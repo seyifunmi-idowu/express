@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <title>Business Consumer Template</title>
+
+    <style type="text/css">
+      @font-face {
+        font-family: 'SF-Pro-Display';
+        src: local('SF-Pro-Display'),
+          url('https://sunfi-web-assets.s3.eu-central-1.amazonaws.com/frontend/SFProDisplay/SF-Pro-Display-Regular.woff')
+            format('truetype');
+      }
+
+      body {
+        font-family: 'SF Pro Display', 'Helvetica Neue', 'Roboto', sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+      }
+
+      table {
+        border-spacing: 0;
+      }
+
+      td {
+        padding: 0;
+      }
+
+      img {
+        border: 0;
+      }
+
+      .wrapper {
+        width: 100%;
+        max-width: 698px;
+        margin: 0 auto;
+
+        table-layout: fixed;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        background: #ffffff;
+        min-height: 100vh;
+      }
+
+      .main {
+        width: 100%;
+        background: transparent;
+      }
+
+      .header {
+        background: #f9fcff;
+      }
+
+      .logo {
+        width: 100px;
+        padding: 20px 50px;
+      }
+
+      .content {
+        padding: 40px 50px;
+      }
+
+      .intro-text {
+        font-size: 26px;
+        font-weight: 700;
+      }
+
+      .info-box {
+        background: #f9f9f9;
+        border: 1px solid #f2f2f2;
+        border-radius: 10px;
+        padding: 12px 20px;
+      }
+
+      .finish-btn {
+        background: #004aad;
+        border-radius: 30px;
+
+        font-style: normal;
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 17px;
+
+        text-align: center;
+        padding: 17px 24px 16px;
+        color: #ffffff;
+        text-decoration: none;
+      }
+
+      .footer {
+        background-color: #001837;
+        color: white;
+        padding: 30px 50px;
+        font-size: 14px;
+      }
+
+      .footer__table {
+        width: 100%;
+        border-bottom: 0.3px solid #f4f4f4;
+        padding-bottom: 15px;
+      }
+
+      .footer__table tr {
+        display: inline-block;
+      }
+
+      .footer__nav {
+        color: #f9fcff;
+        text-decoration: none;
+        display: block;
+        line-height: 26px;
+        text-align: end;
+      }
+
+      .footer__address,
+      .footer__copy {
+        color: #f9fcff;
+        font-size: 12px;
+        display: inline-block;
+      }
+
+      .footer__copy {
+        float: right;
+      }
+
+      @media only screen and (max-width: 600px) {
+        .logo {
+          padding: 10px 12px !important;
+        }
+
+        .content {
+          padding: 10px 12px !important;
+        }
+
+        .intro-text {
+          font-size: 22px !important;
+        }
+
+        .finish-btn {
+          padding: 15px 12px !important;
+        }
+
+        .footer {
+          padding: 20px 12px !important;
+        }
+      }
+
+      @media only screen and (max-width: 550px) {
+        .footer__address {
+          display: block !important;
+        }
+
+        .footer__copy {
+          float: none !important;
+          margin-top: 0px !important;
+        }
+
+        .info {
+          margin-top: 12px !important;
+        }
+      }
+
+      @media only screen and (max-width: 450px) {
+        .intro-text {
+          font-size: 20px !important;
+        }
+
+        .footer__nav {
+          font-size: 12px !important;
+        }
+
+        .progress-indicator {
+          text-align: center !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <center class="wrapper">
+      <table class="main" style="width: 100%">
+        <tr>
+          <td class="content">
+            <table>
+              <tr>
+                <td>
+                  <table style="width: 100%">
+                    <tr>
+                      <td class="progress-indicator">
+                        <img
+                          src="https://sunfi-web-assets.s3.eu-central-1.amazonaws.com/frontend/progress-indicator.png"
+                          alt="progress indicator image"
+                          style="width: 122px; height: 83px"
+                        />
+                      </td>
+                    </tr>
+                  </table>
+                  <h1 class="intro-text">Hi {{ name }}, Your progress was saved.</h1>
+                  <p style="font-size: 14px">
+                    This email is to provide you with the information you need
+                    to get back on track with your plan to get a system tailored
+                    to your needs from SunFi.
+                  </p>
+                </td>
+              </tr>
+
+
+
+              <tr>
+                <td>
+                  <h4
+                    style="margin-top: 35px; font-size: 14px; font-weight: 600"
+                  >
+                    Ready to finish your application?
+                  </h4>
+                  <p style="font-size: 14px; margin-bottom: 40px">
+                    To continue, click the button below and enter your email or
+                    phone number. A timed password will be sent to your email or
+                    phone number, which you can use to sign in and pick up from
+                    where you left off.
+                  </p>
+
+                  <a href="www.google.com" class="finish-btn">Finish your application</a>
+
+                  <h4
+                    style="
+                      margin-top: 40px;
+                      margin-bottom: 0px;
+                      font-size: 14px;
+                      font-weight: 600;
+                    "
+                  >
+                    Can’t remember the exact solution you selected?
+                  </h4>
+                  <p
+                    style="
+                      font-size: 14px;
+                      margin-bottom: 10px;
+                      margin-top: 5px;
+                      line-height: 20px;
+                    "
+                  >
+                    No worries. Attached is a document about your selected
+                    solution. Click on it to open and read about the solution
+                    you selected.
+                  </p>
+
+                  <a href="#">
+                    <img
+                      src="https://sunfi-web-assets.s3.eu-central-1.amazonaws.com/frontend/download.png"
+                      alt="download icon"
+                      style="margin-top: 20px; width: 135px"
+                    />
+                  </a>
+                </td>
+              </tr>
+
+              <tr>
+                <td style="font-size: 14px; margin-top: 40px">
+                  <p style="display: inline-block">
+                    If you have any questions or need assistance, please contact
+                    us at
+                    <a
+                      href="mailto:hello@sunfi.co."
+                      style="
+                        text-decoration: none;
+                        display: inline-block;
+                        color: #004aad;
+                      "
+                      >hello@sunfi.co.</a
+                    >
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </center>
+  </body>
+</html>

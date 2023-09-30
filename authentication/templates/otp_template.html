@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      @font-face {
+        font-family: "Roboto";
+        src: url(https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2)
+          format("woff2");
+      }
+
+      body {
+        background-color: #f5f5f5;
+      }
+
+      .wrapper {
+        width: 350px;
+        margin: auto;
+        background-color: #ffffff;
+        padding: 21px;
+      }
+
+      .logo-wrapper {
+        margin: 0 auto;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .subtext {
+        font-size: 13px;
+        padding-bottom: 30px;
+        line-height: 19px;
+        text-align: center;
+      }
+
+      h2 {
+        font-family: "Roboto";
+        font-size: 22px;
+        font-weight: 600;
+        text-align: center;
+        width: 246px;
+        margin: auto;
+        padding: 8px;
+      }
+
+      p {
+        font-family: "Roboto";
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.73);
+        text-align: center;
+      }
+
+      .line {
+        height: 1px;
+        background-color: #eaeaea;
+        margin: 27px 0;
+      }
+
+      .questions {
+        font-size: 16px;
+        line-height: 19px;
+        color: rgba(29, 33, 37, 0.8);
+      }
+
+      .img-wrapper {
+        margin: auto;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .bottom-text {
+        margin-bottom: 40px;
+        text-align: start;
+      }
+
+      a {
+        text-decoration: none;
+      }
+
+      a:visited {
+        color: #004aad;
+      }
+
+      .otp-wrapper {
+        width: 166px;
+        border: 1px solid #e5e5e5;
+        border-radius: 5px;
+        margin: auto;
+        font-size: 24px;
+        font-weight: 500;
+        border-radius: 15px;
+        letter-spacing: 0.2em;
+        padding: 15px 5px;
+        margin-bottom: 30px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <div class="logo-wrapper">
+        <img
+          src="https://feleexpress.s3.amazonaws.com/emails/fele-driver.png" style="width:120px;"
+        />
+      </div>
+
+      <h2>Hey {{name}}, here's your OTP</h2>
+      <div class="otp-wrapper title" style="color: #011a3c">
+        <p style="font-size: 24px; margin: 0">{{otp}}</p>
+      </div>
+
+      <p class="subtext">
+        If you didn't request this action, there's nothing to worry about, you
+        can safely ignore it.
+      </p>
+      <p class="questions" style="font-size: 13px">
+        Questions? Email us at
+        <a href="mailto:hello@feleexpress.com" style="color: #EA661A"
+          >hello@feleexpress.com</a
+        >
+      </p>
+    </div>
+  </body>
+</html>

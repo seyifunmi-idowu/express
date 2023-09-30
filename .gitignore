@@ -1,0 +1,14 @@
+__pycache__/
+db.sqlite3
+media
+venv/
+
+env/
+
+.env
+
+dump.rdb
+randomfile.py
+
+.mypy_cache
+.idea
