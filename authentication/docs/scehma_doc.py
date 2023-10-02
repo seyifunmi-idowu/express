@@ -1,35 +1,9 @@
 from drf_yasg import openapi
 
-REGISTRATION_SUCCESS_RESPONSE = {
-    "application/json": {"data": {}, "message": "Rider sign up successful"}
+UNAUTHENTICATED = {
+    "application/json": {"message": "Token is invalid or expired"}  # type: ignore
 }
-
-EMAIL_REGISTRATION_BAD_INPUT_RESPONSE = {
-    "application/json": {
-        "errors": {
-            "email": ["Enter a valid email address."],
-            "vehicle_type": ["This field is required."],
-        }
-    }
-}
-
-EMAIL_REGISTRATION_EXISITING_USER_RESPONSE = {
-    "application/json": {
-        "errors": {"email": ["A user has already registered with this email address"]}
-    }
-}
-
-RIDER_REGISTRATION_RESPONSES = {
-    201: openapi.Response(
-        description="Created User", examples=REGISTRATION_SUCCESS_RESPONSE
-    ),
-    400: openapi.Response(
-        description="Bad Input", examples=EMAIL_REGISTRATION_BAD_INPUT_RESPONSE
-    ),
-    409: openapi.Response(
-        description="Existing User", examples=EMAIL_REGISTRATION_EXISITING_USER_RESPONSE
-    ),
-}
+NOT_FOUND = {"application/json": {"message": "Object not found."}}
 
 OTP_SUCCESS_RESPONSE = {
     "application/json": {"data": {}, "message": "Verification successful"}
@@ -41,4 +15,35 @@ VERIFY_OTP_RESPONSES = {
         description="Verification successful", examples=OTP_SUCCESS_RESPONSE
     ),
     400: openapi.Response(description="Bad Input", examples=EXPIRE_RESPONSE),
+}
+
+
+USER_DATA_EXAMPLE = {
+    "id": "3979c56f95d4474580f466b7123e955f",
+    "first_name": "John",
+    "last_name": "Mark",
+    "email": "john@mark.com",
+    "email_verified": False,
+    "phone_number": "+234123456789",
+    "phone_verified": True,
+    "street_address": None,
+    "city": None,
+    "last_login": "2023-10-02T20:43:57.009396Z",
+    "is_rider": True,
+    "is_customer": False,
+    "display_name": "John Mark"
+}
+USER_DATA = {"application/json": {"data": USER_DATA_EXAMPLE, "message": ""}}
+GET_USER_DATA = {
+    200: openapi.Response(
+        description="retrieved user data successfully", examples=USER_DATA
+    ),
+    403: openapi.Response(description="Unauthorized", examples=UNAUTHENTICATED),
+}
+NO_DATA = {"application/json": {"data": {}, "message": ""}}
+LOGOUT_RESPONSE = {
+    200: openapi.Response(
+        description="logout successfully", examples=NO_DATA
+    ),
+    403: openapi.Response(description="Unauthorized", examples=UNAUTHENTICATED),
 }

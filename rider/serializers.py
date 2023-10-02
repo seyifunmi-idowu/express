@@ -1,6 +1,8 @@
 from rest_framework import serializers, status
 
+from authentication.serializers import UserProfileSerializer
 from helpers.validators import FieldValidators
+from rider.models import Rider
 
 
 class RiderSignupSerializer(serializers.Serializer):
@@ -64,12 +66,30 @@ class VerifyOtpSerializer(serializers.Serializer):
     )
 
     def validate(self, data):
-        email = data.get("email")
-        phone_number = data.get("phone_number")
-
-        if email is None and phone_number is None:
-            raise serializers.ValidationError("Provide an email or phone_number")
-        elif email and phone_number:
-            raise serializers.ValidationError("Provide only an email or phone_number")
-
+        FieldValidators.validate_email_or_phone_number(data)
         return data
+
+
+class RiderLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+    phone_number = serializers.CharField(required=False)
+    password = serializers.CharField()
+
+    def validate(self, data):
+        FieldValidators.validate_email_or_phone_number(data)
+        return data
+
+
+class RetrieveRiderSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer()
+
+    class Meta:
+        model = Rider
+        fields = (
+            "id",
+            "user",
+            "vehicle_type",
+            "rider_info",
+            "city",
+            "vehicle_photos",
+        )

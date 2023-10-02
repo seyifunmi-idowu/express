@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.utils import timezone
 from rest_framework import status
+from django.contrib.auth.hashers import check_password
 
 from authentication.models import User, UserActivity
 from authentication.tasks import track_user_activity
@@ -11,6 +12,7 @@ from helpers.db_helpers import generate_otp
 from helpers.exceptions import (CustomAPIException,
                                 CustomFieldValidationException)
 from helpers.notification import EmailManager, SMSManager
+from helpers.token_manager import TokenManager
 
 
 class UserService:
@@ -286,6 +288,40 @@ class AuthService:
         )
 
         return True
+
+    @classmethod
+    def login_user(
+        cls,
+        session_id: str = None,
+        email: str = None,
+        phone_number: str = None,
+        password: str = None,
+        login_user_type="CUSTOMER"
+    ):
+        if email is not None:
+            field_verbose_name = "email"
+            user = User.objects.filter(email=email).first()
+        else:
+            field_verbose_name = "phone number"
+            user = User.objects.filter(phone_number=phone_number).first()
+
+        if user is None:
+            raise CustomAPIException(
+                f"{field_verbose_name.capitalize()} or password is not correct",
+                status.HTTP_401_UNAUTHORIZED,
+            )
+
+        is_valid_password = check_password(password, user.password)
+        if not is_valid_password:
+            raise CustomAPIException(
+                f"{field_verbose_name.capitalize()} or password is not correct",
+                status.HTTP_401_UNAUTHORIZED,
+            )
+
+        user.last_login = timezone.now()
+        user.last_login_user_type = login_user_type
+        user.save()
+        return TokenManager.prepare_user_token(user=user, session_id=session_id)
 
 
 class UserActivityService:

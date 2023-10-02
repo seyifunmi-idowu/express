@@ -2,40 +2,51 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
+from feleexpress.middlewares.permissions.is_authenticated import IsAuthenticated
 
-from helpers.cache_manager import CacheManager
 from helpers.utils import ResponseManager
-
-# Create your views here.
+from authentication.docs import scehma_doc
+from authentication.serializers import UserProfileSerializer
 
 
 class UserViewset(viewsets.ViewSet):
+    permission_classes = (IsAuthenticated,)
 
-    # @swagger_auto_schema(
-    #     methods=["post"],
-    #     request_body=UserAvatarSerializer,
-    #     operation_description="Set User Avatar",
-    #     operation_summary="Set a User avatar",
-    #     tags=["User"],
-    #     responses=SET_AVATAR_RESPONSES,
-    # )
+    @swagger_auto_schema(
+        method="get",
+        operation_description="Get user",
+        operation_summary="Get user",
+        tags=["User"],
+        responses=scehma_doc.GET_USER_DATA,
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="me",
+        parser_classes=(MultiPartParser, FormParser),
+    )
+    def get_user(self, request):
+        return ResponseManager.handle_response(
+            data=UserProfileSerializer(request.user).data,
+            status=status.HTTP_200_OK
+        )
+
+    @swagger_auto_schema(
+        method="post",
+        operation_description="Logout user",
+        operation_summary="Logout user",
+        tags=["User"],
+        responses=scehma_doc.LOGOUT_RESPONSE,
+    )
     @action(
         detail=False,
         methods=["post"],
-        url_path="test",
-        parser_classes=(MultiPartParser, FormParser),
+        url_path="logout",
     )
-    def retriever(self, request):
-        from helpers.notification import EmailManager, SMSManager
-        # result = SMSManager().send_verification_code("+2349112529296")
-        # result = SMSManager().new_caller("+2348105474517")
-        from helpers.s3_uploader import S3Uploader
-
-        s3_uploader = S3Uploader()
-
-        # Upload the file to S3
-        s3_url = s3_uploader.hard_delete_object(
-            "https://feleexpress.s3.amazonaws.com/backend-dev/c390e9e4ff354b9ea7c58fd482a8a155.pdf"
+    def logout(self, request):
+        from helpers.token_manager import TokenManager
+        access_token = request.auth.token
+        TokenManager.logout(access_token)
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_204_NO_CONTENT
         )
-
-        return ResponseManager.handle_response(data={}, status=status.HTTP_200_OK)

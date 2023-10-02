@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import datetime
 
 import dj_database_url
 from decouple import config
@@ -42,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework_simplejwt.token_blacklist",
     "rest_framework",
     "drf_yasg",
     "authentication.apps.AuthenticationConfig",
@@ -133,6 +135,37 @@ CACHES = {
         "LOCATION": REDIS_INSTANCE_ONE,
         "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
+}
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PAGINATION_CLASS": "helpers.utils.CustomPagination",
+    "PAGE_SIZE": 8,
+    "EXCEPTION_HANDLER": "helpers.exceptions.custom_exception_handler",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": f"{config('THROTTLE_RATE', default='1000')}/{config('THROTTLE_PERIOD', default='day')}",
+        "user": f"{config('THROTTLE_RATE', default='1000')}/{config('THROTTLE_PERIOD', default='day')}",
+    },
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(
+        minutes=config("ACCESS_TOKEN_LIFETIME", default=60, cast=int)
+    ),
+    "REFRESH_TOKEN_LIFETIME": datetime.timedelta(
+        minutes=config("REFRESH_TOKEN_LIFETIME", default=360, cast=int)
+    ),
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_TOKEN_CLASSES": ("helpers.token_manager.CustomAccessToken",),
 }
 
 ACCOUNT_SID = config("ACCOUNT_SID", "")

@@ -4,6 +4,7 @@ from authentication.service import AuthService, UserService
 from authentication.tasks import track_user_activity
 from helpers.db_helpers import select_for_update
 from rider.models import Rider
+from rider.serializers import RetrieveRiderSerializer
 
 
 class RiderService:
@@ -80,3 +81,25 @@ class RiderService:
             )
 
         return True
+
+    @classmethod
+    def rider_login(cls, session_id, **kwargs):
+        email = kwargs.get("email")
+        phone = kwargs.get("phone")
+        password = kwargs.get("password")
+
+        login_token = AuthService.login_user(
+            email=email,
+            phone_number=phone,
+            password=password,
+            session_id=session_id,
+            login_user_type="RIDER",
+        )
+        user = UserService.get_user_instance(email=email)
+        rider = cls.get_rider(user=user)
+
+        return {
+            "rider": RetrieveRiderSerializer(rider).data,
+            "token": login_token
+        }
+
