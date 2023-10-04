@@ -88,8 +88,22 @@ class RetrieveRiderSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "user",
+            "status",
             "vehicle_type",
+            "vehicle_make",
+            "vehicle_model",
+            "vehicle_plate_number",
+            "vehicle_color",
             "rider_info",
             "city",
+            "avatar_url",
             "vehicle_photos",
         )
+
+
+class DocumentUploadSerializer(serializers.ModelSerializer):
+    vehicle_photos = serializers.ListField(
+        child=serializers.ImageField(),
+        allow_empty_file=False,
+        write_only=True,
+    )

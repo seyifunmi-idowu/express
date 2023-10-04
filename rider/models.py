@@ -34,6 +34,10 @@ class Rider(BaseAbstractModel):
     vehicle_type = models.CharField(
         max_length=30, choices=VEHICLE_TYPE_CHOICES, verbose_name="rider's vehicle type"
     )
+    vehicle_make = models.CharField(max_length=50, blank=True, null=True)
+    vehicle_model = models.CharField(max_length=30, blank=True, null=True)
+    vehicle_plate_number = models.CharField(max_length=10, blank=True, null=True)
+    vehicle_color = models.CharField(max_length=30, blank=True, null=True)
     rider_info = models.TextField(blank=True, null=True)
     city = models.CharField(max_length=50, null=True, blank=True)
     avatar_url = models.CharField(

@@ -1,6 +1,13 @@
 from rest_framework import permissions
 
-from helpers.validate_user import validate_user, validate_verified_user, validate_deactivated_user
+from helpers.validate_user import (
+    validate_user,
+    validate_verified_user,
+    validate_deactivated_user,
+    validate_rider,
+    validate_customer,
+    validate_admin
+)
 
 
 class IsAuthenticated(permissions.BasePermission):
@@ -28,3 +35,30 @@ class IsVerifiedUser(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return validate_verified_user(request.user)
+
+
+class IsRider(permissions.BasePermission):
+    """
+    Custom permission to allow only riders make this request
+    """
+
+    def has_permission(self, request, view):
+        return validate_rider(request.user)
+
+
+class IsCustomer(permissions.BasePermission):
+    """
+    Custom permission to allow only customers make this request
+    """
+
+    def has_permission(self, request, view):
+        return validate_customer(request.user)
+
+
+class IsAdmin(permissions.BasePermission):
+    """
+    Custom permission to allow only customers make this request
+    """
+
+    def has_permission(self, request, view):
+        return validate_admin(request.user)

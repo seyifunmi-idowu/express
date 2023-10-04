@@ -103,3 +103,7 @@ class RiderService:
             "token": login_token
         }
 
+    @classmethod
+    def upload_document(cls, user, session_id, **kwargs):
+        pass
+

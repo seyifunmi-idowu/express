@@ -28,10 +28,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         )
 
     def get_is_rider(self, obj):
-        return "RIDER" == obj.user_type
+        return obj.user_type == "RIDER"
 
     def get_is_customer(self, obj):
-        return "CUSTOMER" in obj.user_type
+        return obj.user_type == "CUSTOMER"
 
     def get_display_name(self, obj):
         return obj.display_name

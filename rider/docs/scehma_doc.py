@@ -1,5 +1,33 @@
 from drf_yasg import openapi
 
+RIDER_INFO = {
+    "id": "1f1d831988564d0eb6adcf6a5bbcb0a0",
+    "user": {
+        "id": "3979c56f95d4474580f466b7123e955f",
+        "first_name": "John",
+        "last_name": "Mark",
+        "email": "seyiidowu24@yahoo.com",
+        "email_verified": False,
+        "phone_number": "+2348105474517",
+        "phone_verified": True,
+        "street_address": None,
+        "city": None,
+        "last_login": "2023-10-04T07:17:48.924120Z",
+        "is_rider": True,
+        "is_customer": False,
+        "display_name": "John Mark"
+    },
+    "status": "UNAPPROVED",
+    "vehicle_type": "CAR",
+    "vehicle_make": None,
+    "vehicle_model": None,
+    "vehicle_plate_number": None,
+    "vehicle_color": None,
+    "rider_info": None,
+    "city": None,
+    "avatar_url": None,
+    "vehicle_photos": []
+}
 UNAUTHENTICATED = {
     "application/json": {"message": "Token is invalid or expired"}  # type: ignore
 }
@@ -38,30 +66,7 @@ RIDER_REGISTRATION_RESPONSES = {
 
 LOGIN_SUCCESS_RESPONSE = {
     "application/json": {
-        "data": {
-            "rider": {
-                "id": "1f1d831988564d0eb6adcf6a5bbcb0a0",
-                "user": {
-                    "id": "3979c56f95d4474580f466b7123e955f",
-                    "first_name": "John",
-                    "last_name": "Mark",
-                    "email": "john@mark.com",
-                    "email_verified": False,
-                    "phone_number": "+234123456789",
-                    "phone_verified": True,
-                    "street_address": None,
-                    "city": None,
-                    "last_login": "2023-10-02T20:43:57.009396Z",
-                    "is_rider": True,
-                    "is_customer": False,
-                    "display_name": "John Mark"
-                },
-                "vehicle_type": "CAR",
-                "rider_info": None,
-                "city": None,
-                "vehicle_photos": []
-            },
-        },
+        "data": RIDER_INFO,
         "token": {
             "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9....",
             "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9....",
@@ -92,5 +97,20 @@ LOGIN_RESPONSES = {
     401: openapi.Response(
         description="Invalid Credentials",
         examples=LOGIN_WITH_EMAIL_UNAUTHORISED_RESPONSE,
+    ),
+}
+RIDER_INFO_SUCCESS_RESPONSE = {
+    "application/json": {
+        "data": RIDER_INFO,
+        "message": "Rider info"
+    }
+}
+RIDER_INFO_RESPONSE = {
+    200: openapi.Response(
+        description="Rider information", examples=RIDER_INFO_SUCCESS_RESPONSE
+    ),
+    401: openapi.Response(
+        description="Invalid Credentials",
+        examples=UNAUTHENTICATED,
     ),
 }

@@ -93,6 +93,11 @@ class User(BaseAbstractModel, AbstractBaseUser, PermissionsMixin):
         null=True,
         verbose_name="User's last user_type login",
     )
+    is_deactivated = models.BooleanField(
+        "is user deactivated",
+        default=False,
+        help_text="Designates whether the user can login or not.",
+    )
     deactivated_reason = models.TextField(
         null=True, blank=True, verbose_name="Why was this user deactivated?"
     )
@@ -137,22 +142,6 @@ class User(BaseAbstractModel, AbstractBaseUser, PermissionsMixin):
                 using=using, keep_parents=keep_parents, image_url=self.avatar_url
             )
         return super(User, self).hard_delete(using=using, keep_parents=keep_parents)
-
-    def deactivate(self, deactivated_reason=None):
-        if "DEACTIVATED_USER" not in self.user_types:
-            self.user_types.append("DEACTIVATED_USER")
-            if deactivated_reason:
-                self.deactivated_reason = deactivated_reason
-            self.save()
-            return True
-        return False
-
-    def reactivate(self):
-        if "DEACTIVATED_USER" in self.user_types:
-            self.user_types.remove("DEACTIVATED_USER")
-            self.save()
-            return True
-        return False
 
 
 class UserActivity(BaseAbstractModel):

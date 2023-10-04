@@ -7,7 +7,14 @@ from rider.docs import scehma_doc
 from authentication.service import AuthService
 from helpers.db_helpers import generate_session_id
 from helpers.utils import ResponseManager
-from rider.serializers import RiderSignupSerializer, VerifyOtpSerializer, RiderLoginSerializer
+from feleexpress.middlewares.permissions.is_authenticated import IsAuthenticated, IsRider, IsNotDeactivatedUser
+from rider.serializers import (
+    RiderSignupSerializer,
+    VerifyOtpSerializer,
+    RiderLoginSerializer,
+    RetrieveRiderSerializer,
+    DocumentUploadSerializer,
+)
 from rider.service import RiderService
 
 
@@ -94,25 +101,56 @@ class RiderAuthViewset(viewsets.ViewSet):
         )
 
 
-class RiderKycViewset(viewsets.ViewSet):
-    pass
+class RiderViewset(viewsets.ViewSet):
+    permission_classes = (IsAuthenticated, IsRider)
 
-    # @swagger_auto_schema(
-    #     methods=["post"],
-    #     request_body=RiderSignupSerializer,
-    #     operation_description="Upload kyc documents",
-    #     operation_summary="Upload kyc documents",
-    #     tags=["Rider-KYC"],
-    #     responses=scehma_doc.RIDER_REGISTRATION_RESPONSES,
-    # )
-    # def create(self, request):
-    #     serialized_data = RiderSignupSerializer(data=request.data)
-    #     if not serialized_data.is_valid():
-    #         return ResponseManager.handle_response(
-    #             errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
-    #         )
-    #     session_id = generate_session_id()
-    #     RiderService.register_rider(session_id, **serialized_data.data)
-    #     return ResponseManager.handle_response(
-    #         data={}, status=status.HTTP_200_OK, message="Rider sign up successful"
-    #     )
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get Rider information",
+        operation_summary="Get Rider information",
+        tags=["Rider"],
+        responses=scehma_doc.RIDER_INFO_RESPONSE,
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="info",
+    )
+    def get_rider_info(self, request):
+        rider = RiderService.get_rider(user=request.user)
+        return ResponseManager.handle_response(
+            data=RetrieveRiderSerializer(rider).data,
+            status=status.HTTP_200_OK,
+            message="Rider info"
+        )
+
+
+class RiderKycViewset(viewsets.ViewSet):
+    permission_classes = (IsAuthenticated, IsRider)
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=DocumentUploadSerializer,
+        operation_description="Upload kyc documents",
+        operation_summary="Upload kyc documents",
+        tags=["Rider-KYC"],
+        responses={},
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="upload",
+    )
+    def upload(self, request):
+        serialized_data = DocumentUploadSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        RiderService.upload_document(request.user, session_id, **serialized_data.data)
+        return ResponseManager.handle_response(
+            data={},
+            status=status.HTTP_200_OK,
+            message="Document(s) uploaded, you will be notified when information has been verified"
+        )
