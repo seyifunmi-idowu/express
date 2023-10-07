@@ -1,6 +1,5 @@
 from typing import Dict
 
-import requests
 from drf_yasg.generators import OpenAPISchemaGenerator
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response

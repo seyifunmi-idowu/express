@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-import authentication.views as views
+# import authentication.views as views
 
 router = DefaultRouter(trailing_slash=False)
 
