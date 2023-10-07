@@ -5,9 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("authentication", "0002_initial"),
-    ]
+    dependencies = [("authentication", "0002_initial")]
 
     operations = [
         migrations.AddField(
@@ -18,5 +16,5 @@ class Migration(migrations.Migration):
                 help_text="Designates whether the user can login or not.",
                 verbose_name="is user deactivated",
             ),
-        ),
+        )
     ]

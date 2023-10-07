@@ -5,9 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("rider", "0002_rider_city_alter_rider_vehicle_type"),
-    ]
+    dependencies = [("rider", "0002_rider_city_alter_rider_vehicle_type")]
 
     operations = [
         migrations.AddField(

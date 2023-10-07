@@ -2,11 +2,11 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
-from feleexpress.middlewares.permissions.is_authenticated import IsAuthenticated
 
-from helpers.utils import ResponseManager
 from authentication.docs import scehma_doc
 from authentication.serializers import UserProfileSerializer
+from feleexpress.middlewares.permissions.is_authenticated import IsAuthenticated
+from helpers.utils import ResponseManager
 
 
 class UserViewset(viewsets.ViewSet):
@@ -27,8 +27,7 @@ class UserViewset(viewsets.ViewSet):
     )
     def get_user(self, request):
         return ResponseManager.handle_response(
-            data=UserProfileSerializer(request.user).data,
-            status=status.HTTP_200_OK
+            data=UserProfileSerializer(request.user).data, status=status.HTTP_200_OK
         )
 
     @swagger_auto_schema(
@@ -38,13 +37,10 @@ class UserViewset(viewsets.ViewSet):
         tags=["User"],
         responses=scehma_doc.LOGOUT_RESPONSE,
     )
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="logout",
-    )
+    @action(detail=False, methods=["post"], url_path="logout")
     def logout(self, request):
         from helpers.token_manager import TokenManager
+
         access_token = request.auth.token
         TokenManager.logout(access_token)
         return ResponseManager.handle_response(

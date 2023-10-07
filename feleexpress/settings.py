@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
-from pathlib import Path
 import datetime
+from pathlib import Path
+from typing import List
 
 import dj_database_url
 from decouple import config
@@ -29,7 +30,7 @@ SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: List = []
 
 # Base User
 AUTH_USER_MODEL = "authentication.User"

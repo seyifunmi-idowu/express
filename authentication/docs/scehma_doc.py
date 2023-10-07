@@ -31,7 +31,7 @@ USER_DATA_EXAMPLE = {
     "last_login": "2023-10-02T20:43:57.009396Z",
     "is_rider": True,
     "is_customer": False,
-    "display_name": "John Mark"
+    "display_name": "John Mark",
 }
 USER_DATA = {"application/json": {"data": USER_DATA_EXAMPLE, "message": ""}}
 GET_USER_DATA = {
@@ -42,8 +42,6 @@ GET_USER_DATA = {
 }
 NO_DATA = {"application/json": {"data": {}, "message": ""}}
 LOGOUT_RESPONSE = {
-    200: openapi.Response(
-        description="logout successfully", examples=NO_DATA
-    ),
+    200: openapi.Response(description="logout successfully", examples=NO_DATA),
     403: openapi.Response(description="Unauthorized", examples=UNAUTHENTICATED),
 }

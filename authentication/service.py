@@ -1,16 +1,15 @@
 from datetime import timedelta
 
+from django.contrib.auth.hashers import check_password
 from django.utils import timezone
 from rest_framework import status
-from django.contrib.auth.hashers import check_password
 
 from authentication.models import User, UserActivity
 from authentication.tasks import track_user_activity
 from feleexpress import settings
 from helpers.cache_manager import CacheManager, KeyBuilder
 from helpers.db_helpers import generate_otp
-from helpers.exceptions import (CustomAPIException,
-                                CustomFieldValidationException)
+from helpers.exceptions import CustomAPIException, CustomFieldValidationException
 from helpers.notification import EmailManager, SMSManager
 from helpers.token_manager import TokenManager
 
@@ -164,7 +163,7 @@ class AuthService:
 
     @classmethod
     def initiate_phone_verification_with_twillio(cls, phone_number):
-        result = SMSManager().send_verification_code(phone_number)
+        SMSManager().send_verification_code(phone_number)
 
     @classmethod
     def verify_phone_verification_with_twillio(cls, phone_number, code):
@@ -296,7 +295,7 @@ class AuthService:
         email: str = None,
         phone_number: str = None,
         password: str = None,
-        login_user_type="CUSTOMER"
+        login_user_type="CUSTOMER",
     ):
         if email is not None:
             field_verbose_name = "email"

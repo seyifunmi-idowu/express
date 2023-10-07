@@ -98,12 +98,8 @@ class RiderService:
         user = UserService.get_user_instance(email=email)
         rider = cls.get_rider(user=user)
 
-        return {
-            "rider": RetrieveRiderSerializer(rider).data,
-            "token": login_token
-        }
+        return {"rider": RetrieveRiderSerializer(rider).data, "token": login_token}
 
     @classmethod
     def upload_document(cls, user, session_id, **kwargs):
         pass
-

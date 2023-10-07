@@ -3,17 +3,20 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from authentication.docs.scehma_doc import VERIFY_OTP_RESPONSES
-from rider.docs import scehma_doc
 from authentication.service import AuthService
+from feleexpress.middlewares.permissions.is_authenticated import (
+    IsAuthenticated,
+    IsRider,
+)
 from helpers.db_helpers import generate_session_id
 from helpers.utils import ResponseManager
-from feleexpress.middlewares.permissions.is_authenticated import IsAuthenticated, IsRider, IsNotDeactivatedUser
+from rider.docs import scehma_doc
 from rider.serializers import (
+    DocumentUploadSerializer,
+    RetrieveRiderSerializer,
+    RiderLoginSerializer,
     RiderSignupSerializer,
     VerifyOtpSerializer,
-    RiderLoginSerializer,
-    RetrieveRiderSerializer,
-    DocumentUploadSerializer,
 )
 from rider.service import RiderService
 
@@ -82,11 +85,7 @@ class RiderAuthViewset(viewsets.ViewSet):
         tags=["Rider-Auth"],
         responses=scehma_doc.LOGIN_RESPONSES,
     )
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="login",
-    )
+    @action(detail=False, methods=["post"], url_path="login")
     def login(self, request):
         serialized_data = RiderLoginSerializer(data=request.data)
         if not serialized_data.is_valid():
@@ -95,10 +94,10 @@ class RiderAuthViewset(viewsets.ViewSet):
             )
 
         session_id = generate_session_id()
-        response = RiderService.rider_login(session_id=session_id, **serialized_data.data)
-        return ResponseManager.handle_response(
-            data=response, status=status.HTTP_200_OK
+        response = RiderService.rider_login(
+            session_id=session_id, **serialized_data.data
         )
+        return ResponseManager.handle_response(data=response, status=status.HTTP_200_OK)
 
 
 class RiderViewset(viewsets.ViewSet):
@@ -111,17 +110,13 @@ class RiderViewset(viewsets.ViewSet):
         tags=["Rider"],
         responses=scehma_doc.RIDER_INFO_RESPONSE,
     )
-    @action(
-        detail=False,
-        methods=["get"],
-        url_path="info",
-    )
+    @action(detail=False, methods=["get"], url_path="info")
     def get_rider_info(self, request):
         rider = RiderService.get_rider(user=request.user)
         return ResponseManager.handle_response(
             data=RetrieveRiderSerializer(rider).data,
             status=status.HTTP_200_OK,
-            message="Rider info"
+            message="Rider info",
         )
 
 
@@ -136,11 +131,7 @@ class RiderKycViewset(viewsets.ViewSet):
         tags=["Rider-KYC"],
         responses={},
     )
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="upload",
-    )
+    @action(detail=False, methods=["post"], url_path="upload")
     def upload(self, request):
         serialized_data = DocumentUploadSerializer(data=request.data)
         if not serialized_data.is_valid():
@@ -152,5 +143,5 @@ class RiderKycViewset(viewsets.ViewSet):
         return ResponseManager.handle_response(
             data={},
             status=status.HTTP_200_OK,
-            message="Document(s) uploaded, you will be notified when information has been verified"
+            message="Document(s) uploaded, you will be notified when information has been verified",
         )

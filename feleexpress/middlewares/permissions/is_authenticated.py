@@ -1,12 +1,12 @@
 from rest_framework import permissions
 
 from helpers.validate_user import (
-    validate_user,
-    validate_verified_user,
+    validate_admin,
+    validate_customer,
     validate_deactivated_user,
     validate_rider,
-    validate_customer,
-    validate_admin
+    validate_user,
+    validate_verified_user,
 )
 
 

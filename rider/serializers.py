@@ -1,4 +1,4 @@
-from rest_framework import serializers, status
+from rest_framework import serializers
 
 from authentication.serializers import UserProfileSerializer
 from helpers.validators import FieldValidators
@@ -20,16 +20,16 @@ class RiderSignupSerializer(serializers.Serializer):
         required=True,
     )
     address = serializers.CharField()
-    VEHICLE_TYPE_CHOICES = [
-        ("BICYCLE", "BICYCLE"),
-        ("CAR", "CAR (SEDAN)"),
-        ("KEKE", "KEKE"),
-        ("MOTORCYCLE", "MOTORCYCLE"),
-        ("MPV", "MPV (MULTI-PURPOSE VAN)"),
-        ("TRUCKS", "TRUCKS"),
-    ]
+    # VEHICLE_TYPE_CHOICES = [
+    #     ("BICYCLE", "BICYCLE"),
+    #     ("CAR", "CAR (SEDAN)"),
+    #     ("KEKE", "KEKE"),
+    #     ("MOTORCYCLE", "MOTORCYCLE"),
+    #     ("MPV", "MPV (MULTI-PURPOSE VAN)"),
+    #     ("TRUCKS", "TRUCKS"),
+    # ]
     CITY_CHOICES = [("MAKURDI", "MAKURDI"), ("GBOKO", "GBOKO"), ("OTUKPO", "OTUKPO")]
-    vehicle_type = serializers.ChoiceField(choices=VEHICLE_TYPE_CHOICES)
+    # vehicle_type = serializers.ChoiceField(choices=VEHICLE_TYPE_CHOICES)
     city = serializers.ChoiceField(choices=CITY_CHOICES)
     password = serializers.CharField(validators=[FieldValidators.validate_password])
     verify_password = serializers.CharField()
@@ -101,9 +101,7 @@ class RetrieveRiderSerializer(serializers.ModelSerializer):
         )
 
 
-class DocumentUploadSerializer(serializers.ModelSerializer):
+class DocumentUploadSerializer(serializers.Serializer):
     vehicle_photos = serializers.ListField(
-        child=serializers.ImageField(),
-        allow_empty_file=False,
-        write_only=True,
+        child=serializers.ImageField(), allow_empty_file=False, write_only=True
     )

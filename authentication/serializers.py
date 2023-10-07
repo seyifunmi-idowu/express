@@ -1,7 +1,6 @@
-from rest_framework import serializers, status
+from rest_framework import serializers
 
 from authentication.models import User
-from helpers.validators import FieldValidators
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -35,4 +34,3 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_display_name(self, obj):
         return obj.display_name
-

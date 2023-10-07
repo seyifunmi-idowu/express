@@ -15,7 +15,7 @@ RIDER_INFO = {
         "last_login": "2023-10-04T07:17:48.924120Z",
         "is_rider": True,
         "is_customer": False,
-        "display_name": "John Mark"
+        "display_name": "John Mark",
     },
     "status": "UNAPPROVED",
     "vehicle_type": "CAR",
@@ -26,7 +26,7 @@ RIDER_INFO = {
     "rider_info": None,
     "city": None,
     "avatar_url": None,
-    "vehicle_photos": []
+    "vehicle_photos": [],
 }
 UNAUTHENTICATED = {
     "application/json": {"message": "Token is invalid or expired"}  # type: ignore
@@ -100,17 +100,11 @@ LOGIN_RESPONSES = {
     ),
 }
 RIDER_INFO_SUCCESS_RESPONSE = {
-    "application/json": {
-        "data": RIDER_INFO,
-        "message": "Rider info"
-    }
+    "application/json": {"data": RIDER_INFO, "message": "Rider info"}
 }
 RIDER_INFO_RESPONSE = {
     200: openapi.Response(
         description="Rider information", examples=RIDER_INFO_SUCCESS_RESPONSE
     ),
-    401: openapi.Response(
-        description="Invalid Credentials",
-        examples=UNAUTHENTICATED,
-    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }
