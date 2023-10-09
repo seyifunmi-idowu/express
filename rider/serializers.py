@@ -20,16 +20,7 @@ class RiderSignupSerializer(serializers.Serializer):
         required=True,
     )
     address = serializers.CharField()
-    # VEHICLE_TYPE_CHOICES = [
-    #     ("BICYCLE", "BICYCLE"),
-    #     ("CAR", "CAR (SEDAN)"),
-    #     ("KEKE", "KEKE"),
-    #     ("MOTORCYCLE", "MOTORCYCLE"),
-    #     ("MPV", "MPV (MULTI-PURPOSE VAN)"),
-    #     ("TRUCKS", "TRUCKS"),
-    # ]
     CITY_CHOICES = [("MAKURDI", "MAKURDI"), ("GBOKO", "GBOKO"), ("OTUKPO", "OTUKPO")]
-    # vehicle_type = serializers.ChoiceField(choices=VEHICLE_TYPE_CHOICES)
     city = serializers.ChoiceField(choices=CITY_CHOICES)
     password = serializers.CharField(validators=[FieldValidators.validate_password])
     verify_password = serializers.CharField()
@@ -97,11 +88,57 @@ class RetrieveRiderSerializer(serializers.ModelSerializer):
             "rider_info",
             "city",
             "avatar_url",
-            "vehicle_photos",
         )
 
 
 class DocumentUploadSerializer(serializers.Serializer):
-    vehicle_photos = serializers.ListField(
-        child=serializers.ImageField(), allow_empty_file=False, write_only=True
+    DOCUMENT_TYPE_CHOICES = [
+        ("vehicle_photo", "vehicle_photo"),
+        ("passport_photo", "passport_photo"),
+        ("government_id", "government_id"),
+        ("guarantor_letter", "guarantor_letter"),
+        ("address_verification", "address_verification"),
+    ]
+    document_type = serializers.ChoiceField(choices=DOCUMENT_TYPE_CHOICES)
+    documents = serializers.ListField(child=serializers.FileField(), write_only=True)
+
+
+class KycSerializer(serializers.Serializer):
+    VEHICLE_TYPE_CHOICES = [
+        ("BICYCLE", "BICYCLE"),
+        ("CAR", "CAR"),
+        ("KEKE", "KEKE"),
+        ("MOTORCYCLE", "MOTORCYCLE"),
+        ("MPV", "MPV"),
+        ("TRUCKS", "TRUCKS"),
+    ]
+    vehicle_type = serializers.ChoiceField(choices=VEHICLE_TYPE_CHOICES)
+    vehicle_plate_number = serializers.CharField(max_length=20)
+    vehicle_color = serializers.CharField(max_length=20)
+    vehicle_photo = serializers.ListField(
+        child=serializers.FileField(), write_only=True, required=False
     )
+    passport_photo = serializers.ListField(
+        child=serializers.FileField(), write_only=True, required=False
+    )
+    government_id = serializers.ListField(
+        child=serializers.FileField(), write_only=True, required=False
+    )
+    guarantor_letter = serializers.ListField(
+        child=serializers.FileField(), write_only=True, required=False
+    )
+    address_verification = serializers.ListField(
+        child=serializers.FileField(), write_only=True, required=False
+    )
+
+    class Meta:
+        fields = [
+            "vehicle_type",
+            "vehicle_plate_number",
+            "vehicle_color",
+            "vehicle_photo",
+            "passport_photo",
+            "government_id",
+            "guarantor_letter",
+            "address_verification",
+        ]

@@ -47,7 +47,6 @@ class Rider(BaseAbstractModel):
     avatar_url = models.CharField(
         max_length=550, verbose_name="avatar url", null=True, blank=True
     )
-    vehicle_photos = models.JSONField(default=list)
     status = models.CharField(
         max_length=30,
         choices=STATUS,
@@ -122,30 +121,31 @@ class Guarantor(BaseAbstractModel):
         verbose_name_plural = "guarantor"
 
 
-class VerificationId(BaseAbstractModel):
+class RiderDocument(BaseAbstractModel):
     """
-    Verification IDs Model
+    Rider Document(s) Model
     """
 
-    IDENTIFICATION_TYPES = [
-        ("Government Issued Identification", "Government Issued Identification"),
-        ("Vehicle Registration", "Vehicle Registration"),
-        ("Utility Bill", "Utility Bill"),
-        ("National Identification Number", "National Identification Number"),
-        ("Drivers License", "Drivers License"),
+    DOCUMENT_TYPES = [
+        ("vehicle_registration", "Vehicle Registration"),
+        ("driver_license", "Driver License"),
+        ("vehicle_photo", "Vehicle Photo"),
+        ("passport_photo", "Passport Photo"),
+        ("government_id", "Government Issued Identification"),
+        ("guarantor_letter", "Guarantor Letter"),
+        ("address_verification", "Address Verification (Utility Bill)"),
     ]
-
     type = models.CharField(
-        max_length=100, choices=IDENTIFICATION_TYPES, verbose_name="identification type"
+        max_length=100, choices=DOCUMENT_TYPES, verbose_name="document type"
     )
     number = models.CharField(
-        max_length=50, verbose_name="identification number", null=True, blank=True
+        max_length=50, verbose_name="document number", null=True, blank=True
     )
     file_url = models.CharField(
-        max_length=550, verbose_name="identification file url", null=True, blank=True
+        max_length=550, verbose_name="document file url", null=True, blank=True
     )
     rider = models.ForeignKey(Rider, on_delete=models.CASCADE)
-    verified = models.BooleanField(default=False)
+    verified = models.BooleanField(default=False, verbose_name="Is Verified")
 
     def __str__(self):
         return f"{self.rider.display_name}"
@@ -153,17 +153,17 @@ class VerificationId(BaseAbstractModel):
     def hard_delete(self, using=None, keep_parents=False, image_url=None, commit=True):
         """Hard deleting"""
         if self.file_url:
-            return super(VerificationId, self).hard_delete(
+            return super(RiderDocument, self).hard_delete(
                 using=using, keep_parents=keep_parents, image_url=self.file_url
             )
-        return super(VerificationId, self).hard_delete(
+        return super(RiderDocument, self).hard_delete(
             using=using, keep_parents=keep_parents
         )
 
     class Meta:
-        db_table = "verification_id"
-        verbose_name = "Verification Id"
-        verbose_name_plural = "Verification Ids"
+        db_table = "rider_document"
+        verbose_name = "Rider Document"
+        verbose_name_plural = "Rider Documents"
 
 
 class RiderRating(BaseAbstractModel):

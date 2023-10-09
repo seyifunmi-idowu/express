@@ -108,3 +108,43 @@ RIDER_INFO_RESPONSE = {
     ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }
+SUBMIT_KYC_SUCCESS_RESPONSE = {
+    "application/json": {"data": {}, "message": "Kyc submitted"}
+}
+SUBMIT_KYC_BAD_INPUT_RESPONSE = {
+    "application/json": {
+        "errors": {
+            "vehicle_type": ["This field is required."],
+            "vehicle_plate_number": ["This field is required."],
+        }
+    }
+}
+SUBMIT_KYC_RESPONSE = {
+    200: openapi.Response(
+        description="Kyc submitted", examples=SUBMIT_KYC_SUCCESS_RESPONSE
+    ),
+    400: openapi.Response(
+        description="Bad Input", examples=SUBMIT_KYC_BAD_INPUT_RESPONSE
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
+UPLOAD_DOCUMENT_SUCCESS_RESPONSE = {
+    "application/json": {"data": {}, "message": "Document(s) uploaded"}
+}
+UPLOAD_DOCUMENT_BAD_INPUT_RESPONSE = {
+    "application/json": {
+        "errors": {
+            "document_type": ["This field is required."],
+            "documents": ["This field is required."],
+        }
+    }
+}
+UPLOAD_DOCUMENT_RESPONSE = {
+    200: openapi.Response(
+        description="Kyc submitted", examples=SUBMIT_KYC_SUCCESS_RESPONSE
+    ),
+    400: openapi.Response(
+        description="Bad Input", examples=UPLOAD_DOCUMENT_BAD_INPUT_RESPONSE
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}

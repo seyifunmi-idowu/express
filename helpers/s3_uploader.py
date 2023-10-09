@@ -26,24 +26,23 @@ class S3Uploader(object):
 
     def upload_file_object(self, file_object, file_name, use_random_key=True):
         key = self.build_key(file_name) if use_random_key else file_name
+        key = f"{self.folder}/{key}"
+        self.put_object(key=key, body=file_object)
+        return f"https://{self.bucket}.s3.amazonaws.com/{key}"
+
+    def put_object(self, key, body):
+        # TODO: put this in a celery task because of lateness
         self.s3_resource.Bucket(self.bucket).put_object(
-            Key=f"{self.folder}/{key}", Body=file_object, ACL="public-read"
+            Key=key, Body=body, ACL="public-read"
         )
-        return f"https://{self.bucket}.s3.amazonaws.com/{self.folder}/{key}"
 
     def hard_delete_object(self, image_url):
         res = (
             self.s3_resource.Bucket(self.bucket)
-            .object_versions.filter(
-                Prefix=f"{self.folder}/{'/'.join(str(image_url).split('/')[-1:])}"
-            )
+            .object_versions.filter(Prefix=f"{'/'.join(str(image_url).split('/')[3:])}")
             .delete()
         )
-
-        if not res:
-            return False
-
-        return True
+        return res
 
 
 class SuggestedImageUploader(S3Uploader):

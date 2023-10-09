@@ -3,7 +3,8 @@ from django.db import transaction
 from authentication.service import AuthService, UserService
 from authentication.tasks import track_user_activity
 from helpers.db_helpers import select_for_update
-from rider.models import Rider
+from helpers.s3_uploader import S3Uploader
+from rider.models import Rider, RiderDocument
 from rider.serializers import RetrieveRiderSerializer
 
 
@@ -100,6 +101,56 @@ class RiderService:
 
         return {"rider": RetrieveRiderSerializer(rider).data, "token": login_token}
 
+
+class RiderKYCService:
     @classmethod
-    def upload_document(cls, user, session_id, **kwargs):
-        pass
+    def submit_kyc(cls, user, session_id, **kwargs):
+        rider = RiderService.get_rider(user=user)
+        rider.vehicle_type = kwargs.get("vehicle_type")
+        rider.vehicle_color = kwargs.get("vehicle_color")
+        rider.vehicle_plate_number = kwargs.get("vehicle_plate_number")
+        kwargs.pop("vehicle_type")
+        kwargs.pop("vehicle_color")
+        kwargs.pop("vehicle_plate_number")
+
+        for field_name, files in kwargs.items():
+            for file in files:
+                cls.add_rider_document(
+                    rider=rider,
+                    document_type=field_name,
+                    file=file,
+                    session_id=session_id,
+                )
+
+        rider.save()
+        track_user_activity(
+            context={},
+            category="RIDER_KYC",
+            action="RIDER_SUBMIT_KYC",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+        return True
+
+    @classmethod
+    def add_rider_document(cls, rider, document_type, file, session_id=None, **kwargs):
+        file_name = file.name
+        file_url = S3Uploader(
+            append_folder=f"/rider_document/{document_type}"
+        ).upload_file_object(file, file_name)
+
+        rider_document = RiderDocument.objects.create(
+            rider=rider, type=document_type, file_url=file_url, **kwargs
+        )
+        track_user_activity(
+            context={"file_name": file_name, "rider_document": rider_document.id},
+            category="RIDER_KYC",
+            action="RIDER_ADD_DOCUMENT",
+            email=rider.user.email if rider.user.email else None,
+            phone_number=rider.user.phone_number if rider.user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+        return rider_document

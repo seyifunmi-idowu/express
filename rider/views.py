@@ -10,15 +10,16 @@ from feleexpress.middlewares.permissions.is_authenticated import (
 )
 from helpers.db_helpers import generate_session_id
 from helpers.utils import ResponseManager
-from rider.docs import scehma_doc
+from rider.docs import schema_doc
 from rider.serializers import (
     DocumentUploadSerializer,
+    KycSerializer,
     RetrieveRiderSerializer,
     RiderLoginSerializer,
     RiderSignupSerializer,
     VerifyOtpSerializer,
 )
-from rider.service import RiderService
+from rider.service import RiderKYCService, RiderService
 
 
 class RiderAuthViewset(viewsets.ViewSet):
@@ -30,7 +31,7 @@ class RiderAuthViewset(viewsets.ViewSet):
         operation_description="Register a rider",
         operation_summary="Register a rider",
         tags=["Rider-Auth"],
-        responses=scehma_doc.RIDER_REGISTRATION_RESPONSES,
+        responses=schema_doc.RIDER_REGISTRATION_RESPONSES,
     )
     @action(detail=False, methods=["post"], url_path="register")
     def signup(self, request):
@@ -83,7 +84,7 @@ class RiderAuthViewset(viewsets.ViewSet):
         operation_description="Login a user account with email or phone_number and password",
         operation_summary="Login a User with Basic Authentication - Email or Phone Number",
         tags=["Rider-Auth"],
-        responses=scehma_doc.LOGIN_RESPONSES,
+        responses=schema_doc.LOGIN_RESPONSES,
     )
     @action(detail=False, methods=["post"], url_path="login")
     def login(self, request):
@@ -108,7 +109,7 @@ class RiderViewset(viewsets.ViewSet):
         operation_description="Get Rider information",
         operation_summary="Get Rider information",
         tags=["Rider"],
-        responses=scehma_doc.RIDER_INFO_RESPONSE,
+        responses=schema_doc.RIDER_INFO_RESPONSE,
     )
     @action(detail=False, methods=["get"], url_path="info")
     def get_rider_info(self, request):
@@ -125,23 +126,54 @@ class RiderKycViewset(viewsets.ViewSet):
 
     @swagger_auto_schema(
         methods=["post"],
+        request_body=KycSerializer,
+        operation_description="Submit kyc documents",
+        operation_summary="Submit kyc documents",
+        tags=["Rider-KYC"],
+        responses=schema_doc.RIDER_INFO_RESPONSE,
+    )
+    @action(detail=False, methods=["post"], url_path="submit")
+    def submit_kyc(self, request):
+        serialized_data = KycSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        RiderKYCService.submit_kyc(
+            request.user, session_id, **serialized_data.validated_data
+        )
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Kyc submitted"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
         request_body=DocumentUploadSerializer,
         operation_description="Upload kyc documents",
         operation_summary="Upload kyc documents",
         tags=["Rider-KYC"],
-        responses={},
+        responses=schema_doc.UPLOAD_DOCUMENT_RESPONSE,
     )
     @action(detail=False, methods=["post"], url_path="upload")
-    def upload(self, request):
+    def upload_document(self, request):
         serialized_data = DocumentUploadSerializer(data=request.data)
         if not serialized_data.is_valid():
             return ResponseManager.handle_response(
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         session_id = generate_session_id()
-        RiderService.upload_document(request.user, session_id, **serialized_data.data)
+        rider = RiderService.get_rider(user=request.user)
+        document_type = serialized_data.validated_data.get("document_type")
+        documents = serialized_data.validated_data.get("documents")
+        for document in documents:
+            RiderKYCService.add_rider_document(
+                rider=rider,
+                document_type=document_type,
+                file=document,
+                session_id=session_id,
+            )
+
         return ResponseManager.handle_response(
-            data={},
-            status=status.HTTP_200_OK,
-            message="Document(s) uploaded, you will be notified when information has been verified",
+            data={}, status=status.HTTP_200_OK, message="Document(s) uploaded"
         )
