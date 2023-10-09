@@ -14,6 +14,7 @@ from rider.docs import schema_doc
 from rider.serializers import (
     DocumentUploadSerializer,
     KycSerializer,
+    RetrieveKycSerializer,
     RetrieveRiderSerializer,
     RiderLoginSerializer,
     RiderSignupSerializer,
@@ -130,7 +131,7 @@ class RiderKycViewset(viewsets.ViewSet):
         operation_description="Submit kyc documents",
         operation_summary="Submit kyc documents",
         tags=["Rider-KYC"],
-        responses=schema_doc.RIDER_INFO_RESPONSE,
+        responses=schema_doc.SUBMIT_KYC_RESPONSE,
     )
     @action(detail=False, methods=["post"], url_path="submit")
     def submit_kyc(self, request):
@@ -140,11 +141,11 @@ class RiderKycViewset(viewsets.ViewSet):
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         session_id = generate_session_id()
-        RiderKYCService.submit_kyc(
+        response = RiderKYCService.submit_kyc(
             request.user, session_id, **serialized_data.validated_data
         )
         return ResponseManager.handle_response(
-            data={}, status=status.HTTP_200_OK, message="Kyc submitted"
+            data=response, status=status.HTTP_200_OK, message="Kyc submitted"
         )
 
     @swagger_auto_schema(
@@ -176,4 +177,20 @@ class RiderKycViewset(viewsets.ViewSet):
 
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Document(s) uploaded"
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get Kyc information",
+        operation_summary="Get Kyc information",
+        tags=["Rider-KYC"],
+        responses=schema_doc.KYC_INFO_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="info")
+    def kyc_info(self, request):
+        rider = RiderService.get_rider(user=request.user)
+        return ResponseManager.handle_response(
+            data=RetrieveKycSerializer(rider).data,
+            status=status.HTTP_200_OK,
+            message="Kyc Info",
         )

@@ -5,7 +5,7 @@ from authentication.tasks import track_user_activity
 from helpers.db_helpers import select_for_update
 from helpers.s3_uploader import S3Uploader
 from rider.models import Rider, RiderDocument
-from rider.serializers import RetrieveRiderSerializer
+from rider.serializers import RetrieveKycSerializer, RetrieveRiderSerializer
 
 
 class RiderService:
@@ -106,33 +106,34 @@ class RiderKYCService:
     @classmethod
     def submit_kyc(cls, user, session_id, **kwargs):
         rider = RiderService.get_rider(user=user)
-        rider.vehicle_type = kwargs.get("vehicle_type")
-        rider.vehicle_color = kwargs.get("vehicle_color")
-        rider.vehicle_plate_number = kwargs.get("vehicle_plate_number")
-        kwargs.pop("vehicle_type")
-        kwargs.pop("vehicle_color")
-        kwargs.pop("vehicle_plate_number")
+        # rider.vehicle_type = kwargs.get("vehicle_type")
+        # rider.vehicle_color = kwargs.get("vehicle_color")
+        # rider.vehicle_plate_number = kwargs.get("vehicle_plate_number")
+        # kwargs.pop("vehicle_type")
+        # kwargs.pop("vehicle_color")
+        # kwargs.pop("vehicle_plate_number")
+        #
+        # for field_name, files in kwargs.items():
+        #     for file in files:
+        #         cls.add_rider_document(
+        #             rider=rider,
+        #             document_type=field_name,
+        #             file=file,
+        #             session_id=session_id,
+        #         )
+        #
+        # rider.save()
+        # track_user_activity(
+        #     context={},
+        #     category="RIDER_KYC",
+        #     action="RIDER_SUBMIT_KYC",
+        #     email=user.email if user.email else None,
+        #     phone_number=user.phone_number if user.phone_number else None,
+        #     level="SUCCESS",
+        #     session_id=session_id,
+        # )
 
-        for field_name, files in kwargs.items():
-            for file in files:
-                cls.add_rider_document(
-                    rider=rider,
-                    document_type=field_name,
-                    file=file,
-                    session_id=session_id,
-                )
-
-        rider.save()
-        track_user_activity(
-            context={},
-            category="RIDER_KYC",
-            action="RIDER_SUBMIT_KYC",
-            email=user.email if user.email else None,
-            phone_number=user.phone_number if user.phone_number else None,
-            level="SUCCESS",
-            session_id=session_id,
-        )
-        return True
+        return RetrieveKycSerializer(rider).data
 
     @classmethod
     def add_rider_document(cls, rider, document_type, file, session_id=None, **kwargs):

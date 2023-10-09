@@ -78,11 +78,35 @@ class Rider(BaseAbstractModel):
         from django.db.models import Avg
 
         rider_ratings = self.rider_rating.all()
-
         avg_rating = rider_ratings.aggregate(avg_rating=Avg("rating"))["avg_rating"]
-
         # Check if avg_rating is not None before returning
         return avg_rating if avg_rating is not None else 0.0
+
+    def vehicle_photos(self):
+        return self.rider_document.filter(type="vehicle_photo").values_list(
+            "file_url", flat=True
+        )
+
+    def kyc_verified(self):
+        # The document types you want to check
+        document_types_to_check = [
+            "vehicle_photo",
+            "passport_photo",
+            "government_id",
+            "guarantor_letter",
+            "address_verification",
+        ]
+
+        for document_type in document_types_to_check:
+            rider_documents = self.rider_document.filter(type=document_type)
+            if not rider_documents.exists():
+                return False
+
+            all_verified = all(document.verified for document in rider_documents)
+            if not all_verified:
+                return False
+
+        return True
 
     def hard_delete(self, using=None, keep_parents=False, image_url=None, commit=True):
         """Hard deleting"""
@@ -144,7 +168,12 @@ class RiderDocument(BaseAbstractModel):
     file_url = models.CharField(
         max_length=550, verbose_name="document file url", null=True, blank=True
     )
-    rider = models.ForeignKey(Rider, on_delete=models.CASCADE)
+    rider = models.ForeignKey(
+        Rider,
+        on_delete=models.CASCADE,
+        verbose_name="rider",
+        related_name="rider_document",
+    )
     verified = models.BooleanField(default=False, verbose_name="Is Verified")
 
     def __str__(self):

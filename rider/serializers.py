@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from authentication.serializers import UserProfileSerializer
 from helpers.validators import FieldValidators
-from rider.models import Rider
+from rider.models import Rider, RiderDocument
 
 
 class RiderSignupSerializer(serializers.Serializer):
@@ -142,3 +142,50 @@ class KycSerializer(serializers.Serializer):
             "guarantor_letter",
             "address_verification",
         ]
+
+
+class RetrieveKycSerializer(serializers.ModelSerializer):
+    status = serializers.CharField()
+    vehicle_photo = serializers.SerializerMethodField()
+    passport_photo = serializers.SerializerMethodField()
+    government_id = serializers.SerializerMethodField()
+    guarantor_letter = serializers.SerializerMethodField()
+    address_verification = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Rider
+        fields = (
+            "status",
+            "vehicle_photo",
+            "passport_photo",
+            "government_id",
+            "guarantor_letter",
+            "address_verification",
+        )
+
+    def get_document_info(self, obj, document_type):
+        documents = RiderDocument.objects.filter(rider=obj, type=document_type)
+        if len(documents) < 1:
+            return {"status": "unverified", "files": []}
+
+        all_verified = all(photo.verified for photo in documents)
+        file_urls = [photo.file_url for photo in documents]
+        return {
+            "status": "verified" if all_verified else "unverified",
+            "files": file_urls,
+        }
+
+    def get_vehicle_photo(self, obj):
+        return self.get_document_info(obj, "vehicle_photo")
+
+    def get_passport_photo(self, obj):
+        return self.get_document_info(obj, "passport_photo")
+
+    def get_government_id(self, obj):
+        return self.get_document_info(obj, "government_id")
+
+    def get_guarantor_letter(self, obj):
+        return self.get_document_info(obj, "guarantor_letter")
+
+    def get_address_verification(self, obj):
+        return self.get_document_info(obj, "address_verification")
