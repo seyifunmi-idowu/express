@@ -18,6 +18,8 @@ from rider.serializers import (
     RetrieveRiderSerializer,
     RiderLoginSerializer,
     RiderSignupSerializer,
+    UpdateVehicleSerializer,
+    VehicleInformationSerializer,
     VerifyOtpSerializer,
 )
 from rider.service import RiderKYCService, RiderService
@@ -119,6 +121,46 @@ class RiderViewset(viewsets.ViewSet):
             data=RetrieveRiderSerializer(rider).data,
             status=status.HTTP_200_OK,
             message="Rider info",
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get Rider Vehicle information",
+        operation_summary="Get Rider Vehicle information",
+        tags=["Rider"],
+        responses=schema_doc.VEHICLE_INFO_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="vehicle/info")
+    def get_rider_vehicle(self, request):
+        rider = RiderService.get_rider(user=request.user)
+        return ResponseManager.handle_response(
+            data=VehicleInformationSerializer(rider).data,
+            status=status.HTTP_200_OK,
+            message="Vehicle information",
+        )
+
+    @swagger_auto_schema(
+        request_body=UpdateVehicleSerializer,
+        operation_description="Update Rider Vehicle information",
+        operation_summary="Update Rider Vehicle information",
+        tags=["Rider"],
+        responses=schema_doc.UPDATE_VEHICLE_RESPONSE,
+    )
+    @get_rider_vehicle.mapping.patch
+    def update_rider_vehicle(self, request):
+        serialized_data = UpdateVehicleSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        response = RiderService.update_rider_vehicle(
+            request.user, session_id, **serialized_data.validated_data
+        )
+        return ResponseManager.handle_response(
+            data=response,
+            status=status.HTTP_200_OK,
+            message="Vehicle information updated",
         )
 
 

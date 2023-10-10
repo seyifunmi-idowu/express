@@ -151,13 +151,14 @@ class RiderDocument(BaseAbstractModel):
     """
 
     DOCUMENT_TYPES = [
-        ("vehicle_registration", "Vehicle Registration"),
+        ("address_verification", "Address Verification (Utility Bill)"),
         ("driver_license", "Driver License"),
-        ("vehicle_photo", "Vehicle Photo"),
-        ("passport_photo", "Passport Photo"),
+        ("insurance_certificate", "Insurance Certificate"),
         ("government_id", "Government Issued Identification"),
         ("guarantor_letter", "Guarantor Letter"),
-        ("address_verification", "Address Verification (Utility Bill)"),
+        ("passport_photo", "Passport Photo"),
+        ("vehicle_registration", "Vehicle Registration"),
+        ("vehicle_photo", "Vehicle Photo"),
     ]
     type = models.CharField(
         max_length=100, choices=DOCUMENT_TYPES, verbose_name="document type"

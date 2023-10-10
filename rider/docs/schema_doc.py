@@ -184,3 +184,31 @@ KYC_INFO_RESPONSE = {
     ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }
+VEHICLE_INFO_SUCCESS_RESPONSE = {
+    "application/json": {
+        "data": {
+            "vehicle_type": "CAR",
+            "vehicle_make": None,
+            "vehicle_model": None,
+            "vehicle_plate_number": "eky24sky",
+            "vehicle_color": "red",
+            "driver_license": {"status": "unverified", "files": []},
+            "insurance_certificate": {"status": "unverified", "files": []},
+        },
+        "message": "Kyc submitted",
+    }
+}
+VEHICLE_INFO_RESPONSE = {
+    200: openapi.Response(
+        description="Vehicle information", examples=VEHICLE_INFO_SUCCESS_RESPONSE
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
+
+UPDATE_VEHICLE_RESPONSE = {
+    200: openapi.Response(
+        description="Vehicle information updated",
+        examples=VEHICLE_INFO_SUCCESS_RESPONSE,
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}

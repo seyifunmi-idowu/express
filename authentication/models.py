@@ -186,7 +186,7 @@ class UserActivity(BaseAbstractModel):
     )
 
     def __str__(self):
-        return f"{self.user} - {self.action} ({self.category})"
+        return f"{self.user} -{self.category} ({self.action})"
 
     class Meta:
         db_table = "user_activity"

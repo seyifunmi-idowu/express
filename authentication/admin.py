@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 
 from authentication.forms import CreateUserForm
-from authentication.models import User
+from authentication.models import User, UserActivity
 from helpers.admin_helpers import BaseModelAdmin
 
 
@@ -10,8 +10,8 @@ class CustomUserAdmin(BaseModelAdmin, UserAdmin):
     actions = ["delete_user"]
     model = User
     list_display = ("first_name", "last_name", "email", "is_staff")
-    list_filter = ("first_name", "last_name", "email", "is_staff")
-    readonly_fields = ("deleted_at", "email_verified")
+    list_filter = ("first_name", "last_name", "is_staff")
+    readonly_fields = ("deleted_at", "email_verified", "phone_verified")
     fieldsets = (
         (
             None,
@@ -20,10 +20,11 @@ class CustomUserAdmin(BaseModelAdmin, UserAdmin):
                     "first_name",
                     "last_name",
                     "phone_number",
-                    "user_types",
+                    "user_type",
                     "email",
                     "password",
                     "email_verified",
+                    "phone_verified",
                 )
             },
         ),
@@ -65,4 +66,45 @@ class CustomUserAdmin(BaseModelAdmin, UserAdmin):
             )
 
 
-admin.site.register(User)
+class UserActivityAdmin(admin.ModelAdmin):
+    model = UserActivity
+    ordering = ["-created_at"]
+    search_fields = [
+        "user__first_name",
+        "user__last_name",
+        "user__email",
+        "user__phone_number",
+        "id",
+        "session_id",
+    ]
+    list_display = ("user", "category", "action")
+    list_filter = ("category", "level")
+
+    fields = (
+        "session_id",
+        "level",
+        "action",
+        "category",
+        "user",
+        "rider",
+        "customer",
+        "context",
+    )
+
+    readonly_fields = (
+        "session_id",
+        "level",
+        "action",
+        "category",
+        "user",
+        "rider",
+        "customer",
+        "context",
+    )
+
+    def consumer_name(self, obj):
+        return obj.consumer.user.display_name
+
+
+admin.site.register(User, CustomUserAdmin)
+admin.site.register(UserActivity, UserActivityAdmin)

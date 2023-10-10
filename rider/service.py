@@ -5,7 +5,11 @@ from authentication.tasks import track_user_activity
 from helpers.db_helpers import select_for_update
 from helpers.s3_uploader import S3Uploader
 from rider.models import Rider, RiderDocument
-from rider.serializers import RetrieveKycSerializer, RetrieveRiderSerializer
+from rider.serializers import (
+    RetrieveKycSerializer,
+    RetrieveRiderSerializer,
+    VehicleInformationSerializer,
+)
 
 
 class RiderService:
@@ -101,37 +105,73 @@ class RiderService:
 
         return {"rider": RetrieveRiderSerializer(rider).data, "token": login_token}
 
+    @classmethod
+    def update_rider_vehicle(cls, user, session_id, **kwargs):
+        with transaction.atomic():
+            rider = cls.get_rider(user=user)
+            rider.vehicle_type = kwargs.get("vehicle_type", rider.vehicle_type)
+            rider.vehicle_make = kwargs.get("vehicle_make", rider.vehicle_make)
+            rider.vehicle_model = kwargs.get("vehicle_model", rider.vehicle_model)
+            rider.vehicle_plate_number = kwargs.get(
+                "vehicle_plate_number", rider.vehicle_plate_number
+            )
+            rider.vehicle_color = kwargs.get("vehicle_color", rider.vehicle_color)
+            rider.save()
+            track_user_activity(
+                context=kwargs,
+                category="RIDER_KYC",
+                action="RIDER_UPDATE_VEHICLE",
+                email=user.email if user.email else None,
+                phone_number=user.phone_number if user.phone_number else None,
+                level="SUCCESS",
+                session_id=session_id,
+            )
+            return VehicleInformationSerializer(rider).data
+
 
 class RiderKYCService:
     @classmethod
+    def get_rider_document_status(cls, rider, document_type):
+        documents = RiderDocument.objects.filter(rider=rider, type=document_type)
+        if len(documents) < 1:
+            return {"status": "unverified", "files": []}
+
+        all_verified = all(photo.verified for photo in documents)
+        file_urls = [photo.file_url for photo in documents]
+        return {
+            "status": "verified" if all_verified else "unverified",
+            "files": file_urls,
+        }
+
+    @classmethod
     def submit_kyc(cls, user, session_id, **kwargs):
         rider = RiderService.get_rider(user=user)
-        # rider.vehicle_type = kwargs.get("vehicle_type")
-        # rider.vehicle_color = kwargs.get("vehicle_color")
-        # rider.vehicle_plate_number = kwargs.get("vehicle_plate_number")
-        # kwargs.pop("vehicle_type")
-        # kwargs.pop("vehicle_color")
-        # kwargs.pop("vehicle_plate_number")
-        #
-        # for field_name, files in kwargs.items():
-        #     for file in files:
-        #         cls.add_rider_document(
-        #             rider=rider,
-        #             document_type=field_name,
-        #             file=file,
-        #             session_id=session_id,
-        #         )
-        #
-        # rider.save()
-        # track_user_activity(
-        #     context={},
-        #     category="RIDER_KYC",
-        #     action="RIDER_SUBMIT_KYC",
-        #     email=user.email if user.email else None,
-        #     phone_number=user.phone_number if user.phone_number else None,
-        #     level="SUCCESS",
-        #     session_id=session_id,
-        # )
+        rider.vehicle_type = kwargs.get("vehicle_type")
+        rider.vehicle_color = kwargs.get("vehicle_color")
+        rider.vehicle_plate_number = kwargs.get("vehicle_plate_number")
+        kwargs.pop("vehicle_type")
+        kwargs.pop("vehicle_color")
+        kwargs.pop("vehicle_plate_number")
+
+        for field_name, files in kwargs.items():
+            for file in files:
+                cls.add_rider_document(
+                    rider=rider,
+                    document_type=field_name,
+                    file=file,
+                    session_id=session_id,
+                )
+
+        rider.save()
+        track_user_activity(
+            context={},
+            category="RIDER_KYC",
+            action="RIDER_SUBMIT_KYC",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
 
         return RetrieveKycSerializer(rider).data
 
