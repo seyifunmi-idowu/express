@@ -175,7 +175,6 @@ SIMPLE_JWT = {
 }
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-STATICFILES_DIRS = [f"{BASE_DIR}/feleexpress/static"]
 
 ACCOUNT_SID = config("ACCOUNT_SID", "")
 AUTH_TOKEN = config("AUTH_TOKEN", "")
