@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import datetime
+import os
 from pathlib import Path
 
 import dj_database_url
@@ -172,6 +173,9 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_TOKEN_CLASSES": ("helpers.token_manager.CustomAccessToken",),
 }
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 ACCOUNT_SID = config("ACCOUNT_SID", "")
 AUTH_TOKEN = config("AUTH_TOKEN", "")
