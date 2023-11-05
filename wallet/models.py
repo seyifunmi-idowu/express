@@ -107,3 +107,27 @@ class Transaction(BaseAbstractModel):
         db_table = "transactions"
         verbose_name = "transaction"
         verbose_name_plural = "transaction"
+
+    def __str__(self):
+        return f"{self.currency} {self.amount} --- {self.reference}"
+
+
+class Card(BaseAbstractModel):
+    user = models.ForeignKey(
+        "authentication.User",
+        related_name="user_card",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    card_type = models.CharField(max_length=30, null=True, blank=True)
+    card_auth = models.CharField(max_length=30, null=True, blank=True)
+    last_4 = models.CharField(max_length=30, null=True, blank=True)
+    exp_month = models.CharField(max_length=30, null=True, blank=True)
+    exp_year = models.CharField(max_length=30, null=True, blank=True)
+    country_code = models.CharField(max_length=30, null=True, blank=True)
+    brand = models.CharField(max_length=30, null=True, blank=True)
+    first_name = models.CharField(max_length=50, null=True, blank=True)
+    last_name = models.CharField(max_length=50, null=True, blank=True)
+    reusable = models.BooleanField(default=True)
+    customer_code = models.CharField(max_length=50, null=True, blank=True)

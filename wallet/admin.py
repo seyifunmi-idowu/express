@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from wallet.models import Transaction, Wallet
+from wallet.models import Card, Transaction, Wallet
 
 # Register your models here.
 
@@ -24,3 +24,4 @@ class WalletAdmin(admin.ModelAdmin):
 
 admin.site.register(Wallet, WalletAdmin)
 admin.site.register(Transaction)
+admin.site.register(Card)

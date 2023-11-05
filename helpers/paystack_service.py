@@ -45,7 +45,7 @@ class PaystackService:
     def verify_transaction(cls, reference):
         url = f"{cls.base_url}transaction/verify/{reference}"
         response = requests.get(url, headers=cls.headers)
-        return response
+        return response.json()
 
     @classmethod
     def initialize_payment(cls, email, amount, currency="NGN", callback_url=None):

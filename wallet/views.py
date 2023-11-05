@@ -33,3 +33,14 @@ class WalletViewset(viewsets.ViewSet):
             status=status.HTTP_200_OK,
             message="Card transaction initiated",
         )
+
+
+class TransactionViewset(viewsets.ViewSet):
+    permission_classes = ()
+
+    @action(detail=False, methods=["get"], url_path="paystack/callback")
+    def paystack_callback_view(self, request):
+        response = TransactionService.verify_transaction(request.GET)
+        return ResponseManager.handle_response(
+            data=response, status=status.HTTP_200_OK, message="Transaction successful"
+        )
