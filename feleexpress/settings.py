@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "authentication.apps.AuthenticationConfig",
     "customer.apps.CustomerConfig",
     "rider.apps.RiderConfig",
+    "wallet.apps.WalletConfig",
 ]
 
 MIDDLEWARE = [
@@ -197,3 +198,4 @@ PHONE_VERIFICATION_TTL = config("PHONE_VERIFICATION_TTL", 21600, cast=int)
 PHONE_VERIFICATION_MAX_TRIALS = config("PHONE_VERIFICATION_MAX_TRIALS", 3, cast=int)
 
 TEST_OTP = config("TEST_OTP", "376213", cast=str)
+PAYSTACK_SECRET_KEY = config("PAYSTACK_SECRET_KEY")

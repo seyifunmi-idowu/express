@@ -1,0 +1,109 @@
+from django.db import models
+
+from feleexpress import settings
+from helpers.db_helpers import BaseAbstractModel
+
+
+class Wallet(BaseAbstractModel):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="user_wallet", on_delete=models.CASCADE
+    )
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def deposit(self, amount):
+        """
+        Deposit money into the wallet.
+        """
+        self.balance += amount
+        self.save()
+
+    def withdraw(self, amount):
+        """
+        Withdraw money from the wallet.
+        """
+        if self.balance >= amount:
+            self.balance -= amount
+            self.save()
+        else:
+            raise ValueError("Insufficient balance for withdrawal.")
+
+    def __str__(self):
+        return f"{self.user}'s Wallet"
+
+
+class Transaction(BaseAbstractModel):
+    TRANSACTION_TYPE_CHOICES = (("CREDIT", "CREDIT"), ("DEBIT", "DEBIT"))
+    TRANSACTION_STATUS_CHOICES = (
+        ("PENDING", "PENDING"),
+        ("SUCCESS", "SUCCESS"),
+        ("FAILED", "FAILED"),
+        ("REVERSED", "REVERSED"),
+        ("CANCELLED", "CANCELLED"),
+    )
+    PSSP_CHOICES = (("PAYSTACK", "PAYSTACK"), ("IN_HOUSE", "IN HOUSE TRANSACTION"))
+    OBJECT_CLASS_CHOICES = (("CUSTOMER", "CUSTOMER"), ("RIDER", "RIDER"))
+    PAYMENT_CATEGORIES = (
+        ("FUND_WALLET", "Fund wallet"),
+        ("CUSTOMER_PAY_RIDER", "Customer pays rider"),
+        ("RIDER_PAY_CUSTOMER", "Rider pays customer"),
+        ("WITHDRAW", "Withdrawal"),
+    )
+    CURRENCIES = [("NGN", "₦")]
+
+    transaction_type = models.CharField(
+        max_length=255,
+        choices=TRANSACTION_TYPE_CHOICES,
+        default=TRANSACTION_TYPE_CHOICES[0][0],
+    )
+    transaction_status = models.CharField(
+        max_length=255,
+        choices=TRANSACTION_STATUS_CHOICES,
+        default=TRANSACTION_STATUS_CHOICES[0][0],
+    )
+    amount = models.DecimalField(decimal_places=2, max_digits=30)
+    # The payee is the person paying the money
+    payee = models.ForeignKey(
+        "authentication.User",
+        related_name="transaction_payee",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    # The payor is the person receiving the money
+    payor = models.ForeignKey(
+        "authentication.User",
+        related_name="transaction_payor",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    currency = models.CharField(
+        max_length=30,
+        choices=CURRENCIES,
+        default=CURRENCIES[0][1],
+        verbose_name="transaction currency",
+    )
+    reference = models.CharField(max_length=255, null=True, blank=True)
+    pssp = models.CharField(
+        max_length=255, choices=PSSP_CHOICES, default=PSSP_CHOICES[0][0]
+    )
+    payment_channel = models.CharField(max_length=255, null=True, blank=True)
+
+    description = models.TextField(null=True, blank=True)
+
+    wallet_id = models.CharField(max_length=255, null=True, blank=True)
+    object_id = models.CharField(max_length=255, null=True, blank=True)
+    object_class = models.CharField(
+        max_length=255, choices=OBJECT_CLASS_CHOICES, null=True, blank=True
+    )
+
+    payment_category = models.CharField(
+        max_length=255, choices=PAYMENT_CATEGORIES, null=True, blank=True
+    )
+    pssp_meta_data = models.JSONField(default=dict, null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        db_table = "transactions"
+        verbose_name = "transaction"
+        verbose_name_plural = "transaction"

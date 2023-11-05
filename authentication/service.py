@@ -17,7 +17,11 @@ from helpers.token_manager import TokenManager
 class UserService:
     @classmethod
     def create_user(cls, **kwargs):
+        from wallet.service import WalletService
+
         user = User.objects.create_user(**kwargs)
+        # every user must have a wallet
+        WalletService.create_user_wallet(user)
         return user
 
     @classmethod
