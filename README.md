@@ -5,6 +5,8 @@ Git pull
 
 Install your virtual environment
 `pip3 install virtualenv`
+
+Create virtual environment
 `virtualenv venv`
 
 Copy `sample.env` to create your `.env`
