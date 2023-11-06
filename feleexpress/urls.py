@@ -31,6 +31,7 @@ urlpatterns = [
     path("api/v1/", include("customer.urls")),
     path("api/v1/", include("order.urls")),
     path("api/v1/", include("rider.urls")),
+    path("api/v1/", include("wallet.urls")),
 ]
 
 admin.site.site_header = "Fele Express Admin"

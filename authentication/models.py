@@ -143,6 +143,9 @@ class User(BaseAbstractModel, AbstractBaseUser, PermissionsMixin):
             )
         return super(User, self).hard_delete(using=using, keep_parents=keep_parents)
 
+    def get_user_wallet(self):
+        return self.user_wallet.get()
+
 
 class UserActivity(BaseAbstractModel):
     """

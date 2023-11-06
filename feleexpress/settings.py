@@ -36,6 +36,7 @@ if not ALLOWED_HOSTS_STRING:
     ALLOWED_HOSTS = []
 else:
     ALLOWED_HOSTS = ALLOWED_HOSTS_STRING.split(",")
+# ALLOWED_HOSTS = ["*"]
 
 # Base User
 AUTH_USER_MODEL = "authentication.User"
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
     "authentication.apps.AuthenticationConfig",
     "customer.apps.CustomerConfig",
     "rider.apps.RiderConfig",
+    "wallet.apps.WalletConfig",
 ]
 
 MIDDLEWARE = [
@@ -197,3 +199,8 @@ PHONE_VERIFICATION_TTL = config("PHONE_VERIFICATION_TTL", 21600, cast=int)
 PHONE_VERIFICATION_MAX_TRIALS = config("PHONE_VERIFICATION_MAX_TRIALS", 3, cast=int)
 
 TEST_OTP = config("TEST_OTP", "376213", cast=str)
+BASE_URL = config("BASE_URL", "http://127.0.0.1:8000/", cast=str)
+PAYSTACK_SECRET_KEY = config("PAYSTACK_SECRET_KEY", "")
+PAYSTACK_WHITELISTED_IP = config("PAYSTACK_WHITELISTED_IP", default="").split(",")
+
+ENABLED_IP_LOOKUP = config("ENABLED_IP_LOOKUP", cast=bool, default=False)
