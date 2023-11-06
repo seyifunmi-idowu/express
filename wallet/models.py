@@ -109,7 +109,7 @@ class Transaction(BaseAbstractModel):
         verbose_name_plural = "transaction"
 
     def __str__(self):
-        return f"{self.currency} {self.amount} --- {self.reference}"
+        return f"{self.currency} {self.amount} --- {self.reference} --- {self.transaction_status}"
 
 
 class Card(BaseAbstractModel):

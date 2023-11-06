@@ -29,9 +29,7 @@ class TransactionService:
         return Transaction.objects.filter(reference=reference)
 
     @classmethod
-    def initiate_card_transaction(
-        cls, user, session_id, amount=100, object_class="CUSTOMER"
-    ):
+    def initiate_card_transaction(cls, user, session_id, amount=100):
         base_url = settings.BASE_URL
         callback_url = f"{base_url}api/v1/transaction/paystack/callback"
 
@@ -58,7 +56,6 @@ class TransactionService:
             payee=user,
             reference=reference,
             pssp="PAYSTACK",
-            object_class=object_class,
             payment_category="FUND_WALLET",
             pssp_meta_data=paystack_response["data"],
         )
@@ -78,7 +75,7 @@ class TransactionService:
         return {"url": authorization_url}
 
     @classmethod
-    def verify_transaction(cls, data):
+    def verify_card_transaction(cls, data):
         reference = data.get("trxref", "")
         transaction = cls.get_transaction_with_reference(reference).first()
         if not transaction:
@@ -95,9 +92,11 @@ class TransactionService:
             wallet = user.get_user_wallet()
             data = response["data"]
             amount = data["amount"] / 100
+
             transaction.transaction_status = "SUCCESS"
-            transaction.wallet_id = (wallet.id,)
+            transaction.wallet_id = wallet.id
             transaction.save()
+
             wallet.deposit(Decimal(amount))
 
             card = Card.objects.filter(

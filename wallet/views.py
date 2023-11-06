@@ -6,6 +6,7 @@ from feleexpress.middlewares.permissions.is_authenticated import (
     IsAuthenticated,
     IsRider,
 )
+from feleexpress.middlewares.permissions.is_paystack import IsPaystack
 from helpers.db_helpers import generate_session_id
 from helpers.utils import ResponseManager
 from wallet.docs import schema_doc
@@ -40,7 +41,23 @@ class TransactionViewset(viewsets.ViewSet):
 
     @action(detail=False, methods=["get"], url_path="paystack/callback")
     def paystack_callback_view(self, request):
-        response = TransactionService.verify_transaction(request.GET)
+        response = TransactionService.verify_card_transaction(request.GET)
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Transaction successful"
+        )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="paystack/webhook",
+        permission_classes=(IsPaystack,),
+    )
+    def paystack_webhook_view(self, request):
+        request_data = request.data
+        event = request_data.get("event")
+        if event == "charge.success":
+            data = {"trxref": request_data.get("data", {}).get("reference")}
+            TransactionService.verify_card_transaction(data)
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Webhook successful"
         )
