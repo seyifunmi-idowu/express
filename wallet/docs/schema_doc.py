@@ -53,3 +53,18 @@ GET_USER_CARD_RESPONSE = {
     ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }
+DEBIT_USER_CARD_RESPONSE = {
+    200: openapi.Response(
+        description="User card debited",
+        examples={"application/json": {"data": {}, "message": "Card debited"}},
+    ),
+    400: openapi.Response(
+        description="Unable to debit card",
+        examples={"application/json": {"message": "Unable to debit card"}},
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+    404: openapi.Response(
+        description="Card not found",
+        examples={"application/json": {"message": "Card not found"}},
+    ),
+}

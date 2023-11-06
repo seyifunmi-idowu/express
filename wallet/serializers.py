@@ -15,3 +15,8 @@ class CardSerializer(serializers.ModelSerializer):
             "country_code",
             "brand",
         ]
+
+
+class ChargeCardSerializer(serializers.Serializer):
+    card_id = serializers.CharField(max_length=50)
+    amount = serializers.FloatField()

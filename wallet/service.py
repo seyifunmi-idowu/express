@@ -28,12 +28,22 @@ class TransactionService:
     def get_transaction_with_reference(cls, reference):
         return Transaction.objects.filter(reference=reference)
 
+
+class CardService:
+    @classmethod
+    def get_user_cards(cls, user, **kwargs):
+        return Card.objects.filter(user=user, **kwargs)
+
+    @classmethod
+    def create_user_card(cls, user, **kwargs):
+        return Card.objects.create(user=user, **kwargs)
+
     @classmethod
     def initiate_card_transaction(cls, user, session_id, amount=100):
         base_url = settings.BASE_URL
-        callback_url = f"{base_url}api/v1/transaction/paystack/callback"
+        callback_url = f"{base_url}api/v1/paystack/paystack/callback"
 
-        transaction = cls.get_transaction(
+        transaction = TransactionService.get_transaction(
             payee=user,
             amount=Decimal(amount),
             transaction_type="CREDIT",
@@ -49,7 +59,7 @@ class TransactionService:
         )
         authorization_url = paystack_response["data"]["authorization_url"]
         reference = paystack_response["data"]["reference"]
-        transaction_obj = cls.create_transaction(
+        transaction_obj = TransactionService.create_transaction(
             transaction_type="CREDIT",
             transaction_status="PENDING",
             amount=Decimal(amount),
@@ -66,7 +76,7 @@ class TransactionService:
         }
         track_user_activity(
             context=activity_data,
-            category="USER_TRANSACTION",
+            category="USER_CARD",
             action="INITIATE_CARD_TRANSACTION",
             email=user.email,
             level="SUCCESS",
@@ -77,7 +87,9 @@ class TransactionService:
     @classmethod
     def verify_card_transaction(cls, data):
         reference = data.get("trxref", "")
-        transaction = cls.get_transaction_with_reference(reference).first()
+        transaction = TransactionService.get_transaction_with_reference(
+            reference
+        ).first()
         if not transaction:
             raise CustomAPIException(
                 "Transaction not found.", status.HTTP_404_NOT_FOUND
@@ -122,12 +134,41 @@ class TransactionService:
                 )
         return True
 
-
-class CardService:
     @classmethod
-    def get_user_cards(cls, user):
-        return Card.objects.filter(user=user)
+    def debit_card(cls, user, session_id, card_id, amount):
 
-    @classmethod
-    def create_user_card(cls, user, **kwargs):
-        return Card.objects.create(user=user, **kwargs)
+        user_card = cls.get_user_cards(user=user, id=card_id).first()
+        if user_card is None:
+            raise CustomAPIException("Card not found", status.HTTP_404_NOT_FOUND)
+
+        response = PaystackService.charge_card(user.email, amount, user_card.card_auth)
+        if response["status"] and response["data"]["status"] == "success":
+            wallet = user.get_user_wallet()
+            reference = response["data"]["reference"]
+            TransactionService.create_transaction(
+                transaction_type="CREDIT",
+                transaction_status="SUCCESS",
+                amount=Decimal(amount),
+                payee=user,
+                reference=reference,
+                pssp="PAYSTACK",
+                payment_category="FUND_WALLET",
+                wallet_id=wallet.id,
+            )
+            wallet.deposit(Decimal(amount))
+
+            activity_data = {
+                "user": user.display_name,
+                "card_id": card_id,
+                "wallet_id": wallet.id,
+            }
+            track_user_activity(
+                context=activity_data,
+                category="USER_CARD",
+                action="DEBIT_CARD_TRANSACTION",
+                email=user.email,
+                level="SUCCESS",
+                session_id=session_id,
+            )
+            return True
+        raise CustomAPIException("Unable to debit card", status.HTTP_400_BAD_REQUEST)

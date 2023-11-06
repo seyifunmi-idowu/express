@@ -7,7 +7,7 @@ router = DefaultRouter(trailing_slash=False)
 
 router.register(r"card", views.CardViewset, basename="card-views")
 router.register(r"wallet", views.WalletViewset, basename="wallet-views")
-router.register(r"transaction", views.TransactionViewset, basename="wallet-views")
+router.register(r"paystack", views.PaystackViewset, basename="paystack-views")
 
 
 urlpatterns = [path("", include(router.urls))]

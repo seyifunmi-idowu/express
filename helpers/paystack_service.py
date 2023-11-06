@@ -58,3 +58,10 @@ class PaystackService:
         url = f"{cls.base_url}transaction/initialize"
         response = requests.post(url, headers=cls.headers, json=data)
         return response.json()
+
+    @classmethod
+    def charge_card(cls, email, amount, card_auth=None):
+        data = {"email": email, "amount": amount * 100, "authorization_code": card_auth}
+        url = f"{cls.base_url}transaction/charge_authorization"
+        response = requests.post(url, headers=cls.headers, json=data)
+        return response.json()
