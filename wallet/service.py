@@ -106,7 +106,7 @@ class TransactionService:
                 exp_year=data["authorization"]["exp_year"],
             ).first()
             if not card:
-                Card.objects.create(
+                CardService.create_user_card(
                     user=user,
                     card_type=data["authorization"]["card_type"],
                     card_auth=data["authorization"]["authorization_code"],
@@ -121,3 +121,13 @@ class TransactionService:
                     customer_code=data["customer"]["customer_code"],
                 )
         return True
+
+
+class CardService:
+    @classmethod
+    def get_user_cards(cls, user):
+        return Card.objects.filter(user=user)
+
+    @classmethod
+    def create_user_card(cls, user, **kwargs):
+        return Card.objects.create(user=user, **kwargs)
