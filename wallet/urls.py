@@ -5,6 +5,7 @@ import wallet.views as views
 
 router = DefaultRouter(trailing_slash=False)
 
+router.register(r"bank", views.BankViewset, basename="bank-views")
 router.register(r"card", views.CardViewset, basename="card-views")
 router.register(r"wallet", views.WalletViewset, basename="wallet-views")
 router.register(r"paystack", views.PaystackViewset, basename="paystack-views")

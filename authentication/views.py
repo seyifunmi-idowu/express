@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -7,6 +8,11 @@ from authentication.docs import scehma_doc
 from authentication.serializers import UserProfileSerializer
 from feleexpress.middlewares.permissions.is_authenticated import IsAuthenticated
 from helpers.utils import ResponseManager
+
+
+def fele_express_api(request):
+    response_data = {"status": True, "data": [], "message": "Fele express API"}
+    return JsonResponse(response_data)
 
 
 class UserViewset(viewsets.ViewSet):

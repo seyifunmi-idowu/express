@@ -131,3 +131,18 @@ class Card(BaseAbstractModel):
     last_name = models.CharField(max_length=50, null=True, blank=True)
     reusable = models.BooleanField(default=True)
     customer_code = models.CharField(max_length=50, null=True, blank=True)
+
+
+class BankAccount(BaseAbstractModel):
+    user = models.ForeignKey(
+        "authentication.User",
+        related_name="user_bank_account",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    account_number = models.CharField(max_length=30, null=True, blank=True)
+    bank_code = models.CharField(max_length=30, null=True, blank=True)
+    bank_name = models.CharField(max_length=30, null=True, blank=True)
+    recipient_code = models.CharField(max_length=30, null=True, blank=True)
+    meta = models.JSONField(default=dict, null=True, blank=True)

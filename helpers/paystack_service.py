@@ -21,7 +21,8 @@ class PaystackService:
     def get_banks(cls):
         url = f"{cls.base_url}bank"
         response = requests.get(url, headers=cls.headers)
-        return response.json()
+        # TODO: for optimization, save and retrieve in a cache
+        return cls.format_list_of_banks(response.json()["data"])
 
     @classmethod
     def create_transfer_recipient(cls, data):
@@ -60,8 +61,15 @@ class PaystackService:
         return response.json()
 
     @classmethod
-    def charge_card(cls, email, amount, card_auth=None):
+    def charge_card(cls, email, amount, card_auth):
         data = {"email": email, "amount": amount * 100, "authorization_code": card_auth}
         url = f"{cls.base_url}transaction/charge_authorization"
         response = requests.post(url, headers=cls.headers, json=data)
         return response.json()
+
+    @staticmethod
+    def format_list_of_banks(banks_data):
+        formatted_banks = [
+            {"name": bank["name"], "code": bank["code"]} for bank in banks_data
+        ]
+        return formatted_banks

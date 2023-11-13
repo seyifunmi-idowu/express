@@ -8,6 +8,7 @@ from feleexpress.middlewares.permissions.is_authenticated import (
 )
 from feleexpress.middlewares.permissions.is_paystack import IsPaystack
 from helpers.db_helpers import generate_session_id
+from helpers.paystack_service import PaystackService
 from helpers.utils import ResponseManager
 from wallet.docs import schema_doc
 from wallet.serializers import CardSerializer, ChargeCardSerializer
@@ -71,6 +72,25 @@ class CardViewset(viewsets.ViewSet):
         CardService.debit_card(request.user, session_id, **serialized_data.data)
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Card debited"
+        )
+
+
+class BankViewset(viewsets.ViewSet):
+    permission_classes = ()
+
+    @swagger_auto_schema(
+        methods=["get"],
+        request_body=ChargeCardSerializer,
+        operation_description="Get List of banks",
+        operation_summary="Get List of banks",
+        tags=["User-Bank"],
+        responses=schema_doc.DEBIT_USER_CARD_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="list")
+    def get_list_of_banks(self, request):
+        response = PaystackService.get_banks()
+        return ResponseManager.handle_response(
+            data=response, status=status.HTTP_200_OK, message="List of banks"
         )
 
 

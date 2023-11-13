@@ -5,6 +5,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
+from authentication.views import fele_express_api
 from helpers.utils import BothHttpAndHttpsSchemaGenerator
 
 schema_view = get_schema_view(
@@ -21,6 +22,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path("", fele_express_api, name="fele_express_api"),
     path("admin/", admin.site.urls),
     path(
         "api/docs",
