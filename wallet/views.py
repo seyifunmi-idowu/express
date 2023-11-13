@@ -76,11 +76,10 @@ class CardViewset(viewsets.ViewSet):
 
 
 class BankViewset(viewsets.ViewSet):
-    permission_classes = ()
+    permission_classes = (IsAuthenticated, IsRider)
 
     @swagger_auto_schema(
         methods=["get"],
-        request_body=ChargeCardSerializer,
         operation_description="Get List of banks",
         operation_summary="Get List of banks",
         tags=["User-Bank"],
