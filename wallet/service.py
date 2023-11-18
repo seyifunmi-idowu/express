@@ -76,7 +76,7 @@ class WalletService:
             transaction_type="DEBIT",
             transaction_status="SUCCESS",
             amount=Decimal(amount),
-            payee=user,
+            user=user,
             reference=reference,
             pssp="PAYSTACK",
             payment_category="WITHDRAW",
@@ -165,7 +165,7 @@ class CardService:
         callback_url = f"{base_url}api/v1/paystack/paystack/callback"
 
         transaction = TransactionService.get_transaction(
-            payee=user,
+            user=user,
             amount=Decimal(amount),
             transaction_type="CREDIT",
             transaction_status="PENDING",
@@ -184,7 +184,7 @@ class CardService:
             transaction_type="CREDIT",
             transaction_status="PENDING",
             amount=Decimal(amount),
-            payee=user,
+            user=user,
             reference=reference,
             pssp="PAYSTACK",
             payment_category="FUND_WALLET",
@@ -221,7 +221,7 @@ class CardService:
             )
         response = PaystackService.verify_transaction(reference)
         if response and response["data"]["status"] == "success":
-            user = transaction.payee
+            user = transaction.user
             wallet = user.get_user_wallet()
             data = response["data"]
             amount = data["amount"] / 100
@@ -262,7 +262,6 @@ class CardService:
         if user_card is None:
             raise CustomAPIException("Card not found", status.HTTP_404_NOT_FOUND)
         response = PaystackService.charge_card(user.email, amount, user_card.card_auth)
-        print(response)
         if response["status"] and response["data"]["status"] == "success":
             wallet = user.get_user_wallet()
             reference = response["data"]["reference"]
@@ -270,7 +269,7 @@ class CardService:
                 transaction_type="CREDIT",
                 transaction_status="SUCCESS",
                 amount=Decimal(amount),
-                payee=user,
+                user=user,
                 reference=reference,
                 pssp="PAYSTACK",
                 payment_category="FUND_WALLET",

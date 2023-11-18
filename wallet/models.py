@@ -52,6 +52,13 @@ class Transaction(BaseAbstractModel):
     )
     CURRENCIES = [("NGN", "₦")]
 
+    user = models.ForeignKey(
+        "authentication.User",
+        related_name="transaction_user",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     transaction_type = models.CharField(
         max_length=255,
         choices=TRANSACTION_TYPE_CHOICES,
@@ -63,22 +70,6 @@ class Transaction(BaseAbstractModel):
         default=TRANSACTION_STATUS_CHOICES[0][0],
     )
     amount = models.DecimalField(decimal_places=2, max_digits=30)
-    # The payee is the person paying the money or withdrawing (transaction initiator)
-    payee = models.ForeignKey(
-        "authentication.User",
-        related_name="transaction_payee",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-    )
-    # The payor is the person receiving the money
-    payor = models.ForeignKey(
-        "authentication.User",
-        related_name="transaction_payor",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-    )
     currency = models.CharField(
         max_length=30,
         choices=CURRENCIES,
@@ -111,7 +102,7 @@ class Transaction(BaseAbstractModel):
         verbose_name_plural = "transaction"
 
     def __str__(self):
-        return f"{self.currency} {self.amount} --- {self.reference} --- {self.transaction_status}"
+        return f"{self.user} - {self.currency} {self.amount}"
 
 
 class Card(BaseAbstractModel):

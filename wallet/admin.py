@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from wallet.models import BankAccount, Card, Transaction, Wallet
+from wallet.models import Transaction, Wallet
 
 # Register your models here.
 
@@ -22,7 +22,44 @@ class WalletAdmin(admin.ModelAdmin):
         return False
 
 
+class TransactionAdmin(admin.ModelAdmin):
+    search_fields = (
+        "user__first_name",
+        "user__last_name",
+        "transaction_type",
+        "transaction_status",
+        "amount",
+        "reference",
+    )
+    list_display = (
+        "user",
+        "amount",
+        "reference",
+        "transaction_type",
+        "transaction_status",
+        "payment_category",
+    )
+    ordering = ["-created_at"]
+    exclude = (
+        "state",
+        "created_by",
+        "deleted_by",
+        "updated_by",
+        "deleted_at",
+        "wallet_id",
+        "object_id",
+        "object_class",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 admin.site.register(Wallet, WalletAdmin)
-admin.site.register(Transaction)
-admin.site.register(Card)
-admin.site.register(BankAccount)
+admin.site.register(Transaction, TransactionAdmin)
