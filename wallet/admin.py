@@ -38,6 +38,7 @@ class TransactionAdmin(admin.ModelAdmin):
         "transaction_type",
         "transaction_status",
         "payment_category",
+        "created_at",
     )
     ordering = ["-created_at"]
     exclude = (

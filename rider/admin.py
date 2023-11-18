@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
+from rider.forms import RiderActionForm
 from rider.models import Rider, RiderDocument
 
 # Register your models here.
@@ -36,6 +37,7 @@ class RiderDocumentInline(admin.TabularInline):
 
 
 class RiderAdmin(admin.ModelAdmin):
+    form = RiderActionForm
     search_fields = (
         "user__first_name",
         "user__last_name",
@@ -52,6 +54,7 @@ class RiderAdmin(admin.ModelAdmin):
         "vehicle_make",
         "vehicle_model",
         "city",
+        "status",
     )
     list_display = ("get_name", "status")
     ordering = ("-created_at",)
@@ -68,6 +71,19 @@ class RiderAdmin(admin.ModelAdmin):
 
     def get_name(self, obj):
         return obj.display_name
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        action = form.data.get("action")
+        if action == "APPROVE_RIDER":
+            obj.status = "APPROVED"
+            obj.save()
+        elif action == "DISAPPROVE_RIDER":
+            obj.status = "UNAPPROVED"
+            obj.save()
+        elif action == "SUSPEND_RIDER":
+            obj.status = "SUSPENDED"
+            obj.save()
 
 
 admin.site.register(Rider, RiderAdmin)

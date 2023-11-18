@@ -41,7 +41,7 @@ class PaystackService:
     def initiate_transfer(cls, amount, recipient):
         data = {
             "source": "balance",
-            "amount": amount,
+            "amount": amount * 100,
             "recipient": recipient,
             "reason": "payment from fele",
         }
