@@ -6,13 +6,104 @@ from authentication.tasks import track_user_activity
 from feleexpress import settings
 from helpers.exceptions import CustomAPIException
 from helpers.paystack_service import PaystackService
-from wallet.models import Card, Transaction, Wallet
+from wallet.models import BankAccount, Card, Transaction, Wallet
 
 
 class WalletService:
     @classmethod
     def create_user_wallet(cls, user):
         return Wallet.objects.create(user=user)
+
+    @classmethod
+    def get_bank_name_with_bank_code(cls, bank_code):
+        banks = PaystackService.get_banks()
+        bank_details = next((bank for bank in banks if bank_code == bank["code"]), {})
+        return bank_details.get("name")
+
+    @classmethod
+    def get_or_create_transfer_recipient(
+        cls, user, bank_code, account_number, save=False
+    ):
+        user_bank = BankAccount.objects.filter(
+            user=user, account_number=account_number, bank_code=bank_code
+        )
+        if user_bank:
+            return user_bank.first().recipient_code
+
+        verify_account = PaystackService.verify_account_number(
+            bank_code, account_number
+        )
+        if not verify_account["status"]:
+            raise CustomAPIException(
+                "Unable to verify account number", status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
+
+        account_name = verify_account["data"]["account_name"]
+        response = PaystackService.create_transfer_recipient(
+            account_name, bank_code, account_number
+        )
+        if not response["status"]:
+            raise CustomAPIException(
+                "Error occurred, unable to transfer",
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        recipient_code = response["data"]["recipient_code"]
+        bank_name = cls.get_bank_name_with_bank_code(bank_code)
+        BankAccount.objects.create(
+            user=user,
+            account_number=account_number,
+            account_name=account_name,
+            bank_code=bank_code,
+            bank_name=bank_name,
+            recipient_code=recipient_code,
+            meta=response,
+            save_account=save,
+        )
+        return recipient_code
+
+    @classmethod
+    def transfer_from_wallet_bank_account(cls, user, data, session_id):
+        amount = float(data.get("amount"))
+        account_number = data.get("account_number")
+        bank_code = data.get("bank_code")
+        save_account = data.get("save_account")
+
+        user_wallet = user.get_user_wallet()
+        if amount > user_wallet.balance:
+            raise CustomAPIException(
+                "Insufficient balance", status.HTTP_400_BAD_REQUEST
+            )
+
+        recipient_code = cls.get_or_create_transfer_recipient(
+            user, bank_code, account_number, save_account
+        )
+        paystack_response = PaystackService.initiate_transfer(amount, recipient_code)
+        user_wallet.withdraw(amount)
+        reference = paystack_response["data"]["reference"]
+        transaction_obj = TransactionService.create_transaction(
+            transaction_type="DEBIT",
+            transaction_status="SUCCESS",
+            amount=Decimal(amount),
+            payee=user,
+            reference=reference,
+            pssp="PAYSTACK",
+            payment_category="WITHDRAW",
+            pssp_meta_data=paystack_response["data"],
+        )
+        activity_data = {
+            "user": user.display_name,
+            "transaction_id": transaction_obj.id,
+        }
+        track_user_activity(
+            context=activity_data,
+            category="USER_WALLET",
+            action="USER_WITHDRAW",
+            email=user.email,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+        return True
 
 
 class TransactionService:
@@ -27,6 +118,10 @@ class TransactionService:
     @classmethod
     def get_transaction_with_reference(cls, reference):
         return Transaction.objects.filter(reference=reference)
+
+    @classmethod
+    def get_user_transaction(cls, user):
+        return Transaction.objects.filter(user=user)
 
 
 class CardService:
@@ -109,7 +204,7 @@ class CardService:
             transaction.wallet_id = wallet.id
             transaction.save()
 
-            wallet.deposit(Decimal(amount))
+            wallet.deposit(amount)
 
             card = Card.objects.filter(
                 user=user,
@@ -140,8 +235,8 @@ class CardService:
         user_card = cls.get_user_cards(user=user, id=card_id).first()
         if user_card is None:
             raise CustomAPIException("Card not found", status.HTTP_404_NOT_FOUND)
-
         response = PaystackService.charge_card(user.email, amount, user_card.card_auth)
+        print(response)
         if response["status"] and response["data"]["status"] == "success":
             wallet = user.get_user_wallet()
             reference = response["data"]["reference"]
@@ -155,7 +250,7 @@ class CardService:
                 payment_category="FUND_WALLET",
                 wallet_id=wallet.id,
             )
-            wallet.deposit(Decimal(amount))
+            wallet.deposit(amount)
 
             activity_data = {
                 "user": user.display_name,

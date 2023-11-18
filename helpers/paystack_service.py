@@ -12,8 +12,8 @@ class PaystackService:
     base_url = "https://api.paystack.co/"
 
     @classmethod
-    def verify_account_number(cls, bank_code, acc_number):
-        url = f"{cls.base_url}bank/resolve?account_number={acc_number}&bank_code={bank_code}"
+    def verify_account_number(cls, bank_code, account_number):
+        url = f"{cls.base_url}bank/resolve?account_number={account_number}&bank_code={bank_code}"
         response = requests.get(url, headers=cls.headers)
         return response.json()
 
@@ -25,13 +25,26 @@ class PaystackService:
         return cls.format_list_of_banks(response.json()["data"])
 
     @classmethod
-    def create_transfer_recipient(cls, data):
+    def create_transfer_recipient(cls, name, bank_code, account_number):
+        data = {
+            "type": "nuban",
+            "name": name,
+            "account_number": account_number,
+            "bank_code": bank_code,
+            "currency": "NGN",
+        }
         url = f"{cls.base_url}transferrecipient"
         response = requests.post(url, headers=cls.headers, json=data)
         return response.json()
 
     @classmethod
-    def initiate_transfer(cls, data):
+    def initiate_transfer(cls, amount, recipient):
+        data = {
+            "source": "balance",
+            "amount": amount,
+            "recipient": recipient,
+            "reason": "payment from fele",
+        }
         url = f"{cls.base_url}transfer"
         response = requests.post(url, headers=cls.headers, json=data)
         return response.json()
@@ -62,7 +75,8 @@ class PaystackService:
 
     @classmethod
     def charge_card(cls, email, amount, card_auth):
-        data = {"email": email, "amount": amount * 100, "authorization_code": card_auth}
+        amount = round(float(amount) * 100)
+        data = {"email": email, "amount": amount, "authorization_code": card_auth}
         url = f"{cls.base_url}transaction/charge_authorization"
         response = requests.post(url, headers=cls.headers, json=data)
         return response.json()

@@ -8,15 +8,42 @@ from feleexpress.middlewares.permissions.is_authenticated import (
 )
 from feleexpress.middlewares.permissions.is_paystack import IsPaystack
 from helpers.db_helpers import generate_session_id
+from helpers.exceptions import CustomAPIException
 from helpers.paystack_service import PaystackService
 from helpers.utils import ResponseManager
 from wallet.docs import schema_doc
-from wallet.serializers import CardSerializer, ChargeCardSerializer
-from wallet.service import CardService
+from wallet.serializers import (
+    CardSerializer,
+    ChargeCardSerializer,
+    TrasferFromWalletToBankSerializer,
+    VerifyAccountNumberSerializer,
+)
+from wallet.service import CardService, WalletService
 
 
 class WalletViewset(viewsets.ViewSet):
-    pass
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=TrasferFromWalletToBankSerializer,
+        operation_description="Transfer from wallet to bank account",
+        operation_summary="Transfer from wallet to bank account",
+        tags=["Wallet"],
+        responses=schema_doc.TRANSFER_FROM_WALLET_BANK_RESPONSE,
+    )
+    @action(detail=False, methods=["post"], url_path="transfer/bank")
+    def transfer_from_wallet_to_bank_account(self, request):
+        serialized_data = TrasferFromWalletToBankSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        WalletService.transfer_from_wallet_bank_account(
+            request.user, serialized_data.validated_data, session_id
+        )
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Transfer in progress"
+        )
 
 
 class CardViewset(viewsets.ViewSet):
@@ -26,7 +53,7 @@ class CardViewset(viewsets.ViewSet):
         operation_description="Get all cards",
         operation_summary="Get all cards",
         tags=["User-Card"],
-        responses=schema_doc.INITIATE_CARD_TRANSACTION_RESPONSE,
+        responses=schema_doc.GET_USER_CARD_RESPONSE,
     )
     def list(self, request):
         user_cards = CardService.get_user_cards(request.user)
@@ -83,13 +110,42 @@ class BankViewset(viewsets.ViewSet):
         operation_description="Get List of banks",
         operation_summary="Get List of banks",
         tags=["User-Bank"],
-        responses=schema_doc.DEBIT_USER_CARD_RESPONSE,
+        responses=schema_doc.GET_LIST_OF_BANKS_RESPONSE,
     )
     @action(detail=False, methods=["get"], url_path="list")
     def get_list_of_banks(self, request):
         response = PaystackService.get_banks()
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="List of banks"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=VerifyAccountNumberSerializer,
+        operation_description="Verify account number",
+        operation_summary="Verify account number",
+        tags=["User-Bank"],
+        responses=schema_doc.VERIFY_ACCOUNT_NUMBER_RESPONSE,
+    )
+    @action(detail=False, methods=["post"], url_path="account-number")
+    def verify_account_number(self, request):
+        serialized_data = VerifyAccountNumberSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        response = PaystackService.verify_account_number(
+            **serialized_data.validated_data
+        )
+        if not response["status"]:
+            raise CustomAPIException(
+                "Unable to verify account number", status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
+
+        return ResponseManager.handle_response(
+            data={"account_name": response["data"]["account_name"]},
+            status=status.HTTP_200_OK,
+            message="Account name",
         )
 
 

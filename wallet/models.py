@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 
 from feleexpress import settings
@@ -14,7 +16,7 @@ class Wallet(BaseAbstractModel):
         """
         Deposit money into the wallet.
         """
-        self.balance += amount
+        self.balance += Decimal(amount)
         self.save()
 
     def withdraw(self, amount):
@@ -22,7 +24,7 @@ class Wallet(BaseAbstractModel):
         Withdraw money from the wallet.
         """
         if self.balance >= amount:
-            self.balance -= amount
+            self.balance -= Decimal(amount)
             self.save()
         else:
             raise ValueError("Insufficient balance for withdrawal.")
@@ -61,7 +63,7 @@ class Transaction(BaseAbstractModel):
         default=TRANSACTION_STATUS_CHOICES[0][0],
     )
     amount = models.DecimalField(decimal_places=2, max_digits=30)
-    # The payee is the person paying the money
+    # The payee is the person paying the money or withdrawing (transaction initiator)
     payee = models.ForeignKey(
         "authentication.User",
         related_name="transaction_payee",
@@ -132,6 +134,12 @@ class Card(BaseAbstractModel):
     reusable = models.BooleanField(default=True)
     customer_code = models.CharField(max_length=50, null=True, blank=True)
 
+    class Meta:
+        ordering = ["-created_at"]
+        db_table = "card"
+        verbose_name = "card"
+        verbose_name_plural = "cards"
+
 
 class BankAccount(BaseAbstractModel):
     user = models.ForeignKey(
@@ -142,7 +150,18 @@ class BankAccount(BaseAbstractModel):
         blank=True,
     )
     account_number = models.CharField(max_length=30, null=True, blank=True)
+    account_name = models.CharField(max_length=100, null=True, blank=True)
     bank_code = models.CharField(max_length=30, null=True, blank=True)
     bank_name = models.CharField(max_length=30, null=True, blank=True)
     recipient_code = models.CharField(max_length=30, null=True, blank=True)
     meta = models.JSONField(default=dict, null=True, blank=True)
+    save_account = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user} -{self.bank_name} ({self.account_number})"
+
+    class Meta:
+        ordering = ["-created_at"]
+        db_table = "bank_account"
+        verbose_name = "bank_account"
+        verbose_name_plural = "bank accounts"

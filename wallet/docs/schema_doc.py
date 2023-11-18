@@ -48,8 +48,7 @@ GET_USER_CARD_SUCCESS_RESPONSE = {
 
 GET_USER_CARD_RESPONSE = {
     200: openapi.Response(
-        description="Retrieved user cards",
-        examples=INITIATE_CARD_TRANSACTION_SUCCESS_RESPONSE,
+        description="Retrieved user cards", examples=GET_USER_CARD_SUCCESS_RESPONSE
     ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }
@@ -67,9 +66,44 @@ DEBIT_USER_CARD_RESPONSE_SUCCESS_RESPONSE = {
     }
 }
 DEBIT_USER_CARD_RESPONSE = {
+    200: openapi.Response(description="User card debited", examples={}),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
+GET_LIST_OF_BANKS_RESPONSE = {
     200: openapi.Response(
-        description="User card debited",
-        examples=DEBIT_USER_CARD_RESPONSE_SUCCESS_RESPONSE,
+        description="List of banks", examples=DEBIT_USER_CARD_RESPONSE_SUCCESS_RESPONSE
     ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
+WRONG_ACCOUNT_RESPONSE = {
+    "application/json": {"message": "Unable to verify account number"}
+}
+VERIFY_ACCOUNT_NUMBER_SUCCESS = {
+    "application/json": {
+        "data": {"account_name": "NIKLAUS MIKAELSON"},
+        "message": "Account name",
+    }
+}
+VERIFY_ACCOUNT_NUMBER_RESPONSE = {
+    200: openapi.Response(
+        description="Account name", examples=VERIFY_ACCOUNT_NUMBER_SUCCESS
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+    422: openapi.Response(
+        description="Wrong account number", examples=WRONG_ACCOUNT_RESPONSE
+    ),
+}
+INSUFFICIENT_BALANCE = {"application/json": {"message": "Insufficient balance"}}
+TRANSFER_FROM_WALLET_BANK_RESPONSE = {
+    200: openapi.Response(
+        description="Transfer in progress",
+        examples={"application/json": {"data": {}, "message": "Transfer in progress"}},
+    ),
+    400: openapi.Response(
+        description="Insufficient balance in account", examples=INSUFFICIENT_BALANCE
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+    422: openapi.Response(
+        description="Wrong account number", examples=WRONG_ACCOUNT_RESPONSE
+    ),
 }
