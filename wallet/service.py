@@ -15,6 +15,10 @@ class WalletService:
         return Wallet.objects.create(user=user)
 
     @classmethod
+    def get_user_banks(cls, user):
+        return BankAccount.objects.filter(user=user, save_account=True)
+
+    @classmethod
     def get_bank_name_with_bank_code(cls, bank_code):
         banks = PaystackService.get_banks()
         bank_details = next((bank for bank in banks if bank_code == bank["code"]), {})
@@ -63,22 +67,9 @@ class WalletService:
         return recipient_code
 
     @classmethod
-    def transfer_from_wallet_bank_account(cls, user, data, session_id):
-        amount = float(data.get("amount"))
-        account_number = data.get("account_number")
-        bank_code = data.get("bank_code")
-        save_account = data.get("save_account")
-
-        user_wallet = user.get_user_wallet()
-        if amount > user_wallet.balance:
-            raise CustomAPIException(
-                "Insufficient balance", status.HTTP_400_BAD_REQUEST
-            )
-
-        recipient_code = cls.get_or_create_transfer_recipient(
-            user, bank_code, account_number, save_account
-        )
+    def withdraw_from_wallet(cls, user, amount, recipient_code, session_id):
         paystack_response = PaystackService.initiate_transfer(amount, recipient_code)
+        user_wallet = user.get_user_wallet()
         user_wallet.withdraw(amount)
         reference = paystack_response["data"]["reference"]
         transaction_obj = TransactionService.create_transaction(
@@ -103,6 +94,41 @@ class WalletService:
             level="SUCCESS",
             session_id=session_id,
         )
+
+    @classmethod
+    def transfer_from_wallet_bank_account(cls, user, data, session_id):
+        amount = float(data.get("amount"))
+        account_number = data.get("account_number")
+        bank_code = data.get("bank_code")
+        save_account = data.get("save_account")
+
+        user_wallet = user.get_user_wallet()
+        if amount > user_wallet.balance:
+            raise CustomAPIException(
+                "Insufficient balance", status.HTTP_400_BAD_REQUEST
+            )
+
+        recipient_code = cls.get_or_create_transfer_recipient(
+            user, bank_code, account_number, save_account
+        )
+        cls.withdraw_from_wallet(user, amount, recipient_code, session_id)
+        return True
+
+    @classmethod
+    def transfer_from_wallet_to_beneficiary(
+        cls, user, session_id, amount, beneficiary_id
+    ):
+        amount = float(amount)
+        user_wallet = user.get_user_wallet()
+        if amount > user_wallet.balance:
+            raise CustomAPIException(
+                "Insufficient balance", status.HTTP_400_BAD_REQUEST
+            )
+
+        bank_account = BankAccount.objects.get(id=beneficiary_id)
+        if not bank_account:
+            raise CustomAPIException("Beneficiary not found", status.HTTP_404_NOT_FOUND)
+        cls.withdraw_from_wallet(user, amount, bank_account.recipient_code, session_id)
         return True
 
 

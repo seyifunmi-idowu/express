@@ -88,7 +88,6 @@ VERIFY_ACCOUNT_NUMBER_RESPONSE = {
     200: openapi.Response(
         description="Account name", examples=VERIFY_ACCOUNT_NUMBER_SUCCESS
     ),
-    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
     422: openapi.Response(
         description="Wrong account number", examples=WRONG_ACCOUNT_RESPONSE
     ),
@@ -102,8 +101,38 @@ TRANSFER_FROM_WALLET_BANK_RESPONSE = {
     400: openapi.Response(
         description="Insufficient balance in account", examples=INSUFFICIENT_BALANCE
     ),
-    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
     422: openapi.Response(
         description="Wrong account number", examples=WRONG_ACCOUNT_RESPONSE
+    ),
+}
+GET_USER_BANKS_RESPONSE = {
+    200: openapi.Response(
+        description="User beneficiary",
+        examples={
+            "application/json": {
+                "data": [
+                    {
+                        "id": "7030faf8f33a469f85143840f041fdc8",
+                        "account_number": "1234567890",
+                        "account_name": "NIKLAUS MIKAELSON",
+                        "bank_name": "Access Bank",
+                    }
+                ],
+                "message": "User beneficiary list",
+            }
+        },
+    )
+}
+WRONG_ACCOUNT_RESPONSE = {"application/json": {"message": "Beneficiary not found"}}
+TRANSFER_FROM_WALLET_BENEFICIARY_RESPONSE = {
+    200: openapi.Response(
+        description="Transfer in progress",
+        examples={"application/json": {"data": {}, "message": "Transfer in progress"}},
+    ),
+    400: openapi.Response(
+        description="Insufficient balance in account", examples=INSUFFICIENT_BALANCE
+    ),
+    404: openapi.Response(
+        description="Beneficiary account not found", examples=WRONG_ACCOUNT_RESPONSE
     ),
 }

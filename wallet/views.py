@@ -13,9 +13,11 @@ from helpers.paystack_service import PaystackService
 from helpers.utils import ResponseManager
 from wallet.docs import schema_doc
 from wallet.serializers import (
+    BankAccountSerializer,
     CardSerializer,
     ChargeCardSerializer,
     TrasferFromWalletToBankSerializer,
+    TrasferFromWalletToBeneficiarySerializer,
     VerifyAccountNumberSerializer,
 )
 from wallet.service import CardService, WalletService
@@ -40,6 +42,29 @@ class WalletViewset(viewsets.ViewSet):
         session_id = generate_session_id()
         WalletService.transfer_from_wallet_bank_account(
             request.user, serialized_data.validated_data, session_id
+        )
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Transfer in progress"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=TrasferFromWalletToBeneficiarySerializer,
+        operation_description="Transfer from wallet to beneficiary",
+        operation_summary="Transfer from wallet to beneficiary",
+        tags=["Wallet"],
+        responses=schema_doc.TRANSFER_FROM_WALLET_BENEFICIARY_RESPONSE,
+    )
+    @action(detail=False, methods=["post"], url_path="transfer/beneficiary")
+    def transfer_from_wallet_to_beneficiary(self, request):
+        serialized_data = TrasferFromWalletToBeneficiarySerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        WalletService.transfer_from_wallet_to_beneficiary(
+            request.user, session_id, **serialized_data.validated_data
         )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Transfer in progress"
@@ -146,6 +171,22 @@ class BankViewset(viewsets.ViewSet):
             data={"account_name": response["data"]["account_name"]},
             status=status.HTTP_200_OK,
             message="Account name",
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get beneficiary list",
+        operation_summary="Get beneficiary accounts",
+        tags=["User-Bank"],
+        responses=schema_doc.GET_USER_BANKS_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="user-beneficiary")
+    def get_user_beneficiary(self, request):
+        response = WalletService.get_user_banks(request.user)
+        return ResponseManager.handle_response(
+            data=BankAccountSerializer(response, many=True).data,
+            status=status.HTTP_200_OK,
+            message="User banks",
         )
 
 
