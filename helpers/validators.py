@@ -3,9 +3,10 @@ from typing import List
 
 import phonenumbers
 from django.conf import settings
-from rest_framework import serializers
+from rest_framework import serializers, status
 
 from authentication.models import User
+from helpers.exceptions import CustomAPIException
 from helpers.nigeria_states_and_capital import NIGERIA_STATES_AND_CAPITAL
 from helpers.nigerian_phonenumbers import NigerianPhone
 
@@ -159,3 +160,23 @@ class NonSerializerInputValidator:
         user_types_list = ["ADMIN", "USER_SERVICE", "GROWTH", "FINANCE", "DEVELOPER"]
 
         return True if user.user_type in user_types_list else False
+
+
+class Validators:
+    @staticmethod
+    def is_start_date_less_than_or_equals_end_date(start_date, end_date):
+        """
+        Validate that the end date is greater than or equal to the start date
+        """
+        from django.utils import dateparse
+
+        start_date = dateparse.parse_date(start_date)
+        end_date = dateparse.parse_date(end_date)
+
+        if end_date >= start_date:
+            return True
+
+        raise CustomAPIException(
+            detail="The end date should be greater than or equal to the start date.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )

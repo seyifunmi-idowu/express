@@ -4,8 +4,8 @@ from rest_framework import status
 
 from authentication.tasks import track_user_activity
 from feleexpress import settings
-from helpers.exceptions import CustomAPIException
 from helpers.paystack_service import PaystackService
+from helpers.validators import CustomAPIException, Validators
 from wallet.models import BankAccount, Card, Transaction, Wallet
 
 
@@ -130,6 +130,33 @@ class WalletService:
             raise CustomAPIException("Beneficiary not found", status.HTTP_404_NOT_FOUND)
         cls.withdraw_from_wallet(user, amount, bank_account.recipient_code, session_id)
         return True
+
+    @classmethod
+    def get_user_wallet_transactions(cls, request):
+        from datetime import timedelta
+
+        from django.utils import dateparse
+
+        start_date = request.GET.get("start_date", "")
+        end_date = request.GET.get("end_date", "")
+        transaction_status = request.GET.get("transaction_status", "").upper()
+        transaction_type = request.GET.get("transaction_type", "").upper()
+
+        transactions = TransactionService.get_transaction(user=request.user)
+        if start_date and end_date:
+            Validators.is_start_date_less_than_or_equals_end_date(start_date, end_date)
+            start_datetime = dateparse.parse_datetime(start_date)
+            end_datetime = dateparse.parse_datetime(end_date)
+
+            end_datetime += timedelta(days=1)
+            transactions = transactions.filter(
+                created_at__range=(start_datetime, end_datetime)
+            )
+        if transaction_status:
+            transactions = transactions.filter(transaction_status=transaction_status)
+        if transaction_type:
+            transactions = transactions.filter(transaction_type=transaction_type)
+        return transactions
 
 
 class TransactionService:

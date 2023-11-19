@@ -136,3 +136,37 @@ TRANSFER_FROM_WALLET_BENEFICIARY_RESPONSE = {
         description="Beneficiary account not found", examples=WRONG_ACCOUNT_RESPONSE
     ),
 }
+GET_USER_TRANSACTIONS_SUCCESS_RESPONSE = {
+    "application/json": {
+        "count": 27,
+        "total_pages": 3,
+        "current_page": 1,
+        "data": [
+            {
+                "id": "d2e6dea4ced943d698dfc5b72201b6fd",
+                "transaction_type": "DEBIT",
+                "transaction_status": "SUCCESS",
+                "amount": "800.00",
+                "currency": "₦",
+                "reference": "-dwdenb8s3zkuyo4u24k",
+                "description": None,
+                "created_at": "2023-11-18T22:21:27.538812Z",
+            },
+            {
+                "id": "02e2ccf8fccd4e5a8e256e5586ec2cb7",
+                "transaction_type": "CREDIT",
+                "transaction_status": "PENDING",
+                "amount": "500.00",
+                "currency": "NGN",
+                "reference": "1pm6hbimrdfia7u3kzrg",
+                "description": "",
+                "created_at": "2023-11-18T21:15:25.882930Z",
+            },
+        ],
+    }
+}
+GET_USER_TRANSACTIONS_RESPONSE = {
+    200: openapi.Response(
+        description="User transactions", examples=GET_USER_TRANSACTIONS_SUCCESS_RESPONSE
+    )
+}

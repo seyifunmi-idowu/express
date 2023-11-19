@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from wallet.models import BankAccount, Card
+from wallet.models import BankAccount, Card, Transaction
 
 
 class CardSerializer(serializers.ModelSerializer):
@@ -22,6 +22,21 @@ class BankAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankAccount
         fields = ["id", "account_number", "account_name", "bank_name"]
+
+
+class GetTransactionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = [
+            "id",
+            "transaction_type",
+            "transaction_status",
+            "amount",
+            "currency",
+            "reference",
+            "description",
+            "created_at",
+        ]
 
 
 class ChargeCardSerializer(serializers.Serializer):

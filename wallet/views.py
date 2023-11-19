@@ -10,12 +10,13 @@ from feleexpress.middlewares.permissions.is_paystack import IsPaystack
 from helpers.db_helpers import generate_session_id
 from helpers.exceptions import CustomAPIException
 from helpers.paystack_service import PaystackService
-from helpers.utils import ResponseManager
-from wallet.docs import schema_doc
+from helpers.utils import ResponseManager, paginate_response
+from wallet.docs import schema_doc, schema_example
 from wallet.serializers import (
     BankAccountSerializer,
     CardSerializer,
     ChargeCardSerializer,
+    GetTransactionsSerializer,
     TrasferFromWalletToBankSerializer,
     TrasferFromWalletToBeneficiarySerializer,
     VerifyAccountNumberSerializer,
@@ -68,6 +69,28 @@ class WalletViewset(viewsets.ViewSet):
         )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Transfer in progress"
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get user wallet transactions",
+        operation_summary="Get user wallet transactions",
+        tags=["Wallet"],
+        manual_parameters=[
+            schema_example.START_DATE_FILTERS,
+            schema_example.END_DATE_FILTERS,
+            schema_example.TRANSACTION_TYPE,
+            schema_example.TRANSACTION_STATUS,
+        ],
+        responses=schema_doc.GET_USER_TRANSACTIONS_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="transaction")
+    def get_user_transactions(self, request):
+        user_transactions = WalletService.get_user_wallet_transactions(request)
+        return paginate_response(
+            queryset=user_transactions,
+            serializer_=GetTransactionsSerializer,
+            request=request,
         )
 
 
