@@ -45,3 +45,35 @@ LOGOUT_RESPONSE = {
     200: openapi.Response(description="logout successfully", examples=NO_DATA),
     403: openapi.Response(description="Unauthorized", examples=UNAUTHENTICATED),
 }
+FORGOT_PASSWORD_WRONG_EMAIL = {
+    "application/json": {
+        "errors": {"email": ["User with email address not found"]},
+        "message": "",
+    }
+}
+FORGOT_PASSWORD_RESPONSE = {
+    200: openapi.Response(
+        description="OTP sent",
+        examples={"application/json": {"data": {}, "message": "OTP sent"}},
+    ),
+    400: openapi.Response(
+        description="Bad request", examples=FORGOT_PASSWORD_WRONG_EMAIL
+    ),
+}
+FORGOT_PASSWORD_WRONG_OTP = {
+    "application/json": {
+        "errors": {"code": ["Oops seems you have an invalid verification code."]},
+        "message": "",
+    }
+}
+VERIFY_FORGOT_PASSWORD_RESPONSE = {
+    200: openapi.Response(
+        description="OTP sent",
+        examples={
+            "application/json": {"data": {}, "message": "Password reset successful"}
+        },
+    ),
+    400: openapi.Response(
+        description="Bad request", examples=FORGOT_PASSWORD_WRONG_OTP
+    ),
+}

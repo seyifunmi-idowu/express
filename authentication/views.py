@@ -5,8 +5,15 @@ from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
 
 from authentication.docs import scehma_doc
-from authentication.serializers import UserProfileSerializer
+from authentication.serializers import (
+    ChangePasswordSerializer,
+    ForgotPasswordSerializer,
+    UserProfileSerializer,
+    VerifyForgotPasswordSerializer,
+)
+from authentication.service import AuthService, UserService
 from feleexpress.middlewares.permissions.is_authenticated import IsAuthenticated
+from helpers.db_helpers import generate_session_id
 from helpers.utils import ResponseManager
 
 
@@ -51,4 +58,73 @@ class UserViewset(viewsets.ViewSet):
         TokenManager.logout(access_token)
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_204_NO_CONTENT
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=ChangePasswordSerializer,
+        operation_description="Change password for authenticated user",
+        operation_summary="Change password for authenticated user",
+        tags=["Auth"],
+        responses=scehma_doc.VERIFY_FORGOT_PASSWORD_RESPONSE,
+    )
+    @action(detail=False, methods=["post"], url_path="change/password")
+    def change_password(self, request):
+        serialized_data = ChangePasswordSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        AuthService.change_password(
+            request.user, serialized_data.data, generate_session_id()
+        )
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Password changed successful"
+        )
+
+
+class AuthViewset(viewsets.ViewSet):
+    permission_classes = ()
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=ForgotPasswordSerializer,
+        operation_description="Initiate forgot password reset for unauthenticated user",
+        operation_summary="Initiate forgot password reset for unauthenticated user",
+        tags=["Auth"],
+        responses=scehma_doc.FORGOT_PASSWORD_RESPONSE,
+    )
+    @action(detail=False, methods=["post"], url_path="password-reset/initiate")
+    def initiate_forgot_password(self, request):
+        serialized_data = ForgotPasswordSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        user = UserService.get_user_instance(serialized_data.data.get("email"))
+        AuthService.initiate_email_verification(
+            serialized_data.data.get("email"), user.display_name, "Password reset"
+        )
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="OTP sent"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=VerifyForgotPasswordSerializer,
+        operation_description="Verify forgot password reset",
+        operation_summary="Verify forgot password reset",
+        tags=["Auth"],
+        responses=scehma_doc.VERIFY_FORGOT_PASSWORD_RESPONSE,
+    )
+    @action(detail=False, methods=["post"], url_path="password-reset/verify")
+    def verify_forgot_password(self, request):
+        serialized_data = VerifyForgotPasswordSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        AuthService.verify_forgot_password(serialized_data.data, generate_session_id())
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Password reset successful"
         )

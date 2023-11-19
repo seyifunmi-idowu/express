@@ -121,7 +121,7 @@ class AuthService:
                         session_id=session_id,
                     )
                     raise CustomAPIException(
-                        "Oops seems the link has expired.", status.HTTP_400_BAD_REQUEST
+                        "Oops seems the otp has expired.", status.HTTP_400_BAD_REQUEST
                     )
 
         if settings.ENVIRONMENT != "production":
@@ -174,9 +174,9 @@ class AuthService:
         pass
 
     @classmethod
-    def initiate_email_verification(cls, email, name):
+    def initiate_email_verification(cls, email, name, subject="Verify Email"):
         user = User.objects.filter(email=email).first()
-        if user.email_verified is True:
+        if subject == "Verify Email" and user.email_verified is True:
             raise CustomFieldValidationException(
                 "User with this email address has been verified",
                 "email",
@@ -208,9 +208,7 @@ class AuthService:
             minutes=1440,  # 24 hours * 60 minutes
         )
         email_manager = EmailManager(
-            "Verify Email",
-            context={"name": name, "otp": otp},
-            template="otp_template.html",
+            subject, context={"name": name, "otp": otp}, template="otp_template.html"
         )
         email_manager.send([email])
 
@@ -254,7 +252,7 @@ class AuthService:
                         session_id=session_id,
                     )
                     raise CustomAPIException(
-                        "Oops seems the link has expired.", status.HTTP_400_BAD_REQUEST
+                        "Oops seems the otp has expired.", status.HTTP_400_BAD_REQUEST
                     )
 
         if is_otp_found is False:
@@ -325,6 +323,49 @@ class AuthService:
         user.last_login_user_type = login_user_type
         user.save()
         return TokenManager.prepare_user_token(user=user, session_id=session_id)
+
+    @classmethod
+    def verify_forgot_password(cls, data, session_id):
+        email = data.get("email")
+        otp = data.get("otp")
+        password = data.get("password")
+
+        cls.validate_email_verification(email, otp, session_id)
+
+        user = UserService.get_user_instance(email)
+        user.set_password(password)
+        user.save()
+        track_user_activity(
+            context={},
+            category="USER_AUTH",
+            action="USER_RESET_PASSWORD",
+            email=email,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+
+    @classmethod
+    def change_password(cls, user, data, session_id):
+        email = data.get("email")
+        old_password = data.get("old_password")
+        password = data.get("password")
+
+        is_valid_password = check_password(old_password, user.password)
+        if not is_valid_password:
+            raise CustomAPIException(
+                "old password is not correct", status.HTTP_401_UNAUTHORIZED
+            )
+
+        user.set_password(password)
+        user.save()
+        track_user_activity(
+            context={},
+            category="USER_AUTH",
+            action="USER_RESET_PASSWORD",
+            email=email,
+            level="SUCCESS",
+            session_id=session_id,
+        )
 
 
 class UserActivityService:
