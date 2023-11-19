@@ -101,6 +101,11 @@ class User(BaseAbstractModel, AbstractBaseUser, PermissionsMixin):
     deactivated_reason = models.TextField(
         null=True, blank=True, verbose_name="Why was this user deactivated?"
     )
+    receive_email_promotions = models.BooleanField(
+        "Did user signup for promotion",
+        default=False,
+        help_text="Designates whether the user will receive newsletter and all.",
+    )
 
     objects = UserManager()
 

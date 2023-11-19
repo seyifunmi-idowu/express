@@ -6,7 +6,7 @@ RIDER_INFO = {
         "id": "3979c56f95d4474580f466b7123e955f",
         "first_name": "John",
         "last_name": "Mark",
-        "email": "seyiidowu24@yahoo.com",
+        "email": "johnmark@yahoo.com",
         "email_verified": False,
         "phone_number": "+2348105474517",
         "phone_verified": True,
@@ -66,11 +66,13 @@ RIDER_REGISTRATION_RESPONSES = {
 
 LOGIN_SUCCESS_RESPONSE = {
     "application/json": {
-        "data": RIDER_INFO,
-        "token": {
-            "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9....",
-            "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9....",
-        },
+        "data": {
+            "rider": RIDER_INFO,
+            "token": {
+                "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9....",
+                "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9....",
+            },
+        }
     },
     "message": "",
 }

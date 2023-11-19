@@ -94,11 +94,7 @@ class RiderService:
         password = kwargs.get("password")
 
         login_token = AuthService.login_user(
-            email=email,
-            phone_number=phone,
-            password=password,
-            session_id=session_id,
-            login_user_type="RIDER",
+            email=email, phone_number=phone, password=password, session_id=session_id
         )
         user = UserService.get_user_instance(email=email)
         rider = cls.get_rider(user=user)

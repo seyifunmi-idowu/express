@@ -297,7 +297,6 @@ class AuthService:
         email: str = None,
         phone_number: str = None,
         password: str = None,
-        login_user_type="CUSTOMER",
     ):
         if email is not None:
             field_verbose_name = "email"
@@ -320,7 +319,6 @@ class AuthService:
             )
 
         user.last_login = timezone.now()
-        user.last_login_user_type = login_user_type
         user.save()
         return TokenManager.prepare_user_token(user=user, session_id=session_id)
 
