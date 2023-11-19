@@ -27,8 +27,8 @@ class UserViewset(viewsets.ViewSet):
 
     @swagger_auto_schema(
         method="get",
-        operation_description="Get user",
-        operation_summary="Get user",
+        operation_description="Get user details",
+        operation_summary="Get user details",
         tags=["User"],
         responses=scehma_doc.GET_USER_DATA,
     )
@@ -65,7 +65,7 @@ class UserViewset(viewsets.ViewSet):
         request_body=ChangePasswordSerializer,
         operation_description="Change password for authenticated user",
         operation_summary="Change password for authenticated user",
-        tags=["Auth"],
+        tags=["User"],
         responses=scehma_doc.VERIFY_FORGOT_PASSWORD_RESPONSE,
     )
     @action(detail=False, methods=["post"], url_path="change/password")
