@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 
 from feleexpress.middlewares.permissions.is_authenticated import (
     IsAuthenticated,
+    IsCustomer,
     IsRider,
 )
 from feleexpress.middlewares.permissions.is_paystack import IsPaystack
@@ -13,6 +14,7 @@ from helpers.paystack_service import PaystackService
 from helpers.utils import ResponseManager, paginate_response
 from wallet.docs import schema_doc, schema_example
 from wallet.serializers import (
+    AddCardSerializer,
     BankAccountSerializer,
     CardSerializer,
     ChargeCardSerializer,
@@ -95,7 +97,7 @@ class WalletViewset(viewsets.ViewSet):
 
 
 class CardViewset(viewsets.ViewSet):
-    permission_classes = (IsAuthenticated, IsRider)
+    permission_classes = (IsAuthenticated, IsRider | IsCustomer)
 
     @swagger_auto_schema(
         operation_description="Get all cards",
@@ -112,16 +114,24 @@ class CardViewset(viewsets.ViewSet):
         )
 
     @swagger_auto_schema(
-        methods=["get"],
-        operation_description="Initiate a card transaction",
-        operation_summary="Initiate a card transaction",
+        methods=["post"],
+        request_body=AddCardSerializer,
+        operation_description="Initiate add card transaction",
+        operation_summary="Initiate add card transaction",
         tags=["User-Card"],
         responses=schema_doc.INITIATE_CARD_TRANSACTION_RESPONSE,
     )
-    @action(detail=False, methods=["get"], url_path="initiate")
+    @action(detail=False, methods=["post"], url_path="initiate")
     def initiate_card_transaction(self, request):
+        serialized_data = AddCardSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         session_id = generate_session_id()
-        response = CardService.initiate_card_transaction(request.user, session_id)
+        response = CardService.initiate_card_transaction(
+            request.user, session_id, serialized_data.data.get("amount")
+        )
         return ResponseManager.handle_response(
             data=response,
             status=status.HTTP_200_OK,

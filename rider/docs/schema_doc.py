@@ -16,6 +16,7 @@ RIDER_INFO = {
         "is_rider": True,
         "is_customer": False,
         "display_name": "John Mark",
+        "wallet_balance": 1000.0,
     },
     "status": "UNAPPROVED",
     "vehicle_type": "CAR",

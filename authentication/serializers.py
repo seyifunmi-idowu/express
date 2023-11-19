@@ -8,6 +8,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     display_name = serializers.SerializerMethodField("get_display_name")
     is_rider = serializers.SerializerMethodField("get_is_rider")
     is_customer = serializers.SerializerMethodField("get_is_customer")
+    wallet_balance = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -25,6 +26,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_rider",
             "is_customer",
             "display_name",
+            "wallet_balance",
         )
 
     def get_is_rider(self, obj):
@@ -35,6 +37,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_display_name(self, obj):
         return obj.display_name
+
+    def get_wallet_balance(self, obj):
+        return obj.get_user_wallet().balance
 
 
 class ForgotPasswordSerializer(serializers.Serializer):

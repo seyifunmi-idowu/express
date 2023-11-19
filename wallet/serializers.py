@@ -39,6 +39,10 @@ class GetTransactionsSerializer(serializers.ModelSerializer):
         ]
 
 
+class AddCardSerializer(serializers.Serializer):
+    amount = serializers.FloatField()
+
+
 class ChargeCardSerializer(serializers.Serializer):
     card_id = serializers.CharField(max_length=50)
     amount = serializers.DecimalField(max_digits=10, decimal_places=2)
