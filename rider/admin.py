@@ -2,9 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from rider.forms import RiderActionForm
-from rider.models import Rider, RiderDocument
-
-# Register your models here.
+from rider.models import ApprovedRider, Rider, RiderDocument, UnApprovedRider
 
 
 class RiderDocumentInline(admin.TabularInline):
@@ -85,5 +83,23 @@ class RiderAdmin(admin.ModelAdmin):
             obj.status = "SUSPENDED"
             obj.save()
 
+    def has_add_permission(self, request, obj=None):
+        return False
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class ApprovedRiderAdmin(RiderAdmin):
+    def get_queryset(self, request):
+        return self.model.objects.filter(status="APPROVED")
+
+
+class UnApprovedRiderAdmin(RiderAdmin):
+    def get_queryset(self, request):
+        return self.model.objects.filter(status="UNAPPROVED")
+
+
+admin.site.register(ApprovedRider, ApprovedRiderAdmin)
+admin.site.register(UnApprovedRider, UnApprovedRiderAdmin)
 admin.site.register(Rider, RiderAdmin)

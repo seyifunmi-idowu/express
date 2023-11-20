@@ -117,6 +117,18 @@ class Rider(BaseAbstractModel):
         return super(Rider, self).hard_delete(using=using, keep_parents=keep_parents)
 
 
+class ApprovedRider(Rider):
+    class Meta:
+        proxy = True
+        verbose_name = "Rider (Approved)"
+
+
+class UnApprovedRider(Rider):
+    class Meta:
+        proxy = True
+        verbose_name = "Rider (Unapproved)"
+
+
 class Guarantor(BaseAbstractModel):
     """
     Provider Guarantor Model

@@ -24,20 +24,50 @@ class CustomerSignupSerializer(serializers.Serializer):
     receive_email_promotions = serializers.BooleanField(default=False, required=False)
     CUSTOMER_TYPE_CHOICES = [("INDIVIDUAL", "INDIVIDUAL"), ("BUSINESS", "BUSINESS")]
     customer_type = serializers.ChoiceField(choices=CUSTOMER_TYPE_CHOICES)
+    business_name = serializers.CharField(required=False)
+    business_address = serializers.CharField(required=False)
+    business_category = serializers.CharField(required=False)
+    delivery_volume = serializers.IntegerField(required=False)
 
     def validate(self, data):
+        errors = {}
         fullname = data.get("fullname")
         if fullname:
             fullname_split = fullname.split()
             if len(fullname_split) != 2:
-                raise serializers.ValidationError(
-                    "Full name must contain first name and last name."
-                )
+                errors[
+                    "business_name"
+                ] = "Full name must contain first name and last name."
 
         password = data.get("password")
         verify_password = data.get("verify_password")
         if password != verify_password:
-            raise serializers.ValidationError("Passwords do not match.")
+            errors["password"] = "Passwords do not match."
+
+        customer_type = data.get("customer_type")
+        business_name = data.get("business_name")
+        business_address = data.get("business_address")
+        business_category = data.get("business_category")
+        delivery_volume = data.get("delivery_volume")
+
+        if customer_type == "BUSINESS":
+            if not business_name:
+                errors["business_name"] = "Business name is required for BUSINESS type."
+            if not business_address:
+                errors[
+                    "business_address"
+                ] = "Business address is required for BUSINESS type."
+            if not business_category:
+                errors[
+                    "business_category"
+                ] = "Business category is required for BUSINESS type."
+            if not delivery_volume:
+                errors[
+                    "delivery_volume"
+                ] = "Delivery volume is required for BUSINESS type."
+
+        if errors:
+            raise serializers.ValidationError(errors)
 
         return data
 

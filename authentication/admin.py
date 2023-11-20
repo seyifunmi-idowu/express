@@ -105,6 +105,15 @@ class UserActivityAdmin(admin.ModelAdmin):
     def consumer_name(self, obj):
         return obj.consumer.user.display_name
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(UserActivity, UserActivityAdmin)

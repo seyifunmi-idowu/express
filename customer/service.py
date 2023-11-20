@@ -48,6 +48,10 @@ class CustomerService:
         password = kwargs.get("password")
         receive_email_promotions = kwargs.get("receive_email_promotions")
         customer_type = kwargs.get("customer_type")
+        business_name = kwargs.get("business_name")
+        business_address = kwargs.get("business_address")
+        business_category = kwargs.get("business_category")
+        delivery_volume = kwargs.get("delivery_volume")
         first_name = fullname.split(" ")[0]
         last_name = fullname.split(" ")[1]
 
@@ -61,7 +65,14 @@ class CustomerService:
                 password=password,
                 receive_email_promotions=receive_email_promotions,
             )
-            cls.create_customer(user=instance_user, customer_type=customer_type)
+            cls.create_customer(
+                user=instance_user,
+                customer_type=customer_type,
+                business_name=business_name,
+                business_address=business_address,
+                business_category=business_category,
+                delivery_volume=delivery_volume,
+            )
 
             # AuthService.initiate_email_verification(email=email, name=fullname)
             AuthService.initiate_phone_verification(phone_number)
