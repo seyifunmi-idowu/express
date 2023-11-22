@@ -24,6 +24,20 @@ class Customer(BaseAbstractModel):
     business_category = models.CharField(max_length=100, null=True, blank=True)
     delivery_volume = models.IntegerField(null=True, blank=True)
 
+    def __str__(self):
+        return self.display_name
+
+    @property
+    def display_name(self):
+        if self.customer_type == "INDIVIDUAL":
+            return self.user.display_name
+        return self.business_name if self.business_name else self.user.display_name
+
+    class Meta:
+        db_table = "customer"
+        verbose_name = "customer"
+        verbose_name_plural = "customers"
+
 
 class IndividualCustomer(Customer):
     class Meta:

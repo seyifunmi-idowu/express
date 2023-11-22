@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "storages",
     "authentication.apps.AuthenticationConfig",
     "customer.apps.CustomerConfig",
+    "order.apps.OrderConfig",
     "rider.apps.RiderConfig",
     "wallet.apps.WalletConfig",
 ]
