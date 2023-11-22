@@ -3,11 +3,14 @@ from django.db import models
 from helpers.db_helpers import BaseAbstractModel
 
 
-class Vehicles(BaseAbstractModel):
+class Vehicle(BaseAbstractModel):
     STATUS = [("ACTIVE", "ACTIVE"), ("INACTIVE", "INACTIVE")]
     name = models.CharField(max_length=50, verbose_name="vehicle name")
     status = models.CharField(
         max_length=30, choices=STATUS, default="UNAPPROVED", verbose_name="status"
+    )
+    note = models.CharField(
+        max_length=550, verbose_name="vehicle note", null=True, blank=True
     )
     start_date = models.DateTimeField(
         null=True, blank=True, default=None, verbose_name="Active period start date"
@@ -16,11 +19,13 @@ class Vehicles(BaseAbstractModel):
         null=True, blank=True, default=None, verbose_name="Active period end date"
     )
     file_url = models.CharField(
-        max_length=550, verbose_name="document file url", null=True, blank=True
+        max_length=550, verbose_name="Vehicle image url", null=True, blank=True
     )
     base_fare = models.IntegerField()
-    km_5_fare = models.IntegerField(verbose_name="0-5 km fare")
-    km_10_fare = models.IntegerField(verbose_name="5km and above fare")
+    # 0.1 - 5 km
+    km_5_below_fare = models.IntegerField(verbose_name="0-5 km fare")
+    # 5.1 and above
+    km_5_above_fare = models.IntegerField(verbose_name="5km and above fare")
 
     def __str__(self):
         return self.name
