@@ -11,14 +11,6 @@ class Rider(BaseAbstractModel):
     Riders Model
     """
 
-    VEHICLE_TYPE_CHOICES = [
-        ("BICYCLE", "BICYCLE"),
-        ("CAR", "CAR (SEDAN)"),
-        ("KEKE", "KEKE"),
-        ("MOTORCYCLE", "MOTORCYCLE"),
-        ("MPV", "MPV (MULTI-PURPOSE VAN)"),
-        ("TRUCKS", "TRUCKS"),
-    ]
     STATUS = [
         ("APPROVED", "APPROVED"),
         ("UNAPPROVED", "UNAPPROVED"),
@@ -31,12 +23,15 @@ class Rider(BaseAbstractModel):
         verbose_name="user",
         related_name="rider",
     )
-    vehicle_type = models.CharField(
-        max_length=30,
-        choices=VEHICLE_TYPE_CHOICES,
-        verbose_name="rider's vehicle type",
+    vehicle = models.ForeignKey(
+        "order.Vehicle",
+        on_delete=models.CASCADE,
+        verbose_name="rider vehicle",
         blank=True,
         null=True,
+    )
+    vehicle_type = models.CharField(
+        max_length=30, verbose_name="rider's vehicle type", blank=True, null=True
     )
     vehicle_make = models.CharField(max_length=50, blank=True, null=True)
     vehicle_model = models.CharField(max_length=30, blank=True, null=True)

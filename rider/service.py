@@ -1,8 +1,10 @@
 from django.db import transaction
+from rest_framework import status
 
 from authentication.service import AuthService, UserService
 from authentication.tasks import track_user_activity
 from helpers.db_helpers import select_for_update
+from helpers.exceptions import CustomAPIException
 from helpers.s3_uploader import S3Uploader
 from rider.models import Rider, RiderDocument
 from rider.serializers import (
@@ -14,8 +16,8 @@ from rider.serializers import (
 
 class RiderService:
     @classmethod
-    def create_rider(cls, user, vehicle_type, **kwargs):
-        rider = Rider.objects.create(user=user, vehicle_type=vehicle_type, **kwargs)
+    def create_rider(cls, user, vehicle, **kwargs):
+        rider = Rider.objects.create(user=user, vehicle=vehicle, **kwargs)
         return rider
 
     @classmethod
@@ -53,14 +55,21 @@ class RiderService:
         :param kwargs:
         :return:
         """
+        from order.service import VehicleService
 
         email = kwargs.get("email")
         phone_number = kwargs.get("phone_number")
         fullname = kwargs.get("fullname")
         password = kwargs.get("password")
-        vehicle_type = kwargs.get("vehicle_type")
+        vehicle_id = kwargs.get("vehicle_id")
         first_name = fullname.split(" ")[0]
         last_name = fullname.split(" ")[1]
+
+        vehicle = VehicleService.get_vehicle(vehicle_id)
+        if vehicle.status != "ACTIVE":
+            raise CustomAPIException(
+                "vehicle is not active for order", status.HTTP_400_BAD_REQUEST
+            )
 
         with transaction.atomic():
             instance_user = UserService.create_user(
@@ -71,7 +80,7 @@ class RiderService:
                 last_name=last_name,
                 password=password,
             )
-            cls.create_rider(user=instance_user, vehicle_type=vehicle_type)
+            cls.create_rider(user=instance_user, vehicle=vehicle)
 
             # AuthService.initiate_email_verification(email=email, name=fullname)
             AuthService.initiate_phone_verification(phone_number)

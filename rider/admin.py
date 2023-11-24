@@ -48,7 +48,7 @@ class RiderAdmin(admin.ModelAdmin):
         "avatar_url",
         "vehicle_plate_number",
         "vehicle_color",
-        "vehicle_type",
+        "vehicle",
         "vehicle_make",
         "vehicle_model",
         "city",
