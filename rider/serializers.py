@@ -24,7 +24,6 @@ class RiderSignupSerializer(serializers.Serializer):
     city = serializers.ChoiceField(choices=CITY_CHOICES)
     password = serializers.CharField(validators=[FieldValidators.validate_password])
     verify_password = serializers.CharField()
-    vehicle_id = serializers.CharField()
 
     def validate(self, data):
         fullname = data.get("fullname")
@@ -75,6 +74,7 @@ class RiderLoginSerializer(serializers.Serializer):
 class RetrieveRiderSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
     vehicle_photos = serializers.SerializerMethodField()
+    vehicle = serializers.SerializerMethodField()
 
     class Meta:
         model = Rider
@@ -82,7 +82,7 @@ class RetrieveRiderSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "status",
-            "vehicle_type",
+            "vehicle",
             "vehicle_make",
             "vehicle_model",
             "vehicle_plate_number",
@@ -95,6 +95,9 @@ class RetrieveRiderSerializer(serializers.ModelSerializer):
 
     def get_vehicle_photos(self, obj):
         return obj.vehicle_photos()
+
+    def get_vehicle(self, obj):
+        return obj.vehicle.name if obj.vehicle else None
 
 
 class DocumentUploadSerializer(serializers.Serializer):
@@ -120,7 +123,7 @@ class KycSerializer(serializers.Serializer):
         ("MPV", "MPV"),
         ("TRUCKS", "TRUCKS"),
     ]
-    vehicle_type = serializers.ChoiceField(choices=VEHICLE_TYPE_CHOICES)
+    vehicle_id = serializers.CharField()
     vehicle_plate_number = serializers.CharField(max_length=20)
     vehicle_color = serializers.CharField(max_length=20)
     vehicle_photo = serializers.ListField(
@@ -141,7 +144,7 @@ class KycSerializer(serializers.Serializer):
 
     class Meta:
         fields = [
-            "vehicle_type",
+            "vehicle_id",
             "vehicle_plate_number",
             "vehicle_color",
             "vehicle_photo",
@@ -199,7 +202,7 @@ class RetrieveKycSerializer(serializers.Serializer):
 
 
 class VehicleInformationSerializer(serializers.Serializer):
-    vehicle_type = serializers.SerializerMethodField()
+    vehicle = serializers.SerializerMethodField()
     vehicle_make = serializers.SerializerMethodField()
     vehicle_model = serializers.SerializerMethodField()
     vehicle_plate_number = serializers.SerializerMethodField()
@@ -207,8 +210,8 @@ class VehicleInformationSerializer(serializers.Serializer):
     driver_license = serializers.SerializerMethodField()
     insurance_certificate = serializers.SerializerMethodField()
 
-    def get_vehicle_type(self, obj):
-        return obj.vehicle_type
+    def get_vehicle(self, obj):
+        return obj.vehicle
 
     def get_vehicle_make(self, obj):
         return obj.vehicle_make
@@ -234,7 +237,6 @@ class VehicleInformationSerializer(serializers.Serializer):
 
 
 class UpdateVehicleSerializer(serializers.ModelSerializer):
-    vehicle_type = serializers.CharField(max_length=30, required=False)
     vehicle_make = serializers.CharField(max_length=30, required=False)
     vehicle_model = serializers.CharField(max_length=30, required=False)
     vehicle_plate_number = serializers.CharField(max_length=30, required=False)
@@ -243,7 +245,6 @@ class UpdateVehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rider
         fields = (
-            "vehicle_type",
             "vehicle_make",
             "vehicle_model",
             "vehicle_plate_number",

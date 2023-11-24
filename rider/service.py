@@ -16,8 +16,8 @@ from rider.serializers import (
 
 class RiderService:
     @classmethod
-    def create_rider(cls, user, vehicle, **kwargs):
-        rider = Rider.objects.create(user=user, vehicle=vehicle, **kwargs)
+    def create_rider(cls, user, **kwargs):
+        rider = Rider.objects.create(user=user, **kwargs)
         return rider
 
     @classmethod
@@ -55,21 +55,12 @@ class RiderService:
         :param kwargs:
         :return:
         """
-        from order.service import VehicleService
-
         email = kwargs.get("email")
         phone_number = kwargs.get("phone_number")
         fullname = kwargs.get("fullname")
         password = kwargs.get("password")
-        vehicle_id = kwargs.get("vehicle_id")
         first_name = fullname.split(" ")[0]
         last_name = fullname.split(" ")[1]
-
-        vehicle = VehicleService.get_vehicle(vehicle_id)
-        if vehicle.status != "ACTIVE":
-            raise CustomAPIException(
-                "vehicle is not active for order", status.HTTP_400_BAD_REQUEST
-            )
 
         with transaction.atomic():
             instance_user = UserService.create_user(
@@ -80,7 +71,7 @@ class RiderService:
                 last_name=last_name,
                 password=password,
             )
-            cls.create_rider(user=instance_user, vehicle=vehicle)
+            cls.create_rider(user=instance_user)
 
             # AuthService.initiate_email_verification(email=email, name=fullname)
             AuthService.initiate_phone_verification(phone_number)
@@ -150,11 +141,22 @@ class RiderKYCService:
 
     @classmethod
     def submit_kyc(cls, user, session_id, **kwargs):
+        from order.service import VehicleService
+
+        vehicle_id = kwargs.get("vehicle_id")
+        vehicle = VehicleService.get_vehicle(vehicle_id)
+        if vehicle.status != "ACTIVE":
+            raise CustomAPIException(
+                "vehicle is not active for order", status.HTTP_400_BAD_REQUEST
+            )
+
         rider = RiderService.get_rider(user=user)
-        rider.vehicle_type = kwargs.get("vehicle_type")
         rider.vehicle_color = kwargs.get("vehicle_color")
         rider.vehicle_plate_number = kwargs.get("vehicle_plate_number")
-        kwargs.pop("vehicle_type")
+        rider.vehicle = vehicle
+        rider.save()
+
+        kwargs.pop("vehicle_id")
         kwargs.pop("vehicle_color")
         kwargs.pop("vehicle_plate_number")
 
