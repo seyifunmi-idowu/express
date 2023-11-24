@@ -19,7 +19,7 @@ RIDER_INFO = {
         "wallet_balance": 1000.0,
     },
     "status": "UNAPPROVED",
-    "vehicle_type": "CAR",
+    "vehicle": "CAR (Sedan)",
     "vehicle_make": None,
     "vehicle_model": None,
     "vehicle_plate_number": None,
@@ -39,12 +39,7 @@ REGISTRATION_SUCCESS_RESPONSE = {
 }
 
 EMAIL_REGISTRATION_BAD_INPUT_RESPONSE = {
-    "application/json": {
-        "errors": {
-            "email": ["Enter a valid email address."],
-            "vehicle_type": ["This field is required."],
-        }
-    }
+    "application/json": {"errors": {"email": ["Enter a valid email address."]}}
 }
 
 EMAIL_REGISTRATION_EXISITING_USER_RESPONSE = {
@@ -147,7 +142,7 @@ SUBMIT_KYC_SUCCESS_RESPONSE = {
 SUBMIT_KYC_BAD_INPUT_RESPONSE = {
     "application/json": {
         "errors": {
-            "vehicle_type": ["This field is required."],
+            "vehicle_id": ["This field is required."],
             "vehicle_plate_number": ["This field is required."],
         }
     }
@@ -190,7 +185,7 @@ KYC_INFO_RESPONSE = {
 VEHICLE_INFO_SUCCESS_RESPONSE = {
     "application/json": {
         "data": {
-            "vehicle_type": "CAR",
+            "vehicle": "CAR (Sedan)",
             "vehicle_make": None,
             "vehicle_model": None,
             "vehicle_plate_number": "eky24sky",

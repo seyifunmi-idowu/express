@@ -211,7 +211,7 @@ class VehicleInformationSerializer(serializers.Serializer):
     insurance_certificate = serializers.SerializerMethodField()
 
     def get_vehicle(self, obj):
-        return obj.vehicle
+        return obj.vehicle.name if obj.vehicle else None
 
     def get_vehicle_make(self, obj):
         return obj.vehicle_make
