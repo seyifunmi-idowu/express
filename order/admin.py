@@ -8,7 +8,7 @@ from order.models import Vehicle
 class VehiclesAdmin(admin.ModelAdmin):
     form = VehicleAdminForm
     search_fields = ("name", "status")
-    readonly_fields = ("file_url_link", "created_by", "created_at")
+    readonly_fields = ("file_url_link", "created_at", "updated_by", "updated_at")
     list_display = ("name", "status")
     ordering = ["name"]
     fields = (
@@ -22,6 +22,9 @@ class VehiclesAdmin(admin.ModelAdmin):
         "km_5_above_fare",
         "file_url_link",
         "vehicle_image",
+        "created_at",
+        "updated_at",
+        "updated_by",
     )
 
     def file_url_link(self, instance):
@@ -52,7 +55,8 @@ class VehiclesAdmin(admin.ModelAdmin):
                 use_random_key=True,
             )
             obj.file_url = file_url
-            obj.save()
+        obj.updated_by = request.user
+        obj.save()
 
 
 admin.site.register(Vehicle, VehiclesAdmin)

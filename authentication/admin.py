@@ -10,7 +10,7 @@ class CustomUserAdmin(BaseModelAdmin, UserAdmin):
     actions = ["delete_user"]
     model = User
     list_display = ("first_name", "last_name", "email", "is_staff")
-    list_filter = ("first_name", "last_name", "is_staff")
+    list_filter = ("first_name", "last_name")
     readonly_fields = ("deleted_at", "email_verified", "phone_verified")
     fieldsets = (
         (
