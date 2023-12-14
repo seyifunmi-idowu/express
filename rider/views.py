@@ -14,6 +14,7 @@ from rider.docs import schema_doc
 from rider.serializers import (
     DocumentUploadSerializer,
     KycSerializer,
+    ResendVerificationSerializer,
     RetrieveKycSerializer,
     RetrieveRiderSerializer,
     RiderLoginSerializer,
@@ -27,6 +28,41 @@ from rider.service import RiderKYCService, RiderService
 
 class RiderAuthViewset(viewsets.ViewSet):
     permission_classes = ()
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get available cities",
+        operation_summary="Get available cities",
+        tags=["Rider"],
+        responses=schema_doc.AVAILABLE_CITIES_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="available-cities")
+    def get_available_cities(self, request):
+        available_cities = {"MAKURDI": "MAKURDI", "GBOKO": "GBOKO", "OTUKPO": "OTUKPO"}
+        return ResponseManager.handle_response(
+            data=available_cities, status=status.HTTP_200_OK, message="Available cities"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=ResendVerificationSerializer,
+        operation_description="Resend verification code",
+        operation_summary="Resend verification code",
+        tags=["Rider-Auth"],
+        responses=schema_doc.RIDER_RESEND_OTP_RESPONSES,
+    )
+    @action(detail=False, methods=["post"], url_path="register/resend")
+    def resend_verification_code(self, request):
+        serialized_data = ResendVerificationSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        RiderService.resend_verification_code(session_id, **serialized_data.data)
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Otp sent"
+        )
 
     @swagger_auto_schema(
         methods=["post"],
