@@ -63,6 +63,20 @@ RIDER_REGISTRATION_RESPONSES = {
         description="Existing User", examples=EMAIL_REGISTRATION_EXISITING_USER_RESPONSE
     ),
 }
+OTP_RESENT_SUCCESS_RESPONSE = {"application/json": {"data": {}, "message": "Otp sent"}}
+EMAIL_REGISTRATION_NONE_EXISITING_USER_RESPONSE = {
+    "application/json": {"errors": {"email": ["User with email address not found"]}}
+}
+RIDER_RESEND_OTP_RESPONSES = {
+    201: openapi.Response(description="Otp sent", examples=OTP_RESENT_SUCCESS_RESPONSE),
+    400: openapi.Response(
+        description="Bad Input", examples=EMAIL_REGISTRATION_BAD_INPUT_RESPONSE
+    ),
+    409: openapi.Response(
+        description="Existing User",
+        examples=EMAIL_REGISTRATION_NONE_EXISITING_USER_RESPONSE,
+    ),
+}
 
 LOGIN_SUCCESS_RESPONSE = {
     "application/json": {
@@ -98,6 +112,17 @@ LOGIN_RESPONSES = {
         description="Invalid Credentials",
         examples=LOGIN_WITH_EMAIL_UNAUTHORISED_RESPONSE,
     ),
+}
+AVAILABLE_CITIES_RESPONSE = {
+    200: openapi.Response(
+        description="Available cities",
+        examples={
+            "application/json": {
+                "data": {"MAKURDI": "MAKURDI", "GBOKO": "GBOKO", "OTUKPO": "OTUKPO"},
+                "message": "Available cities",
+            }
+        },
+    )
 }
 RIDER_INFO_SUCCESS_RESPONSE = {
     "application/json": {"data": RIDER_INFO, "message": "Rider info"}
