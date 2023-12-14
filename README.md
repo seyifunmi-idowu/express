@@ -1,7 +1,7 @@
 # feleexpress
 
 Git pull
-`git pull https://github.com/seyifunmi-idowu/feleexpress.git`
+`git pull https://github.com/FeleExpress/feleexpress.git`
 
 Install your virtual environment
 `pip3 install virtualenv`
