@@ -89,36 +89,25 @@ class RiderService:
 
     @classmethod
     def resend_verification_code(cls, session_id, **kwargs):
-        from helpers.notification import EmailManager
-
         email = kwargs.get("email", None)
-        # phone_number = kwargs.get("phone_number", None)
-        # user = UserService.get_user_instance(email=email, phone_number=phone_number)
-        # if not user:
-        #     raise CustomAPIException(
-        #         "User not found", status.HTTP_404_NOT_FOUND
-        #     )
-        #
-        # if email:
-        #     AuthService.initiate_email_verification(email=email, name=user.display_name)
-        # if phone_number:
-        #     AuthService.initiate_phone_verification(phone_number)
+        phone_number = kwargs.get("phone_number", None)
+        user = UserService.get_user_instance(email=email, phone_number=phone_number)
+        if not user:
+            raise CustomAPIException("User not found", status.HTTP_404_NOT_FOUND)
 
-        email_manager = EmailManager(
-            "welcome",
-            context={"name": "idowu", "otp": "1234"},
-            template="otp_template.html",
+        if email:
+            AuthService.initiate_email_verification(email=email, name=user.display_name)
+        if phone_number:
+            AuthService.initiate_phone_verification(phone_number)
+
+        track_user_activity(
+            context={"user": email or phone_number},
+            category="RIDER_AUTH",
+            action="RIDER_RESEND_OTP",
+            email=email,
+            level="SUCCESS",
+            session_id=session_id,
         )
-        email_manager.send([email])
-
-        # track_user_activity(
-        #     context={"user": email or phone_number},
-        #     category="RIDER_AUTH",
-        #     action="RIDER_RESEND_OTP",
-        #     email=email,
-        #     level="SUCCESS",
-        #     session_id=session_id,
-        # )
         return True
 
     @classmethod
