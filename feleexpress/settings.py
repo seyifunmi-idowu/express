@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "storages",
     "authentication.apps.AuthenticationConfig",
     "customer.apps.CustomerConfig",
+    "notification.apps.NotificationConfig",
     "order.apps.OrderConfig",
     "rider.apps.RiderConfig",
     "wallet.apps.WalletConfig",
@@ -221,3 +222,4 @@ PAYSTACK_SECRET_KEY = config("PAYSTACK_SECRET_KEY", "")
 PAYSTACK_WHITELISTED_IP = config("PAYSTACK_WHITELISTED_IP", default="").split(",")
 
 ENABLED_IP_LOOKUP = config("ENABLED_IP_LOOKUP", cast=bool, default=False)
+ONE_SIGNAL_KEY = config("ONE_SIGNAL_KEY", "")
