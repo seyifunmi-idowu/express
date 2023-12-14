@@ -41,6 +41,25 @@ class RiderSignupSerializer(serializers.Serializer):
         return data
 
 
+class ResendVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        validators=[FieldValidators.validate_existing_user_email], required=False
+    )
+    phone_number = serializers.CharField(
+        min_length=10,
+        max_length=15,
+        validators=[
+            FieldValidators.validate_phone_number,
+            FieldValidators.validate_existing_user_phone,
+        ],
+        required=False,
+    )
+
+    def validate(self, data):
+        FieldValidators.validate_email_or_phone_number(data)
+        return data
+
+
 class VerifyOtpSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=6)
     email = serializers.EmailField(
