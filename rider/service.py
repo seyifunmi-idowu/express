@@ -1,8 +1,10 @@
 from django.db import transaction
+from rest_framework import status
 
 from authentication.service import AuthService, UserService
 from authentication.tasks import track_user_activity
 from helpers.db_helpers import select_for_update
+from helpers.exceptions import CustomAPIException
 from helpers.s3_uploader import S3Uploader
 from rider.models import Rider, RiderDocument
 from rider.serializers import (
