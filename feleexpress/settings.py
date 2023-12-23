@@ -223,3 +223,4 @@ PAYSTACK_WHITELISTED_IP = config("PAYSTACK_WHITELISTED_IP", default="").split(",
 
 ENABLED_IP_LOOKUP = config("ENABLED_IP_LOOKUP", cast=bool, default=False)
 ONE_SIGNAL_KEY = config("ONE_SIGNAL_KEY", "")
+ONE_SIGNAL_APP_ID = config("ONE_SIGNAL_APP_ID", "")

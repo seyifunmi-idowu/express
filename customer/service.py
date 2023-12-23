@@ -52,6 +52,7 @@ class CustomerService:
         business_address = kwargs.get("business_address")
         business_category = kwargs.get("business_category")
         delivery_volume = kwargs.get("delivery_volume")
+        one_signal_id = kwargs.get("one_signal_id")
         first_name = fullname.split(" ")[0]
         last_name = fullname.split(" ")[1]
 
@@ -64,6 +65,7 @@ class CustomerService:
                 last_name=last_name,
                 password=password,
                 receive_email_promotions=receive_email_promotions,
+                one_signal_id=one_signal_id,
             )
             cls.create_customer(
                 user=instance_user,

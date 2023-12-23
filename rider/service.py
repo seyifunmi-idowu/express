@@ -59,6 +59,7 @@ class RiderService:
         phone_number = kwargs.get("phone_number")
         fullname = kwargs.get("fullname")
         password = kwargs.get("password")
+        one_signal_id = kwargs.get("one_signal_id")
         first_name = fullname.split(" ")[0]
         last_name = fullname.split(" ")[1]
 
@@ -70,6 +71,7 @@ class RiderService:
                 first_name=first_name,
                 last_name=last_name,
                 password=password,
+                one_signal_id=one_signal_id,
             )
             cls.create_rider(user=instance_user)
 
