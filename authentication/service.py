@@ -17,9 +17,22 @@ from helpers.token_manager import TokenManager
 class UserService:
     @classmethod
     def create_user(cls, **kwargs):
+        from notification.service import OneSignalService
         from wallet.service import WalletService
 
+        one_signal_id = kwargs.get("one_signal_id", None)
+        if one_signal_id:
+            user_notification = OneSignalService.get_user_notification(
+                one_signal_id=one_signal_id
+            )
+            if user_notification:
+                raise CustomAPIException(
+                    "One signal id assigned to another user", status.HTTP_409_CONFLICT
+                )
+
         user = User.objects.create_user(**kwargs)
+
+        one_signal_id and OneSignalService.add_user_one_signal(user, one_signal_id)
         # every user must have a wallet
         WalletService.create_user_wallet(user)
         return user
