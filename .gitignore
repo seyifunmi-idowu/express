@@ -2,11 +2,12 @@ __pycache__/
 db.sqlite3
 media
 venv/
+static/
 
 env/
 
 .env
-
+.db-env
 dump.rdb
 randomfile.py
 
