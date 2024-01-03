@@ -38,6 +38,12 @@ else:
     ALLOWED_HOSTS = ALLOWED_HOSTS_STRING.split(",")
 # ALLOWED_HOSTS = ["*"]
 
+CSRF_COOKIE_DOMAIN_STRING = config("CSRF_COOKIE_DOMAIN_STRING", default="")
+if not CSRF_COOKIE_DOMAIN_STRING:
+    CSRF_COOKIE_DOMAIN = []
+else:
+    CSRF_COOKIE_DOMAIN = CSRF_COOKIE_DOMAIN_STRING.split(",")
+
 # Base User
 AUTH_USER_MODEL = "authentication.User"
 
