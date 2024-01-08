@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     # "rest_framework_simplejwt.token_blacklist",
+    "django_celery_beat",
     "drf_yasg",
     "storages",
     "authentication.apps.AuthenticationConfig",
@@ -125,7 +126,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Africa/Lagos"
 
 USE_I18N = True
 
@@ -165,7 +166,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 ENVIRONMENT = config("ENVIRONMENT", default="dev")  # dev or production or staging
 
-REDIS_CONNECTION_URL = config("REDIS_URL", default="redis://127.0.0.1:6379")
+REDIS_CONNECTION_URL = config("REDIS_URL", default="redis://redis:6379")
 REDIS_INSTANCE_ONE = f"{REDIS_CONNECTION_URL}/0"
 CACHES = {
     "default": {
@@ -174,6 +175,18 @@ CACHES = {
         "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
 }
+
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BROKER_URL = (
+    CELERY_RESULT_BACKEND
+) = CELERY_REDIS_SCHEDULER_URL = REDIS_INSTANCE_ONE
+CELERY_REDIS_SCHEDULER_KEY_PREFIX = "tasks:meta:"
+CELERY_BEAT_MAX_LOOP_INTERVAL = 2
+CELERY_MAX_RETRY = config("CELERY_MAX_RETRY", default=3, cast=int)
+CELERY_RETRY_DELAY = config("CELERY_RETRY_DELAY", default=5, cast=int)
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
