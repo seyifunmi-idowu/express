@@ -13,10 +13,18 @@ class UserNotification(BaseAbstractModel):
         verbose_name="user",
         related_name="user_notification",
     )
-    one_signal_id = models.CharField(max_length=100, verbose_name="one_signal id")
-    external_id = models.CharField(max_length=100, verbose_name="external id")
-    subscription_id = models.CharField(max_length=100, verbose_name="subscription id")
-    status = models.CharField(choices=STATUS, verbose_name="notification status")
+    one_signal_id = models.CharField(
+        max_length=100, verbose_name="one_signal id", blank=True, null=True
+    )
+    external_id = models.CharField(
+        max_length=100, verbose_name="external id", blank=True, null=True
+    )
+    subscription_id = models.CharField(
+        max_length=100, verbose_name="subscription id", blank=True, null=True
+    )
+    status = models.CharField(
+        choices=STATUS, verbose_name="notification status", default="ACTIVE"
+    )
     notification_type = models.CharField(
         choices=TYPE, verbose_name="notification type", default="PUSH"
     )

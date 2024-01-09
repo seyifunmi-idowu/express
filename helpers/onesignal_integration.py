@@ -50,6 +50,12 @@ class OneSignalIntegration:
         return response.json()
 
     @classmethod
+    def delete_sms_device(cls, subscription_id):
+        url = f"{cls.base_url}players/{subscription_id}?app_id={cls.app_id}"
+        response = requests.delete(url, headers=cls.headers)
+        return response.json()
+
+    @classmethod
     def send_sms_notification(cls, phone_number, message):
         data = {
             "app_id": cls.app_id,
