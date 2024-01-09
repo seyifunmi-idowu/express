@@ -13,5 +13,5 @@ randomfile.py
 
 .mypy_cache
 .idea
-
+.db-env
 rand.html

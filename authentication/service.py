@@ -10,19 +10,19 @@ from feleexpress import settings
 from helpers.cache_manager import CacheManager, KeyBuilder
 from helpers.db_helpers import generate_otp
 from helpers.exceptions import CustomAPIException, CustomFieldValidationException
-from helpers.notification import EmailManager, SMSManager
 from helpers.token_manager import TokenManager
+from notification.service import EmailManager
 
 
 class UserService:
     @classmethod
     def create_user(cls, **kwargs):
-        from notification.service import OneSignalService
+        from notification.service import NotificationService
         from wallet.service import WalletService
 
         one_signal_id = kwargs.get("one_signal_id", None)
         if one_signal_id:
-            user_notification = OneSignalService.get_user_notification(
+            user_notification = NotificationService.get_user_notification(
                 one_signal_id=one_signal_id
             )
             if user_notification:
@@ -32,8 +32,10 @@ class UserService:
 
         user = User.objects.create_user(**kwargs)
 
-        one_signal_id and OneSignalService.add_user_one_signal(user, one_signal_id)
-        # every user must have a wallet
+        one_signal_id and NotificationService.add_user_one_signal(user, one_signal_id)
+
+        NotificationService.add_user_for_sms_notification(user)
+
         WalletService.create_user_wallet(user)
         return user
 
@@ -58,6 +60,8 @@ class UserService:
 class AuthService:
     @classmethod
     def initiate_phone_verification(cls, phone_number):
+        from notification.service import NotificationService
+
         user = User.objects.filter(phone_number=phone_number).first()
         if user.phone_verified is True:
             raise CustomFieldValidationException(
@@ -91,10 +95,11 @@ class AuthService:
             minutes=1440,  # 24 hours * 60 minutes
         )
         message = f"Your Fele Express OTP is {otp}"
+        NotificationService.send_sms_message(user, message)
 
         if settings.ENVIRONMENT == "production":
-            # sms will only go out in production environment
-            SMSManager().send_message(phone_number, message)
+            # sms will only go out in production environment, test otp will work for the rest
+            NotificationService.send_sms_message(user, message)
         return True
 
     @classmethod
@@ -137,9 +142,8 @@ class AuthService:
                         "Oops seems the otp has expired.", status.HTTP_400_BAD_REQUEST
                     )
 
-        if settings.ENVIRONMENT != "production":
-            if code == settings.TEST_OTP:
-                is_otp_found = True
+        if settings.ENVIRONMENT != "production" and code in settings.TEST_OTP:
+            is_otp_found = True
 
         if is_otp_found is False:
             track_user_activity(
@@ -177,14 +181,6 @@ class AuthService:
         )
 
         return True
-
-    @classmethod
-    def initiate_phone_verification_with_twillio(cls, phone_number):
-        SMSManager().send_verification_code(phone_number)
-
-    @classmethod
-    def verify_phone_verification_with_twillio(cls, phone_number, code):
-        pass
 
     @classmethod
     def initiate_email_verification(cls, email, name, subject="Verify Email"):

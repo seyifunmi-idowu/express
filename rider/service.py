@@ -75,7 +75,7 @@ class RiderService:
             )
             cls.create_rider(user=instance_user)
 
-            AuthService.initiate_email_verification(email=email, name=fullname)
+            # AuthService.initiate_email_verification(email=email, name=fullname)
             AuthService.initiate_phone_verification(phone_number)
 
             track_user_activity(

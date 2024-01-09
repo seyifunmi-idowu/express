@@ -220,11 +220,6 @@ SIMPLE_JWT = {
 }
 
 
-ACCOUNT_SID = config("ACCOUNT_SID", "")
-AUTH_TOKEN = config("AUTH_TOKEN", "")
-VERIFY_SID = config("VERIFY_SID", "")
-SMS_FROM = config("SMS_FROM", "")
-
 SENDGRID_API_KEY = config("SENDGRID_API_KEY", "")
 SENDER_EMAIL = config("SENDER_EMAIL", "")
 SENDER_NAME = config("SENDER_NAME", "")
@@ -235,7 +230,12 @@ EMAIL_VERIFICATION_MAX_TRIALS = config("EMAIL_VERIFICATION_MAX_TRIALS", 5, cast=
 PHONE_VERIFICATION_TTL = config("PHONE_VERIFICATION_TTL", 21600, cast=int)
 PHONE_VERIFICATION_MAX_TRIALS = config("PHONE_VERIFICATION_MAX_TRIALS", 3, cast=int)
 
-TEST_OTP = config("TEST_OTP", "376213", cast=str)
+TEST_OTP_STRING = config("TEST_OTP_STRING", default="")
+if not TEST_OTP_STRING:
+    TEST_OTP = []
+else:
+    TEST_OTP = TEST_OTP_STRING.split(",")
+
 BASE_URL = config("BASE_URL", "http://127.0.0.1:8000/", cast=str)
 PAYSTACK_SECRET_KEY = config("PAYSTACK_SECRET_KEY", "")
 PAYSTACK_WHITELISTED_IP = config("PAYSTACK_WHITELISTED_IP", default="").split(",")
@@ -243,3 +243,4 @@ PAYSTACK_WHITELISTED_IP = config("PAYSTACK_WHITELISTED_IP", default="").split(",
 ENABLED_IP_LOOKUP = config("ENABLED_IP_LOOKUP", cast=bool, default=False)
 ONE_SIGNAL_KEY = config("ONE_SIGNAL_KEY", "")
 ONE_SIGNAL_APP_ID = config("ONE_SIGNAL_APP_ID", "")
+ONE_SIGNAL_SMS_FROM = config("ONE_SIGNAL_SMS_FROM", "")
