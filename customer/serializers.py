@@ -36,9 +36,7 @@ class CustomerSignupSerializer(serializers.Serializer):
         if fullname:
             fullname_split = fullname.split()
             if len(fullname_split) != 2:
-                errors[
-                    "business_name"
-                ] = "Full name must contain first name and last name."
+                errors["fullname"] = "Full name must contain first name and last name."
 
         password = data.get("password")
         verify_password = data.get("verify_password")
