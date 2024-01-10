@@ -70,9 +70,6 @@ pip install -r requirements.txt
 - To stop the server:
 ```docker-compose -f docker-compose.yml down```
 
-### Without Docker
-- Start the server
-```./manage.py runserver```
 ## Deployment Links
 - [Staging Server](https://api-staging.feleexpress.com/)
 - [Production Server](https://api.feleexpress.com/) - to be updated
