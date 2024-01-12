@@ -24,38 +24,38 @@ services:
       - fele-network
     restart: "always"
 
-#  celery_worker:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    command: celery -A feleexpress worker --loglevel=info
-#    volumes:
-#      - ./:/app
-#    depends_on:
-#      - db
-#      - redis
-#    networks:
-#      - fele-network
-#
-#  celery_beat:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    command:
-#      [
-#        'celery',
-#        '--app=feleexpress',
-#        'beat',
-#        '--scheduler=django_celery_beat.schedulers:DatabaseScheduler',
-#        '--loglevel=INFO',
-#      ]
-#    volumes:
-#      - ./:/app
-#    depends_on:
-#      - db
-#      - redis
-#    networks:
-#      - fele-network
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A feleexpress worker --loglevel=info
+    volumes:
+      - ./:/app
+    depends_on:
+      - db
+      - redis
+    networks:
+      - fele-network
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      [
+        'celery',
+        '--app=feleexpress',
+        'beat',
+        '--scheduler=django_celery_beat.schedulers:DatabaseScheduler',
+        '--loglevel=INFO',
+      ]
+    volumes:
+      - ./:/app
+    depends_on:
+      - db
+      - redis
+    networks:
+      - fele-network
 
   web:
     build:
