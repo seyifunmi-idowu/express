@@ -20,7 +20,7 @@ class UserService:
         from notification.service import NotificationService
         from wallet.service import WalletService
 
-        one_signal_id = kwargs.get("one_signal_id", None)
+        one_signal_id = kwargs.pop("one_signal_id", None)
         if one_signal_id:
             user_notification = NotificationService.get_user_notification(
                 one_signal_id=one_signal_id

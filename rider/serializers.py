@@ -24,7 +24,7 @@ class RiderSignupSerializer(serializers.Serializer):
     city = serializers.ChoiceField(choices=CITY_CHOICES)
     password = serializers.CharField(validators=[FieldValidators.validate_password])
     verify_password = serializers.CharField()
-    one_signal_id = serializers.CharField()
+    one_signal_id = serializers.CharField(required=False)
 
     def validate(self, data):
         fullname = data.get("fullname")

@@ -24,7 +24,7 @@ class CustomerSignupSerializer(serializers.Serializer):
     receive_email_promotions = serializers.BooleanField(default=False, required=False)
     CUSTOMER_TYPE_CHOICES = [("INDIVIDUAL", "INDIVIDUAL"), ("BUSINESS", "BUSINESS")]
     customer_type = serializers.ChoiceField(choices=CUSTOMER_TYPE_CHOICES)
-    one_signal_id = serializers.CharField()
+    one_signal_id = serializers.CharField(required=False)
     business_name = serializers.CharField(required=False)
     business_address = serializers.CharField(required=False)
     business_category = serializers.CharField(required=False)
