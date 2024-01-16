@@ -166,6 +166,8 @@ class RiderDocument(BaseAbstractModel):
         ("passport_photo", "Passport Photo"),
         ("vehicle_registration", "Vehicle Registration"),
         ("vehicle_photo", "Vehicle Photo"),
+        ("certificate_of_vehicle_registration", "Certificate Of Vehicle Registration"),
+        ("authorization_letter", "Authorization Letter"),
     ]
     type = models.CharField(
         max_length=100, choices=DOCUMENT_TYPES, verbose_name="document type"
@@ -185,7 +187,7 @@ class RiderDocument(BaseAbstractModel):
     verified = models.BooleanField(default=False, verbose_name="Is Verified")
 
     def __str__(self):
-        return f"{self.rider.display_name}"
+        return f"{self.rider.display_name} - {self.type}"
 
     def hard_delete(self, using=None, keep_parents=False, image_url=None, commit=True):
         """Hard deleting"""

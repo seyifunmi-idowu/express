@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from authentication.serializers import UserProfileSerializer
 from helpers.validators import FieldValidators
-from rider.models import Rider, RiderDocument
+from rider.models import Rider
 
 
 class RiderSignupSerializer(serializers.Serializer):
@@ -129,6 +129,8 @@ class DocumentUploadSerializer(serializers.Serializer):
         ("address_verification", "address_verification"),
         ("driver_license", "driver_license"),
         ("insurance_certificate", "insurance_certificate"),
+        ("certificate_of_vehicle_registration", "certificate_of_vehicle_registration"),
+        ("authorization_letter", "authorization_letter"),
     ]
     document_type = serializers.ChoiceField(choices=DOCUMENT_TYPE_CHOICES)
     documents = serializers.ListField(child=serializers.FileField(), write_only=True)
@@ -161,6 +163,18 @@ class KycSerializer(serializers.Serializer):
     address_verification = serializers.ListField(
         child=serializers.FileField(), write_only=True, required=False
     )
+    driver_license = serializers.ListField(
+        child=serializers.FileField(), write_only=True, required=False
+    )
+    insurance_certificate = serializers.ListField(
+        child=serializers.FileField(), write_only=True, required=False
+    )
+    certificate_of_vehicle_registration = serializers.ListField(
+        child=serializers.FileField(), write_only=True, required=False
+    )
+    authorization_letter = serializers.ListField(
+        child=serializers.FileField(), write_only=True, required=False
+    )
 
     class Meta:
         fields = [
@@ -172,6 +186,10 @@ class KycSerializer(serializers.Serializer):
             "government_id",
             "guarantor_letter",
             "address_verification",
+            "driver_license",
+            "insurance_certificate",
+            "certificate_of_vehicle_registration",
+            "authorization_letter",
         ]
 
 
@@ -182,18 +200,10 @@ class RetrieveKycSerializer(serializers.Serializer):
     government_id = serializers.SerializerMethodField()
     guarantor_letter = serializers.SerializerMethodField()
     address_verification = serializers.SerializerMethodField()
-
-    def get_document_info(self, obj, document_type):
-        documents = RiderDocument.objects.filter(rider=obj, type=document_type)
-        if len(documents) < 1:
-            return {"status": "unverified", "files": []}
-
-        all_verified = all(photo.verified for photo in documents)
-        file_urls = [photo.file_url for photo in documents]
-        return {
-            "status": "verified" if all_verified else "unverified",
-            "files": file_urls,
-        }
+    driver_license = serializers.SerializerMethodField()
+    insurance_certificate = serializers.SerializerMethodField()
+    certificate_of_vehicle_registration = serializers.SerializerMethodField()
+    authorization_letter = serializers.SerializerMethodField()
 
     def get_vehicle_photo(self, obj):
         from rider.service import RiderKYCService
@@ -219,6 +229,28 @@ class RetrieveKycSerializer(serializers.Serializer):
         from rider.service import RiderKYCService
 
         return RiderKYCService.get_rider_document_status(obj, "address_verification")
+
+    def get_driver_license(self, obj):
+        from rider.service import RiderKYCService
+
+        return RiderKYCService.get_rider_document_status(obj, "driver_license")
+
+    def get_insurance_certificate(self, obj):
+        from rider.service import RiderKYCService
+
+        return RiderKYCService.get_rider_document_status(obj, "insurance_certificate")
+
+    def get_certificate_of_vehicle_registration(self, obj):
+        from rider.service import RiderKYCService
+
+        return RiderKYCService.get_rider_document_status(
+            obj, "certificate_of_vehicle_registration"
+        )
+
+    def get_authorization_letter(self, obj):
+        from rider.service import RiderKYCService
+
+        return RiderKYCService.get_rider_document_status(obj, "authorization_letter")
 
 
 class VehicleInformationSerializer(serializers.Serializer):

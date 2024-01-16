@@ -13,6 +13,10 @@ class ResponseManager:
         data: Dict = {}, errors: Dict = {}, status: int = 200, message: str = ""
     ) -> Response:
         if errors:
+            if message == "":
+                first_error_key = next(iter(errors))
+                first_error_message = errors[first_error_key][0]
+                message = f"{first_error_key}: {first_error_message}"
             return Response({"errors": errors, "message": message}, status=status)
         return Response({"data": data, "message": message}, status=status)
 

@@ -170,3 +170,14 @@ GET_USER_TRANSACTIONS_RESPONSE = {
         description="User transactions", examples=GET_USER_TRANSACTIONS_SUCCESS_RESPONSE
     )
 }
+GET_USER_WALLET_BALANCE_RESPONSE = {
+    200: openapi.Response(
+        description="Wallet balance",
+        examples={
+            "application/json": {
+                "data": {"balance": 10000},
+                "message": "Wallet balance",
+            }
+        },
+    )
+}

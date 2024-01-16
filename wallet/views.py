@@ -95,6 +95,22 @@ class WalletViewset(viewsets.ViewSet):
             request=request,
         )
 
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get user wallet balance",
+        operation_summary="Get user wallet balance",
+        tags=["Wallet"],
+        responses=schema_doc.GET_USER_WALLET_BALANCE_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="balance")
+    def get_user_wallet_balance(self, request):
+        user_wallet = request.user.get_user_wallet()
+        return ResponseManager.handle_response(
+            data={"balance": user_wallet.balance},
+            status=status.HTTP_200_OK,
+            message="Wallet balance",
+        )
+
 
 class CardViewset(viewsets.ViewSet):
     permission_classes = (IsAuthenticated, IsRider | IsCustomer)

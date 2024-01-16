@@ -77,7 +77,7 @@ RIDER_RESEND_OTP_RESPONSES = {
 LOGIN_SUCCESS_RESPONSE = {
     "application/json": {
         "data": {
-            "rider": RIDER_INFO,
+            **RIDER_INFO,  # type: ignore
             "token": {
                 "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9....",
                 "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9....",

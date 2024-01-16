@@ -124,7 +124,7 @@ class RiderService:
         user = UserService.get_user_instance(email=email)
         rider = cls.get_rider(user=user)
 
-        return {"rider": RetrieveRiderSerializer(rider).data, "token": login_token}
+        return {**RetrieveRiderSerializer(rider).data, "token": login_token}
 
     @classmethod
     def update_rider_vehicle(cls, user, session_id, **kwargs):
