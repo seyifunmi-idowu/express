@@ -146,8 +146,8 @@ class KycSerializer(serializers.Serializer):
         ("TRUCKS", "TRUCKS"),
     ]
     vehicle_id = serializers.CharField()
-    vehicle_plate_number = serializers.CharField(max_length=20)
-    vehicle_color = serializers.CharField(max_length=20)
+    vehicle_plate_number = serializers.CharField(max_length=20, required=False)
+    vehicle_color = serializers.CharField(max_length=20, required=False)
     vehicle_photo = serializers.ListField(
         child=serializers.FileField(), write_only=True, required=False
     )

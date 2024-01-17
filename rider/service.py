@@ -168,7 +168,7 @@ class RiderKYCService:
     def submit_kyc(cls, user, session_id, **kwargs):
         from order.service import VehicleService
 
-        vehicle_id = kwargs.get("vehicle_id")
+        vehicle_id = kwargs.pop("vehicle_id")
         vehicle = VehicleService.get_vehicle(vehicle_id)
         if vehicle.status != "ACTIVE":
             raise CustomAPIException(
@@ -176,14 +176,10 @@ class RiderKYCService:
             )
 
         rider = RiderService.get_rider(user=user)
-        rider.vehicle_color = kwargs.get("vehicle_color")
-        rider.vehicle_plate_number = kwargs.get("vehicle_plate_number")
+        rider.vehicle_color = kwargs.pop("vehicle_color", None)
+        rider.vehicle_plate_number = kwargs.pop("vehicle_plate_number", None)
         rider.vehicle = vehicle
         rider.save()
-
-        kwargs.pop("vehicle_id")
-        kwargs.pop("vehicle_color")
-        kwargs.pop("vehicle_plate_number")
 
         for field_name, files in kwargs.items():
             for file in files:

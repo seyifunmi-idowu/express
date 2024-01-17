@@ -5,7 +5,11 @@ from rest_framework.decorators import action
 from authentication.docs.scehma_doc import VERIFY_OTP_RESPONSES
 from authentication.service import AuthService
 from customer.docs import schema_doc
-from customer.serializers import CustomerSignupSerializer, RetrieveCustomerSerializer
+from customer.serializers import (
+    CustomerSignupSerializer,
+    ResendCustomerVerificationSerializer,
+    RetrieveCustomerSerializer,
+)
 from customer.service import CustomerService
 from feleexpress.middlewares.permissions.is_authenticated import (
     IsAuthenticated,
@@ -38,6 +42,27 @@ class CustomerAuthViewset(viewsets.ViewSet):
         CustomerService.register_customer(session_id, **serialized_data.data)
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Customer sign up successful"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=ResendCustomerVerificationSerializer,
+        operation_description="Resend verification code",
+        operation_summary="Resend verification code",
+        tags=["Customer-Auth"],
+        responses=schema_doc.CUSTOMER_RESEND_OTP_RESPONSES,
+    )
+    @action(detail=False, methods=["post"], url_path="register/resend")
+    def resend_verification_code(self, request):
+        serialized_data = ResendCustomerVerificationSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        CustomerService.resend_verification_code(session_id, **serialized_data.data)
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Otp sent"
         )
 
     @swagger_auto_schema(
