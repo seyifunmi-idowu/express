@@ -3,7 +3,6 @@ from decimal import Decimal
 from rest_framework import status
 
 from authentication.tasks import track_user_activity
-from feleexpress import settings
 from helpers.paystack_service import PaystackService
 from helpers.validators import CustomAPIException, Validators
 from wallet.models import BankAccount, Card, Transaction, Wallet
@@ -188,8 +187,8 @@ class CardService:
 
     @classmethod
     def initiate_card_transaction(cls, user, session_id, amount=100):
-        base_url = settings.BASE_URL
-        callback_url = f"{base_url}api/v1/paystack/paystack/callback"
+        # base_url = settings.BASE_URL
+        # callback_url = f"{base_url}api/v1/paystack/paystack/callback"
 
         transaction = TransactionService.get_transaction(
             user=user,
@@ -202,9 +201,7 @@ class CardService:
             authorization_url = transaction.pssp_meta_data["authorization_url"]
             return {"url": authorization_url}
 
-        paystack_response = PaystackService.initialize_payment(
-            user.email, amount, callback_url=callback_url
-        )
+        paystack_response = PaystackService.initialize_payment(user.email, amount)
         authorization_url = paystack_response["data"]["authorization_url"]
         reference = paystack_response["data"]["reference"]
         transaction_obj = TransactionService.create_transaction(
