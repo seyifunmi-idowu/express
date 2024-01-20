@@ -259,27 +259,28 @@ class CardService:
 
             wallet.deposit(amount)
 
-            card = Card.objects.filter(
-                user=user,
-                last_4=data["authorization"]["last4"],
-                exp_month=data["authorization"]["exp_month"],
-                exp_year=data["authorization"]["exp_year"],
-            ).first()
-            if not card:
-                CardService.create_user_card(
+            if data["channel"] == "card":
+                card = Card.objects.filter(
                     user=user,
-                    card_type=data["authorization"]["card_type"],
-                    card_auth=data["authorization"]["authorization_code"],
                     last_4=data["authorization"]["last4"],
                     exp_month=data["authorization"]["exp_month"],
                     exp_year=data["authorization"]["exp_year"],
-                    country_code=data["authorization"]["country_code"],
-                    brand=data["authorization"]["brand"],
-                    reusable=data["authorization"]["reusable"],
-                    first_name=data["customer"]["first_name"],
-                    last_name=data["customer"]["last_name"],
-                    customer_code=data["customer"]["customer_code"],
-                )
+                ).first()
+                if not card:
+                    CardService.create_user_card(
+                        user=user,
+                        card_type=data["authorization"]["card_type"],
+                        card_auth=data["authorization"]["authorization_code"],
+                        last_4=data["authorization"]["last4"],
+                        exp_month=data["authorization"]["exp_month"],
+                        exp_year=data["authorization"]["exp_year"],
+                        country_code=data["authorization"]["country_code"],
+                        brand=data["authorization"]["brand"],
+                        reusable=data["authorization"]["reusable"],
+                        first_name=data["customer"]["first_name"],
+                        last_name=data["customer"]["last_name"],
+                        customer_code=data["customer"]["customer_code"],
+                    )
         return True
 
     @classmethod
