@@ -34,8 +34,6 @@ class UserService:
 
         one_signal_id and NotificationService.add_user_one_signal(user, one_signal_id)
 
-        NotificationService.add_user_for_sms_notification(user)
-
         WalletService.create_user_wallet(user)
         return user
 
@@ -95,10 +93,7 @@ class AuthService:
             minutes=1440,  # 24 hours * 60 minutes
         )
         message = f"Your Fele Express OTP is {otp}"
-
-        if settings.ENVIRONMENT == "production":
-            # sms will only go out in production environment, test otp will work for the rest
-            NotificationService.send_sms_message(user, message)
+        NotificationService.send_sms_message(user, message)
         return True
 
     @classmethod

@@ -49,6 +49,32 @@ class EmailManager:
             return False
 
 
+class SmsManager:
+    secret_key = settings.TERMII_API_KEY
+    sms_from = settings.TERMII_SMS_FROM
+    headers = {
+        "Authorization": f"Bearer {secret_key}",
+        "Content-Type": "application/json",
+    }
+    base_url = "https://api.ng.termii.com/"
+
+    @classmethod
+    def send_sms(cls, phone_number, message):
+        import requests
+
+        url = f"{cls.base_url}/api/sms/send"
+        data = {
+            "to": [phone_number],
+            "sms": message,
+            "api_key": cls.secret_key,
+            "channel": "dnd",
+            "from": cls.sms_from,
+            "type": "plain",
+        }
+        response = requests.post(url, headers=cls.headers, json=data)
+        return response.json()
+
+
 class NotificationService:
     @classmethod
     def add_user_one_signal(cls, user, one_signal_id, **kwargs):
@@ -95,5 +121,5 @@ class NotificationService:
             user=user, notification_type="SMS"
         ).first()
         phone_number = user_notification.get_phone_number()
-        response = OneSignalIntegration.send_sms_notification(phone_number, message)
+        response = SmsManager.send_sms(phone_number, message)
         return response.get("success", False)
