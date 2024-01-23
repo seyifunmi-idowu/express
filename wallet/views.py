@@ -43,11 +43,11 @@ class WalletViewset(viewsets.ViewSet):
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         session_id = generate_session_id()
-        WalletService.transfer_from_wallet_bank_account(
+        response = WalletService.transfer_from_wallet_bank_account(
             request.user, serialized_data.validated_data, session_id
         )
         return ResponseManager.handle_response(
-            data={}, status=status.HTTP_200_OK, message="Transfer in progress"
+            data=response, status=status.HTTP_200_OK, message="Transfer in progress"
         )
 
     @swagger_auto_schema(
@@ -66,11 +66,11 @@ class WalletViewset(viewsets.ViewSet):
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         session_id = generate_session_id()
-        WalletService.transfer_from_wallet_to_beneficiary(
+        response = WalletService.transfer_from_wallet_to_beneficiary(
             request.user, session_id, **serialized_data.validated_data
         )
         return ResponseManager.handle_response(
-            data={}, status=status.HTTP_200_OK, message="Transfer in progress"
+            data=response, status=status.HTTP_200_OK, message="Transfer in progress"
         )
 
     @swagger_auto_schema(

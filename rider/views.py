@@ -38,7 +38,7 @@ class RiderAuthViewset(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"], url_path="available-cities")
     def get_available_cities(self, request):
-        available_cities = {"MAKURDI": "MAKURDI", "GBOKO": "GBOKO", "OTUKPO": "OTUKPO"}
+        available_cities = {"available_cities": ["MAKURDI", "GBOKO", "OTUKPO"]}
         return ResponseManager.handle_response(
             data=available_cities, status=status.HTTP_200_OK, message="Available cities"
         )

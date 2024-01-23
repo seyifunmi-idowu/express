@@ -116,7 +116,7 @@ AVAILABLE_CITIES_RESPONSE = {
         description="Available cities",
         examples={
             "application/json": {
-                "data": {"MAKURDI": "MAKURDI", "GBOKO": "GBOKO", "OTUKPO": "OTUKPO"},
+                "data": {"available_cities": ["MAKURDI", "GBOKO", "OTUKPO"]},
                 "message": "Available cities",
             }
         },

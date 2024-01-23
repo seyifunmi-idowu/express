@@ -93,10 +93,22 @@ VERIFY_ACCOUNT_NUMBER_RESPONSE = {
     ),
 }
 INSUFFICIENT_BALANCE = {"application/json": {"message": "Insufficient balance"}}
+TRANSFER_FROM_WALLET_RESPONSE = {
+    "application/json": {
+        "data": {
+            "bank_name": "SEYIFUNMI S. IDOWU",
+            "account_number": "SEYIFUNMI S. IDOWU",
+            "account_name": "SEYIFUNMI S. IDOWU",
+            "amount": 5000,
+            "date": "2024-01-22T21:15:34.681223Z",
+            "reference": "9624-2copjse4hb3ggbw",
+        },
+        "message": "Transfer in progress",
+    }
+}
 TRANSFER_FROM_WALLET_BANK_RESPONSE = {
     200: openapi.Response(
-        description="Transfer in progress",
-        examples={"application/json": {"data": {}, "message": "Transfer in progress"}},
+        description="Transfer in progress", examples=TRANSFER_FROM_WALLET_RESPONSE
     ),
     400: openapi.Response(
         description="Insufficient balance in account", examples=INSUFFICIENT_BALANCE
@@ -126,8 +138,7 @@ GET_USER_BANKS_RESPONSE = {
 WRONG_ACCOUNT_RESPONSE = {"application/json": {"message": "Beneficiary not found"}}
 TRANSFER_FROM_WALLET_BENEFICIARY_RESPONSE = {
     200: openapi.Response(
-        description="Transfer in progress",
-        examples={"application/json": {"data": {}, "message": "Transfer in progress"}},
+        description="Transfer in progress", examples=TRANSFER_FROM_WALLET_RESPONSE
     ),
     400: openapi.Response(
         description="Insufficient balance in account", examples=INSUFFICIENT_BALANCE

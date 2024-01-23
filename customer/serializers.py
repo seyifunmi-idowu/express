@@ -43,27 +43,27 @@ class CustomerSignupSerializer(serializers.Serializer):
         if password != verify_password:
             errors["password"] = "Passwords do not match."
 
-        customer_type = data.get("customer_type")
-        business_name = data.get("business_name")
-        business_address = data.get("business_address")
-        business_category = data.get("business_category")
-        delivery_volume = data.get("delivery_volume")
-
-        if customer_type == "BUSINESS":
-            if not business_name:
-                errors["business_name"] = "Business name is required for BUSINESS type."
-            if not business_address:
-                errors[
-                    "business_address"
-                ] = "Business address is required for BUSINESS type."
-            if not business_category:
-                errors[
-                    "business_category"
-                ] = "Business category is required for BUSINESS type."
-            if not delivery_volume:
-                errors[
-                    "delivery_volume"
-                ] = "Delivery volume is required for BUSINESS type."
+        # customer_type = data.get("customer_type")
+        # business_name = data.get("business_name")
+        # business_address = data.get("business_address")
+        # business_category = data.get("business_category")
+        # delivery_volume = data.get("delivery_volume")
+        #
+        # if customer_type == "BUSINESS":
+        #     if not business_name:
+        #         errors["business_name"] = "Business name is required for BUSINESS type."
+        #     if not business_address:
+        #         errors[
+        #             "business_address"
+        #         ] = "Business address is required for BUSINESS type."
+        #     if not business_category:
+        #         errors[
+        #             "business_category"
+        #         ] = "Business category is required for BUSINESS type."
+        #     if not delivery_volume:
+        #         errors[
+        #             "delivery_volume"
+        #         ] = "Delivery volume is required for BUSINESS type."
 
         if errors:
             raise serializers.ValidationError(errors)

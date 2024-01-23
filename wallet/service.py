@@ -53,7 +53,7 @@ class WalletService:
 
         recipient_code = response["data"]["recipient_code"]
         bank_name = cls.get_bank_name_with_bank_code(bank_code)
-        BankAccount.objects.create(
+        bank_obj = BankAccount.objects.create(
             user=user,
             account_number=account_number,
             account_name=account_name,
@@ -63,7 +63,7 @@ class WalletService:
             meta=response,
             save_account=save,
         )
-        return recipient_code
+        return bank_obj
 
     @classmethod
     def withdraw_from_wallet(cls, user, amount, recipient_code, session_id):
@@ -93,6 +93,11 @@ class WalletService:
             level="SUCCESS",
             session_id=session_id,
         )
+        return {
+            "amount": transaction_obj.amount,
+            "created_at": transaction_obj.created_at,
+            "reference": transaction_obj.reference,
+        }
 
     @classmethod
     def transfer_from_wallet_bank_account(cls, user, data, session_id):
@@ -107,11 +112,19 @@ class WalletService:
                 "Insufficient balance", status.HTTP_400_BAD_REQUEST
             )
 
-        recipient_code = cls.get_or_create_transfer_recipient(
+        bank_account = cls.get_or_create_transfer_recipient(
             user, bank_code, account_number, save_account
         )
-        cls.withdraw_from_wallet(user, amount, recipient_code, session_id)
-        return True
+        transaction_data = cls.withdraw_from_wallet(
+            user, amount, bank_account.recipient_code, session_id
+        )
+        response = {
+            "bank_name": bank_account.account_name,
+            "account_number": bank_account.account_name,
+            "account_name": bank_account.account_name,
+            **transaction_data,
+        }
+        return response
 
     @classmethod
     def transfer_from_wallet_to_beneficiary(
@@ -127,8 +140,16 @@ class WalletService:
         bank_account = BankAccount.objects.get(id=beneficiary_id)
         if not bank_account:
             raise CustomAPIException("Beneficiary not found", status.HTTP_404_NOT_FOUND)
-        cls.withdraw_from_wallet(user, amount, bank_account.recipient_code, session_id)
-        return True
+        transaction_data = cls.withdraw_from_wallet(
+            user, amount, bank_account.recipient_code, session_id
+        )
+        response = {
+            "bank_name": bank_account.account_name,
+            "account_number": bank_account.account_name,
+            "account_name": bank_account.account_name,
+            **transaction_data,
+        }
+        return response
 
     @classmethod
     def get_user_wallet_transactions(cls, request):
