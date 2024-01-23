@@ -142,9 +142,9 @@ class BankAccount(BaseAbstractModel):
     )
     account_number = models.CharField(max_length=30, null=True, blank=True)
     account_name = models.CharField(max_length=100, null=True, blank=True)
-    bank_code = models.CharField(max_length=30, null=True, blank=True)
-    bank_name = models.CharField(max_length=30, null=True, blank=True)
-    recipient_code = models.CharField(max_length=30, null=True, blank=True)
+    bank_code = models.CharField(max_length=50, null=True, blank=True)
+    bank_name = models.CharField(max_length=100, null=True, blank=True)
+    recipient_code = models.CharField(max_length=50, null=True, blank=True)
     meta = models.JSONField(default=dict, null=True, blank=True)
     save_account = models.BooleanField(default=False)
 
