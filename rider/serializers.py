@@ -206,12 +206,7 @@ class RetrieveKycSerializer(serializers.Serializer):
     authorization_letter = serializers.SerializerMethodField()
 
     def get_status(self, obj):
-        from rider.service import RiderKYCService
-
-        if obj.status == "":
-            return obj.status
-        documents = RiderKYCService.get_rider_document(rider=obj)
-        return "PENDING_APPROVAL" if len(documents) > 0 else obj.status
+        return obj.get_rider_status()
 
     def get_vehicle_photo(self, obj):
         from rider.service import RiderKYCService
