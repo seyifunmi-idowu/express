@@ -52,7 +52,6 @@ class RiderAdmin(admin.ModelAdmin):
         "vehicle_make",
         "vehicle_model",
         "city",
-        "status",
         "rider_status",
     )
     list_display = ("get_name", "rider_status")
