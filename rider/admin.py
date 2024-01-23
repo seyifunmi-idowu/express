@@ -52,9 +52,10 @@ class RiderAdmin(admin.ModelAdmin):
         "vehicle_make",
         "vehicle_model",
         "city",
-        "get_status",
+        "status",
+        "rider_status",
     )
-    list_display = ("get_name", "get_status")
+    list_display = ("get_name", "rider_status")
     ordering = ("-created_at",)
     exclude = (
         "status_updates",
@@ -70,7 +71,7 @@ class RiderAdmin(admin.ModelAdmin):
     def get_name(self, obj):
         return obj.display_name
 
-    def get_status(self, obj):
+    def rider_status(self, obj):
         return obj.get_rider_status()
 
     def save_model(self, request, obj, form, change):
