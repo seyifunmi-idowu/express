@@ -31,7 +31,7 @@ class WalletService:
             user=user, account_number=account_number, bank_code=bank_code
         )
         if user_bank:
-            return user_bank.first().recipient_code
+            return user_bank.first()
 
         verify_account = PaystackService.verify_account_number(
             bank_code, account_number
