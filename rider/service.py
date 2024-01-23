@@ -152,8 +152,12 @@ class RiderService:
 
 class RiderKYCService:
     @classmethod
+    def get_rider_document(cls, rider, **kwargs):
+        return RiderDocument.objects.filter(rider=rider, **kwargs)
+
+    @classmethod
     def get_rider_document_status(cls, rider, document_type):
-        documents = RiderDocument.objects.filter(rider=rider, type=document_type)
+        documents = cls.get_rider_document(rider=rider, type=document_type)
         if len(documents) < 1:
             return {"status": "unverified", "files": []}
 
