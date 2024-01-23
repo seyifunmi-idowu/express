@@ -95,7 +95,6 @@ class AuthService:
             minutes=1440,  # 24 hours * 60 minutes
         )
         message = f"Your Fele Express OTP is {otp}"
-        NotificationService.send_sms_message(user, message)
 
         if settings.ENVIRONMENT == "production":
             # sms will only go out in production environment, test otp will work for the rest
