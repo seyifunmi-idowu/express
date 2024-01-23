@@ -223,6 +223,8 @@ class CardService:
             return {"url": authorization_url}
 
         paystack_response = PaystackService.initialize_payment(user.email, amount)
+        print(paystack_response)
+        print("================")
         authorization_url = paystack_response["data"]["authorization_url"]
         reference = paystack_response["data"]["reference"]
         transaction_obj = TransactionService.create_transaction(
