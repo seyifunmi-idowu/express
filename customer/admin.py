@@ -25,9 +25,6 @@ class CustomerAdmin(admin.ModelAdmin):
     def has_add_permission(self, request, obj=None):
         return False
 
-    def has_delete_permission(self, request, obj=None):
-        return False
-
 
 class IndividualCustomerAdmin(admin.ModelAdmin):
     search_fields = ("user__first_name", "user__last_name")
@@ -47,9 +44,6 @@ class IndividualCustomerAdmin(admin.ModelAdmin):
     )
 
     def has_add_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
         return False
 
     def get_queryset(self, request):
