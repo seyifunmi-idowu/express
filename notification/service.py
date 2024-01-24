@@ -117,9 +117,6 @@ class NotificationService:
 
     @classmethod
     def send_sms_message(cls, user, message):
-        user_notification = UserNotification.objects.filter(
-            user=user, notification_type="SMS"
-        ).first()
-        phone_number = user_notification.get_phone_number()
+        phone_number = user.phone_number
         response = SmsManager.send_sms(phone_number, message)
         return response.get("success", False)
