@@ -89,9 +89,6 @@ class RiderAdmin(admin.ModelAdmin):
     def has_add_permission(self, request, obj=None):
         return False
 
-    def has_delete_permission(self, request, obj=None):
-        return False
-
 
 class ApprovedRiderAdmin(RiderAdmin):
     def get_queryset(self, request):
