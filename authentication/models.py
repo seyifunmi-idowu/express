@@ -140,13 +140,13 @@ class User(BaseAbstractModel, AbstractBaseUser, PermissionsMixin):
     def user_location(self):
         return f"{self.street_address}, {self.city}, {self.state_of_residence}"
 
-    def hard_delete(self, using=None, keep_parents=False, image_url=None, commit=True):
+    def delete(self, using=None, keep_parents=False, image_url=None, commit=True):
         """Hard deleting"""
         if self.avatar_url:
-            return super(User, self).hard_delete(
+            return super(User, self).delete(
                 using=using, keep_parents=keep_parents, image_url=self.avatar_url
             )
-        return super(User, self).hard_delete(using=using, keep_parents=keep_parents)
+        return super(User, self).delete(using=using, keep_parents=keep_parents)
 
     def get_user_wallet(self):
         return self.user_wallet.get()

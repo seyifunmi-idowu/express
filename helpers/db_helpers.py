@@ -91,14 +91,14 @@ class BaseAbstractModel(models.Model):
         abstract = True
         ordering = ["-created_at"]
 
-    def delete(self, soft_delete: bool = True, actor=None):
-        if soft_delete:
-            self.deleted_at = timezone.now()
-            self.state = self.RECORD_STATE[1][0]
-            self.deleted_by = actor
-            return self.save()
+    # def delete(self, soft_delete: bool = True, actor=None):
+    #     if soft_delete:
+    #         self.deleted_at = timezone.now()
+    #         self.state = self.RECORD_STATE[1][0]
+    #         self.deleted_by = actor
+    #         return self.save()
 
-    def hard_delete(self, using=None, keep_parents=False, image_url=None, commit=True):
+    def delete(self, using=None, keep_parents=False, image_url=None, commit=True):
         """Hard deleting"""
         if image_url:
             S3Uploader().hard_delete_object(image_url)

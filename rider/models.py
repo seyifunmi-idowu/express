@@ -111,13 +111,13 @@ class Rider(BaseAbstractModel):
         documents = RiderKYCService.get_rider_document(rider=self)
         return "PENDING_APPROVAL" if len(documents) > 0 else self.status
 
-    def hard_delete(self, using=None, keep_parents=False, image_url=None, commit=True):
+    def delete(self, using=None, keep_parents=False, image_url=None, commit=True):
         """Hard deleting"""
         if self.avatar_url:
-            return super(Rider, self).hard_delete(
+            return super(Rider, self).delete(
                 using=using, keep_parents=keep_parents, image_url=self.avatar_url
             )
-        return super(Rider, self).hard_delete(using=using, keep_parents=keep_parents)
+        return super(Rider, self).delete(using=using, keep_parents=keep_parents)
 
 
 class ApprovedRider(Rider):
@@ -197,15 +197,13 @@ class RiderDocument(BaseAbstractModel):
     def __str__(self):
         return f"{self.rider.display_name} - {self.type}"
 
-    def hard_delete(self, using=None, keep_parents=False, image_url=None, commit=True):
+    def delete(self, using=None, keep_parents=False, image_url=None, commit=True):
         """Hard deleting"""
         if self.file_url:
-            return super(RiderDocument, self).hard_delete(
+            return super(RiderDocument, self).delete(
                 using=using, keep_parents=keep_parents, image_url=self.file_url
             )
-        return super(RiderDocument, self).hard_delete(
-            using=using, keep_parents=keep_parents
-        )
+        return super(RiderDocument, self).delete(using=using, keep_parents=keep_parents)
 
     class Meta:
         db_table = "rider_document"
