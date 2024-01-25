@@ -107,7 +107,7 @@ class Rider(BaseAbstractModel):
     def get_rider_status(self):
         from rider.service import RiderKYCService
 
-        if self.status == "APPROVED":
+        if self.status in ["APPROVED", "DISAPPROVED"]:
             return self.status
         documents = RiderKYCService.get_rider_document(rider=self)
         return "PENDING_APPROVAL" if len(documents) > 0 else self.status
