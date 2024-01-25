@@ -6,6 +6,7 @@ from authentication.tasks import track_user_activity
 from helpers.db_helpers import select_for_update
 from helpers.exceptions import CustomAPIException
 from helpers.s3_uploader import S3Uploader
+from notification.service import EmailManager
 from rider.models import Rider, RiderDocument
 from rider.serializers import (
     RetrieveKycSerializer,
@@ -180,6 +181,7 @@ class RiderKYCService:
             )
 
         rider = RiderService.get_rider(user=user)
+        rider_status = rider.get_rider_status()
         rider.vehicle_color = kwargs.pop("vehicle_color", None)
         rider.vehicle_plate_number = kwargs.pop("vehicle_plate_number", None)
         rider.vehicle = vehicle
@@ -204,7 +206,13 @@ class RiderKYCService:
             level="SUCCESS",
             session_id=session_id,
         )
-
+        if rider_status == "UNAPPROVED":
+            email_manager = EmailManager(
+                "KYC Sumitted",
+                context={"display_name": user.display_name},
+                template="rider_sumit_kyc.html",
+            )
+            email_manager.send([user.email])
         return RetrieveKycSerializer(rider).data
 
     @classmethod

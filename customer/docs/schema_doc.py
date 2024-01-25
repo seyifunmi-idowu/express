@@ -27,7 +27,10 @@ UNAUTHENTICATED = {
 NOT_FOUND = {"application/json": {"message": "Object not found."}}
 
 REGISTRATION_SUCCESS_RESPONSE = {
-    "application/json": {"data": {}, "message": "Customer sign up successful"}
+    "application/json": {
+        "data": {"session_token": "SESSION-d8e1cf97ba8440119e368636fae3eca2"},
+        "message": "Customer sign up successful",
+    }
 }
 EMAIL_REGISTRATION_BAD_INPUT_RESPONSE = {
     "application/json": {
@@ -52,6 +55,25 @@ CUSTOMER_REGISTRATION_RESPONSES = {
     ),
     409: openapi.Response(
         description="Existing User", examples=EMAIL_REGISTRATION_EXISITING_USER_RESPONSE
+    ),
+}
+REGISTRATION_SUCCESS_RESPONSE = {
+    "application/json": {"data": {}, "message": "Customer sign up successful"}
+}
+INVALID_SESSION_TOKEN_RESPONSE = {
+    "application/json": {"message": "Invalid session token."}
+}
+MISSING_INPUT_RESPONSE = {
+    "application/json": {"errors": {"session_token": ["This field is required."]}}
+}
+
+COMPLETE_BUSINESS_CUSTOMER_REGISTRATION_RESPONSES = {
+    201: openapi.Response(
+        description="Created User", examples=REGISTRATION_SUCCESS_RESPONSE
+    ),
+    400: openapi.Response(description="Bad Input", examples=MISSING_INPUT_RESPONSE),
+    401: openapi.Response(
+        description="Invalid session id", examples=INVALID_SESSION_TOKEN_RESPONSE
     ),
 }
 

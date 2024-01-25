@@ -14,6 +14,7 @@ class Rider(BaseAbstractModel):
     STATUS = [
         ("APPROVED", "APPROVED"),
         ("UNAPPROVED", "UNAPPROVED"),
+        ("DISAPPROVED", "DISAPPROVED"),
         ("SUSPENDED", "SUSPENDED"),
     ]
 

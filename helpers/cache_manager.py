@@ -35,3 +35,7 @@ class KeyBuilder:
     @staticmethod
     def user_auth_verification(email):
         return f"user:auth-verification:{email}"
+
+    @staticmethod
+    def business_user_complete_signup(session_id):
+        return f"user:business-signup:{session_id}"

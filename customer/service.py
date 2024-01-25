@@ -44,6 +44,8 @@ class CustomerService:
 
     @classmethod
     def register_customer(cls, session_id, **kwargs):
+        from helpers.cache_manager import CacheManager, KeyBuilder
+
         email = kwargs.get("email")
         phone_number = kwargs.get("phone_number")
         fullname = kwargs.get("fullname")
@@ -85,10 +87,61 @@ class CustomerService:
                 context={"full_name": fullname},
                 category="CUSTOMER_AUTH",
                 action="CUSTOMER_SIGNUP",
-                email=email,
+                email=email if email else phone_number,
                 level="SUCCESS",
                 session_id=session_id,
             )
+            if customer_type == "BUSINESS":
+                key_builder = KeyBuilder.business_user_complete_signup(session_id)
+                CacheManager.set_key(
+                    key_builder,
+                    {"email": email, "phone_number": phone_number},
+                    minutes=1440,  # 24 hours * 60 minutes
+                )
+                return {"session_token": session_id}
+            return {}
+
+    @classmethod
+    def complete_business_customer_signup(cls, session_id, **kwargs):
+        from helpers.cache_manager import CacheManager, KeyBuilder
+
+        session_token = kwargs.get("session_token")
+        key_builder = KeyBuilder.business_user_complete_signup(session_token)
+        verification_data = CacheManager.retrieve_key(key_builder)
+        if not verification_data:
+            raise CustomAPIException(
+                "Invalid session token.", status.HTTP_401_UNAUTHORIZED
+            )
+
+        email = verification_data.get("email", None)
+        phone_number = verification_data.get("phone_number", None)
+        user = UserService.get_user_instance(email=email, phone_number=phone_number)
+
+        business_name = kwargs.get("business_name")
+        business_address = kwargs.get("business_address")
+        business_category = kwargs.get("business_category")
+        delivery_volume = kwargs.get("delivery_volume")
+
+        customer = cls.get_customer(user=user)
+        if customer.customer_type != "BUSINESS":
+            raise CustomAPIException(
+                "User not a business customer.", status.HTTP_401_UNAUTHORIZED
+            )
+        customer.business_name = business_name
+        customer.business_address = business_address
+        customer.business_category = business_category
+        customer.delivery_volume = delivery_volume
+        customer.save()
+        CacheManager.delete_key(key_builder)
+        track_user_activity(
+            context={"business_name": business_name},
+            category="CUSTOMER_AUTH",
+            action="CUSTOMER_COMPLETE_SIGNUP",
+            email=email if email else phone_number,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+        return True
 
     @classmethod
     def resend_verification_code(cls, session_id, **kwargs):

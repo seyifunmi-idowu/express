@@ -111,7 +111,7 @@ class AuthService:
                 session_id=session_id,
             )
             raise CustomAPIException(
-                "Oops seems the link has expired.", status.HTTP_400_BAD_REQUEST
+                "Oops seems the otp has expired.", status.HTTP_400_BAD_REQUEST
             )
 
         tokens = verification_data.get("tokens")

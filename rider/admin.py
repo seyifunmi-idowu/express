@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.utils import timezone
 from django.utils.html import format_html
 
+from notification.service import EmailManager
 from rider.forms import RiderActionForm
 from rider.models import ApprovedRider, Rider, RiderDocument, UnApprovedRider
 
@@ -45,6 +47,7 @@ class RiderAdmin(admin.ModelAdmin):
     )
     readonly_fields = (
         "user",
+        "status",
         "avatar_url",
         "vehicle_plate_number",
         "vehicle_color",
@@ -76,13 +79,52 @@ class RiderAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         action = form.data.get("action")
+        decline_reason = form.data.get("decline_reason", "")
+
         if action == "APPROVE_RIDER":
+            status_updates = obj.status_updates
+            status_updates.append({"status": "APPROVED", "date": str(timezone.now())})
+            obj.status_updates = status_updates
             obj.status = "APPROVED"
             obj.save()
+            email_manager = EmailManager(
+                "Your Documents Have Been Accepted",
+                context={"display_name": obj.display_name},
+                template="rider_accepted.html",
+            )
+            email_manager.send([obj.user.email])
+
         elif action == "DISAPPROVE_RIDER":
-            obj.status = "UNAPPROVED"
+            status_updates = obj.status_updates
+            status_updates.append(
+                {
+                    "status": "DISAPPROVED",
+                    "decline_reason": decline_reason,
+                    "date": str(timezone.now()),
+                }
+            )
+            obj.status_updates = status_updates
+            obj.status = "DISAPPROVED"
             obj.save()
+            email_manager = EmailManager(
+                "We Could Not Approve Your Documents",
+                context={
+                    "display_name": obj.display_name,
+                    "decline_reason": decline_reason,
+                },
+                template="rider_declined.html",
+            )
+            email_manager.send([obj.user.email])
         elif action == "SUSPEND_RIDER":
+            status_updates = obj.status_updates
+            status_updates.append(
+                {
+                    "status": "SUSPENDED",
+                    "decline_reason": decline_reason,
+                    "date": str(timezone.now()),
+                }
+            )
+            obj.status_updates = status_updates
             obj.status = "SUSPENDED"
             obj.save()
 
@@ -97,7 +139,7 @@ class ApprovedRiderAdmin(RiderAdmin):
 
 class UnApprovedRiderAdmin(RiderAdmin):
     def get_queryset(self, request):
-        return self.model.objects.filter(status="UNAPPROVED")
+        return self.model.objects.filter(status__in=["UNAPPROVED", "DISAPPROVED"])
 
 
 admin.site.register(ApprovedRider, ApprovedRiderAdmin)

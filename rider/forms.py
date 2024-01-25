@@ -11,6 +11,7 @@ class RiderActionForm(forms.ModelForm):
         ("SUSPEND_RIDER", "Suspend rider"),
     )
     action = forms.ChoiceField(choices=ACTION_CHOICES, required=False)
+    decline_reason = forms.CharField(widget=forms.Textarea, required=False)
 
     class Meta:
         model = Rider

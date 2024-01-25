@@ -93,6 +93,7 @@ class RiderLoginSerializer(serializers.Serializer):
 
 class RetrieveRiderSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
+    status = serializers.SerializerMethodField()
     vehicle_photos = serializers.SerializerMethodField()
     vehicle = serializers.SerializerMethodField()
 
@@ -118,6 +119,9 @@ class RetrieveRiderSerializer(serializers.ModelSerializer):
 
     def get_vehicle(self, obj):
         return obj.vehicle.name if obj.vehicle else None
+
+    def get_status(self, obj):
+        return obj.get_rider_status()
 
 
 class DocumentUploadSerializer(serializers.Serializer):
