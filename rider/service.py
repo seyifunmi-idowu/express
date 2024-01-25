@@ -87,6 +87,12 @@ class RiderService:
                 level="SUCCESS",
                 session_id=session_id,
             )
+            email_manager = EmailManager(
+                "Welcome",
+                context={"display_name": instance_user.display_name},
+                template="rider_signup.html",
+            )
+            email_manager.send([instance_user.email])
 
         return True
 
@@ -181,7 +187,6 @@ class RiderKYCService:
             )
 
         rider = RiderService.get_rider(user=user)
-        rider_status = rider.get_rider_status()
         rider.vehicle_color = kwargs.pop("vehicle_color", None)
         rider.vehicle_plate_number = kwargs.pop("vehicle_plate_number", None)
         rider.vehicle = vehicle
@@ -206,13 +211,7 @@ class RiderKYCService:
             level="SUCCESS",
             session_id=session_id,
         )
-        if rider_status == "UNAPPROVED":
-            email_manager = EmailManager(
-                "KYC Sumitted",
-                context={"display_name": user.display_name},
-                template="rider_sumit_kyc.html",
-            )
-            email_manager.send([user.email])
+
         return RetrieveKycSerializer(rider).data
 
     @classmethod
