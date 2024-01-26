@@ -69,6 +69,15 @@ class Rider(BaseAbstractModel):
     def display_name(self):
         return self.user.display_name
 
+    def photo_url(self):
+        if self.status == "APPROVED" and self.avatar_url is None:
+            return (
+                self.rider_document.filter(type="passport_photo")
+                .values_list("file_url", flat=True)
+                .first()
+            )
+        return self.avatar_url
+
     @property
     def rating(self):
         from django.db.models import Avg

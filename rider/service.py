@@ -156,6 +156,13 @@ class RiderService:
             )
             return VehicleInformationSerializer(rider).data
 
+    @classmethod
+    def set_rider_avatar_with_passport(cls, rider):
+        if rider.status == "APPROVED" and rider.avatar_url is None:
+            rider.avatar_url = rider.photo_url()
+            rider.save()
+        return True
+
 
 class RiderKYCService:
     @classmethod

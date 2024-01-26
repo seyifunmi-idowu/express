@@ -5,6 +5,7 @@ from django.utils.html import format_html
 from notification.service import EmailManager
 from rider.forms import RiderActionForm
 from rider.models import ApprovedRider, Rider, RiderDocument, UnApprovedRider
+from rider.service import RiderService
 
 
 class RiderDocumentInline(admin.TabularInline):
@@ -87,6 +88,7 @@ class RiderAdmin(admin.ModelAdmin):
             obj.status_updates = status_updates
             obj.status = "APPROVED"
             obj.save()
+            RiderService.set_rider_avatar_with_passport(obj)
             email_manager = EmailManager(
                 "Your Documents Have Been Accepted",
                 context={"display_name": obj.display_name},
