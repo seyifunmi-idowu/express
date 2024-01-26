@@ -106,16 +106,21 @@ class CustomerService:
         from helpers.cache_manager import CacheManager, KeyBuilder
 
         session_token = kwargs.get("session_token")
-        key_builder = KeyBuilder.business_user_complete_signup(session_token)
-        verification_data = CacheManager.retrieve_key(key_builder)
-        if not verification_data:
-            raise CustomAPIException(
-                "Invalid session token.", status.HTTP_401_UNAUTHORIZED
-            )
+        user = kwargs.get("user", None)
+        email = user.email
+        phone_number = user.phone_number
+        if user is None:
+            key_builder = KeyBuilder.business_user_complete_signup(session_token)
+            verification_data = CacheManager.retrieve_key(key_builder)
+            if not verification_data:
+                raise CustomAPIException(
+                    "Invalid session token.", status.HTTP_401_UNAUTHORIZED
+                )
 
-        email = verification_data.get("email", None)
-        phone_number = verification_data.get("phone_number", None)
-        user = UserService.get_user_instance(email=email, phone_number=phone_number)
+            email = verification_data.get("email", None)
+            phone_number = verification_data.get("phone_number", None)
+            user = UserService.get_user_instance(email=email, phone_number=phone_number)
+            CacheManager.delete_key(key_builder)
 
         business_name = kwargs.get("business_name")
         business_address = kwargs.get("business_address")
@@ -132,7 +137,6 @@ class CustomerService:
         customer.business_category = business_category
         customer.delivery_volume = delivery_volume
         customer.save()
-        CacheManager.delete_key(key_builder)
         track_user_activity(
             context={"business_name": business_name},
             category="CUSTOMER_AUTH",

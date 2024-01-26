@@ -82,3 +82,10 @@ class RetrieveCustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ("id", "user", "customer_type")
+
+
+class CompleteAuthBusinessCustomerSignupSerializer(serializers.Serializer):
+    business_name = serializers.CharField(required=True)
+    business_address = serializers.CharField(required=True)
+    business_category = serializers.CharField(required=True)
+    delivery_volume = serializers.IntegerField(required=True)

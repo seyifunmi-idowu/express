@@ -6,6 +6,7 @@ from authentication.docs.scehma_doc import VERIFY_OTP_RESPONSES
 from authentication.service import AuthService
 from customer.docs import schema_doc
 from customer.serializers import (
+    CompleteAuthBusinessCustomerSignupSerializer,
     CompleteBusinessCustomerSignupSerializer,
     CustomerSignupSerializer,
     ResendCustomerVerificationSerializer,
@@ -163,4 +164,29 @@ class CustomerViewset(viewsets.ViewSet):
             data=RetrieveCustomerSerializer(rider).data,
             status=status.HTTP_200_OK,
             message="Customer info",
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=CompleteAuthBusinessCustomerSignupSerializer,
+        operation_description="Complete business customer registration",
+        operation_summary="Complete business customer registration",
+        tags=["Customer"],
+        responses=schema_doc.COMPLETE_AUTH_BUSINESS_CUSTOMER_REGISTRATION_RESPONSES,
+    )
+    @action(detail=False, methods=["post"], url_path="register/complete")
+    def complete_business_customer_signup(self, request):
+        serialized_data = CompleteAuthBusinessCustomerSignupSerializer(
+            data=request.data
+        )
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        CustomerService.complete_business_customer_signup(
+            session_id, user=request.user, **serialized_data.data
+        )
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Customer sign up successful"
         )

@@ -137,3 +137,9 @@ CUSTOMER_RESEND_OTP_RESPONSES = {
         examples=EMAIL_REGISTRATION_NONE_EXISITING_USER_RESPONSE,
     ),
 }
+COMPLETE_AUTH_BUSINESS_CUSTOMER_REGISTRATION_RESPONSES = {
+    201: openapi.Response(
+        description="Created User", examples=REGISTRATION_SUCCESS_RESPONSE
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
