@@ -134,7 +134,7 @@ class Order(BaseAbstractModel):
     duration = models.CharField(max_length=20, help_text="represented in seconds")
 
     def __str__(self):
-        return f"{self.customer.display_name} -- {self.order_id}"
+        return f"{self.customer.display_name}  #{self.order_id}"
 
     class Meta:
         db_table = "order"

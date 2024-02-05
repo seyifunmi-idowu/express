@@ -4,14 +4,7 @@ from django.utils.html import format_html
 
 from notification.service import EmailManager
 from rider.forms import RiderActionForm
-from rider.models import (
-    ApprovedRider,
-    FavoriteRider,
-    Rider,
-    RiderDocument,
-    RiderRating,
-    UnApprovedRider,
-)
+from rider.models import ApprovedRider, Rider, RiderDocument, UnApprovedRider
 from rider.service import RiderService
 
 
@@ -154,5 +147,3 @@ class UnApprovedRiderAdmin(RiderAdmin):
 admin.site.register(ApprovedRider, ApprovedRiderAdmin)
 admin.site.register(UnApprovedRider, UnApprovedRiderAdmin)
 admin.site.register(Rider, RiderAdmin)
-admin.site.register(RiderRating)
-admin.site.register(FavoriteRider)

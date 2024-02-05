@@ -63,7 +63,7 @@ class Rider(BaseAbstractModel):
         verbose_name_plural = "rider"
 
     def __str__(self):
-        return f"{self.display_name} - {self.status}"
+        return f"{self.display_name}"
 
     @property
     def display_name(self):

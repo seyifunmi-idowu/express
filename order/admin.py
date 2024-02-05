@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from order.forms import VehicleAdminForm
-from order.models import Address, Order, Vehicle
+from order.models import Order, Vehicle
 
 
 class VehiclesAdmin(admin.ModelAdmin):
@@ -59,6 +59,54 @@ class VehiclesAdmin(admin.ModelAdmin):
         obj.save()
 
 
+class OrderAdmin(admin.ModelAdmin):
+    search_fields = ("order_id", "status")
+    list_display = ("order_id", "customer", "rider", "status", "distance")
+    ordering = ["created_at"]
+    readonly_fields = (
+        "customer",
+        "rider",
+        "vehicle",
+        "payment_method",
+        "payment_by",
+        "paid",
+        "total_amount",
+        "tip_amount",
+        "pickup_number",
+        "pickup_contact_name",
+        "pickup_location",
+        "delivery_number",
+        "delivery_contact_name",
+        "delivery_location",
+        "delivery_time",
+        "created_at",
+        "updated_by",
+        "updated_at",
+    )
+    fields = (
+        "customer",
+        "rider",
+        "vehicle",
+        "payment_method",
+        "payment_by",
+        "paid",
+        "total_amount",
+        "tip_amount",
+        "pickup_number",
+        "pickup_contact_name",
+        "pickup_location",
+        "delivery_number",
+        "delivery_contact_name",
+        "delivery_location",
+        "delivery_time",
+        "created_at",
+        "updated_by",
+        "updated_at",
+    )
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 admin.site.register(Vehicle, VehiclesAdmin)
-admin.site.register(Order)
-admin.site.register(Address)
+admin.site.register(Order, OrderAdmin)

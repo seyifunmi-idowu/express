@@ -537,6 +537,7 @@ class OrderService:
             }
         )
         order.order_timeline = order_timeline
+        order.delivery_time = timezone.now()
         order.status = "ORDER_DELIVERED"
         order.save()
 
