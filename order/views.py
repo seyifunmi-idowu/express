@@ -277,9 +277,11 @@ class RiderOrderViewset(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"], url_path="new")
     def get_new_order(self, request):
-        orders = OrderService.get_new_order()
+        orders = OrderService.get_order_qs(rider__isnull=True, status="PENDING")
         return ResponseManager.handle_response(
-            data=orders, status=status.HTTP_200_OK, message="Order Information"
+            data=GetOrderSerializer(orders, many=True).data,
+            status=status.HTTP_200_OK,
+            message="Order Information",
         )
 
     @swagger_auto_schema(

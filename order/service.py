@@ -115,7 +115,7 @@ class OrderService:
         return formatted_data
 
     @classmethod
-    def create_order(cls, order_id, rider, customer, data):
+    def create_order(cls, order_id, customer, data):
         pickup = data["pickup"]
         delivery = data["delivery"]
         total_duration = data.get("total_duration")
@@ -124,6 +124,7 @@ class OrderService:
         vehicle_id = data.get("vehicle_id")
         payment_method = data.get("payment_method")
         payment_by = data.get("payment_by")
+        timeline = data.get("timeline")
 
         if pickup.get("save_address"):
             cls.save_address(customer, pickup)
@@ -135,21 +136,14 @@ class OrderService:
 
         order_meta_data = {
             "note_to_driver": data.get("note_to_driver"),
-            "favorite_rider": data.get("favorite_rider"),
             "promo_code": data.get("promo_code"),
+            "timeline": timeline,
         }
-        order_timeline = [
-            {
-                "status": "RIDER_ACCEPTED_ORDER",
-                "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        ]
         return Order.objects.create(
-            rider=rider,
             customer=customer,
             vehicle=VehicleService.get_vehicle(vehicle_id),
             order_id=order_id,
-            status="RIDER_ACCEPTED_ORDER",
+            status="PENDING",
             pickup_number=pickup.get("contact_phone_number", None),
             pickup_contact_name=pickup.get("contact_name", None),
             pickup_location=pickup.get("address"),
@@ -168,7 +162,6 @@ class OrderService:
             order_meta_data=order_meta_data,
             payment_method=payment_method,
             payment_by=payment_by,
-            order_timeline=order_timeline,
         )
 
     @classmethod
@@ -391,11 +384,12 @@ class OrderService:
             raise CustomAPIException("Order not found.", status.HTTP_404_NOT_FOUND)
 
         order_data.update(request)
-        CacheManager.set_key(key_builder, order_data, minutes=120)
         longitude = order_data.get("pickup", {}).get("longitude")
         latitude = order_data.get("pickup", {}).get("latitude")
-
+        customer = CustomerService.get_customer(user=user)
+        cls.create_order(order_id, customer, order_data)
         cls.notify_riders_around_location(longitude, latitude)
+        CacheManager.delete_key(key_builder)
         return True
 
     @classmethod
@@ -405,13 +399,9 @@ class OrderService:
 
     @classmethod
     def add_rider_tip(cls, user, order_id, tip_amount):
-        key_builder = KeyBuilder.initiate_order(order_id)
-        order_data = CacheManager.retrieve_key(key_builder)
-        if not order_data or order_data.get("user_id") != user.id:
-            raise CustomAPIException("Order not found.", status.HTTP_404_NOT_FOUND)
-
-        order_data.update({"tip_amount": tip_amount})
-        CacheManager.set_key(key_builder, order_data, minutes=120)
+        order = cls.get_order(order_id, customer__user=user)
+        order.tip_amount += tip_amount
+        order.save()
         return True
 
     @classmethod
@@ -425,22 +415,31 @@ class OrderService:
         )
         if favorite_rider:
             FavoriteRider.objects.create(rider=order.rider, customer=order.customer)
-            return True
+        return True
 
     @classmethod
     def rider_accept_customer_order(cls, user, order_id):
-        key_builder = KeyBuilder.initiate_order(order_id)
-        order_data = CacheManager.retrieve_key(key_builder)
-        if not order_data:
+        order = cls.get_order(order_id, status="PENDING", rider__isnull=True)
+        if not order:
             raise CustomAPIException(
                 "Order assigned to another rider or doesn't exist.",
                 status.HTTP_404_NOT_FOUND,
             )
-
-        customer = CustomerService.get_customer(user__id=order_data.get("user_id"))
         rider = RiderService.get_rider(user=user)
-        order = cls.create_order(order_id, rider, customer, order_data)
-        CacheManager.delete_key(key_builder)
+        order_timeline = order.order_timeline
+        if not order_timeline:
+            order_timeline = []
+
+        order_timeline.append(
+            {
+                "status": "RIDER_ACCEPTED_ORDER",
+                "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        )
+        order.rider = rider
+        order.status = "RIDER_ACCEPTED_ORDER"
+        order.order_timeline = order_timeline
+        order.save()
         return order
 
     @classmethod

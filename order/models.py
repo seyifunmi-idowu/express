@@ -126,7 +126,7 @@ class Order(BaseAbstractModel):
     order_timeline = models.JSONField(
         default=list, help_text="Ordered timeline tracking"
     )
-    # {"note_to_driver"}
+    # ["note_to_driver", "timeline", "promo_code", ]
     order_meta_data = models.JSONField(
         default=dict, help_text="Other order information"
     )
