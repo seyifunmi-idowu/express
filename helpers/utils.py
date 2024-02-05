@@ -12,13 +12,38 @@ class ResponseManager:
     def handle_response(
         data: Dict = {}, errors: Dict = {}, status: int = 200, message: str = ""
     ) -> Response:
+        def format_nested_errors(error_dict: Dict, current_key: str = ""):
+            formatted_errors = []
+            for key, value in error_dict.items():
+                full_key = f"{current_key} {key}".strip()
+                if isinstance(value, dict):
+                    formatted_errors.extend(
+                        format_nested_errors(value, current_key=full_key)
+                    )
+                else:
+                    formatted_errors.append(f"{full_key}: {value[0]}")
+            return formatted_errors
+
         if errors:
             if message == "":
                 first_error_key = next(iter(errors))
-                first_error_message = errors[first_error_key][0]
-                message = f"{first_error_key}: {first_error_message}"
+                if isinstance(errors[first_error_key], dict):
+                    formatted_error = format_nested_errors(
+                        errors[first_error_key], current_key=first_error_key
+                    )
+                    message = " ".join(formatted_error)
+                else:
+                    first_error_message = errors[first_error_key][0]
+                    message = f"{first_error_key}: {first_error_message}"
             return Response({"errors": errors, "message": message}, status=status)
         return Response({"data": data, "message": message}, status=status)
+
+    # def handle_response(
+    #     data: Dict = {}, errors: Dict = {}, status: int = 200, message: str = ""
+    # ) -> Response:
+    #     if errors:
+    #         return Response({"errors": errors, "message": message}, status=status)
+    #     return Response({"data": data, "message": message}, status=status)
 
     @staticmethod
     def handle_paginated_response(

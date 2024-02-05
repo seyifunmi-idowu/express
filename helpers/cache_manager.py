@@ -30,6 +30,18 @@ class CacheManager:
         key = f"{settings.ENVIRONMENT}:{key}"
         cache.delete(key)
 
+    @classmethod
+    def retrieve_all_cache_data(cls):
+        all_cache_data = {}
+        cache_keys = cache.keys(
+            f"{settings.ENVIRONMENT}:*"
+        )  # Retrieve all keys matching the environment prefix
+        for key in cache_keys:
+            data = cache.get(key)
+            all_cache_data[key] = data
+
+        return all_cache_data
+
 
 class KeyBuilder:
     @staticmethod
@@ -39,3 +51,7 @@ class KeyBuilder:
     @staticmethod
     def business_user_complete_signup(session_id):
         return f"user:business-signup:{session_id}"
+
+    @staticmethod
+    def initiate_order(order_id):
+        return f"customer:order:{order_id}"

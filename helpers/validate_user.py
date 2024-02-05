@@ -7,8 +7,6 @@ def validate_verified_user(user) -> bool:
 
 
 def validate_deactivated_user(request) -> bool:
-    from rest_framework import status
-
     from authentication.models import User
     from helpers.exceptions import CustomAPIException
 
@@ -20,9 +18,7 @@ def validate_deactivated_user(request) -> bool:
             phone_number=request.data.get("phone_number")
         ).first()
     if user and user.is_deactivated:
-        raise CustomAPIException(
-            "Your account has been suspended.", status.HTTP_403_FORBIDDEN
-        )
+        raise CustomAPIException("Your account has been suspended.", 403)
 
     return True
 
@@ -37,3 +33,13 @@ def validate_customer(user) -> bool:
 
 def validate_admin(user) -> bool:
     return user.user_type == "ADMIN"
+
+
+def validate_approved_rider(user) -> bool:
+    from helpers.exceptions import CustomAPIException
+    from rider.models import Rider
+
+    rider = Rider.objects.get(user=user)
+    if rider.status != "APPROVED":
+        raise CustomAPIException("Your account has not been approved.", 403)
+    return True

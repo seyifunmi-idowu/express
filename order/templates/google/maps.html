@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+</head>
+<body>
+<div id="map"></div>
+      <script>
+          function initMap() {
+              let stadium = { lat: 6.5000, lng: 3.3608 };
+              let map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 4,
+                center: stadium
+             });
+             let marker = new google.maps.Marker({
+                  position: stadium,
+                  map: map,
+              })
+           }
+      </script>
+      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6S7UUN0ZnFmyBdHp4emdMzOOCfjZS1jk&callback=initMap&v=weekly" defer >
+      </script>
+</body>
+</html>

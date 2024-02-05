@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import datetime
-import os
 from pathlib import Path
 
 import dj_database_url
@@ -156,8 +155,8 @@ if USE_S3:
     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 else:
     STATIC_URL = "/static/"
-    STATIC_ROOT = os.path.join(BASE_DIR, "static")
-
+    # STATIC_ROOT = os.path.join(BASE_DIR, "static")
+    STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -219,6 +218,7 @@ SIMPLE_JWT = {
     "AUTH_TOKEN_CLASSES": ("helpers.token_manager.CustomAccessToken",),
 }
 
+LOGIN_URL = "/admin/login"
 
 SENDGRID_API_KEY = config("SENDGRID_API_KEY", "")
 SENDER_EMAIL = config("SENDER_EMAIL", "")
@@ -248,3 +248,5 @@ ONE_SIGNAL_SMS_FROM = config("ONE_SIGNAL_SMS_FROM", "")
 TERMII_API_KEY = config("TERMII_API_KEY", "")
 TERMII_SECRET_KEY = config("TERMII_SECRET_KEY", "")
 TERMII_SMS_FROM = config("TERMII_SMS_FROM", "")
+
+GOOGLE_API_KEY = config("GOOGLE_API_KEY", "")
