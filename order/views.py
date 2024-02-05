@@ -191,7 +191,7 @@ class CustomerOrderViewset(viewsets.ViewSet):
         operation_description="Rate rider",
         operation_summary="Rate rider",
         tags=["Customer-Order"],
-        responses=schema_doc.ADD_DRIVER_TIP_RESPONSE,
+        responses=schema_doc.RATE_RIDER_RESPONSE,
     )
     @action(
         detail=False,
@@ -208,7 +208,7 @@ class CustomerOrderViewset(viewsets.ViewSet):
             request.user, order_id, **serialized_data.data
         )
         return ResponseManager.handle_response(
-            data=response, status=status.HTTP_200_OK, message="Tip added"
+            data=response, status=status.HTTP_200_OK, message="Rider rated"
         )
 
 

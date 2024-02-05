@@ -341,3 +341,15 @@ RIDER_RECEIVE_PAYMENT_RESPONSE = {
         description="Order not found", examples=ORDER_NOT_FOUND_RESPONSE
     ),
 }
+RATE_RIDER_SUCCESS_RESPONSE = {
+    "application/json": {"data": True, "message": "Rider rated"}
+}
+RATE_RIDER_RESPONSE = {
+    200: openapi.Response(
+        description="Rider rated", examples=RATE_RIDER_SUCCESS_RESPONSE
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+    404: openapi.Response(
+        description="Order not found", examples=ORDER_NOT_FOUND_RESPONSE
+    ),
+}
