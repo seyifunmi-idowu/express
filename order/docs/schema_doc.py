@@ -9,7 +9,7 @@ GET_ALL_ORDER = {
         "data": [
             {
                 "order_id": "glfut9cv8s",
-                "status": "ORDER_DELIVERED",
+                "status": "ORDER_COMPLETED",
                 "pickup": {
                     "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria"
                 },
@@ -23,7 +23,7 @@ GET_ALL_ORDER = {
             },
             {
                 "order_id": "ht737siecf",
-                "status": "RIDER_ACCEPTED_ORDER",
+                "status": "PENDING",
                 "pickup": {
                     "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria"
                 },

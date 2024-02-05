@@ -91,6 +91,30 @@ class OrderService:
         return Order.objects.filter(**kwargs)
 
     @classmethod
+    def get_current_order_qs(cls, **kwargs):
+        return Order.objects.filter(**kwargs).exclude(
+            status__in=["ORDER_COMPLETED", "ORDER_CANCELLED"]
+        )
+
+    @classmethod
+    def get_new_order(cls):
+        data = CacheManager.retrieve_all_cache_data("customer:order")
+        formatted_data = []
+
+        for order_id, order_data in data.items():
+            formatted_order = {
+                "order_id": order_data["order_id"],
+                "status": "PENDING",
+                "pickup": {"address": order_data["pickup"]["address"]},
+                "delivery": {"address": order_data["delivery"]["address"]},
+                "total_amount": order_data["total_price"],
+                "distance": cls.get_km_in_word(order_data["total_distance"]),
+                "duration": cls.get_time_in_word(order_data["total_duration"]),
+            }
+            formatted_data.append(formatted_order)
+        return formatted_data
+
+    @classmethod
     def create_order(cls, order_id, rider, customer, data):
         pickup = data["pickup"]
         delivery = data["delivery"]

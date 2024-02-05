@@ -87,7 +87,7 @@ class GoogleMapsService:
             ],
             "status": "OK",
         }
-        if sample_response:
+        if settings.ENVIRONMENT == "dev":
             return sample_response
         response = requests.get(url)
         return response.json()
@@ -804,7 +804,7 @@ class GoogleMapsService:
             ],
             "status": "OK",
         }
-        if sample_response:
+        if settings.ENVIRONMENT == "dev":
             return sample_response
         response = requests.get(url)
         return response.json()
@@ -833,7 +833,7 @@ class GoogleMapsService:
             ],
             "status": "OK",
         }
-        if sample_response:
+        if settings.ENVIRONMENT == "dev":
             return sample_response
         response = requests.get(url)
         return response.json()

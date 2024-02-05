@@ -231,6 +231,59 @@ class RiderOrderViewset(viewsets.ViewSet):
 
     @swagger_auto_schema(
         methods=["get"],
+        operation_description="Get completed orders",
+        operation_summary="Get completed orders",
+        tags=["Rider-Order"],
+        responses=schema_doc.GET_ALL_ORDER_RESPONSE,
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="completed",
+        permission_classes=(IsAuthenticated, IsRider),
+    )
+    def get_completed_order(self, request):
+        orders = OrderService.get_order_qs(
+            rider__user=request.user, status="ORDER_COMPLETED"
+        )
+        return ResponseManager.handle_response(
+            data=GetOrderSerializer(orders, many=True).data,
+            status=status.HTTP_200_OK,
+            message="Order Information",
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get current orders",
+        operation_summary="Get current orders",
+        tags=["Rider-Order"],
+        responses=schema_doc.GET_ALL_ORDER_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="current")
+    def get_current_order(self, request):
+        orders = OrderService.get_current_order_qs(rider__user=request.user)
+        return ResponseManager.handle_response(
+            data=GetOrderSerializer(orders, many=True).data,
+            status=status.HTTP_200_OK,
+            message="Order Information",
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get new orders",
+        operation_summary="Get new orders",
+        tags=["Rider-Order"],
+        responses=schema_doc.GET_ALL_ORDER_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="new")
+    def get_new_order(self, request):
+        orders = OrderService.get_new_order()
+        return ResponseManager.handle_response(
+            data=orders, status=status.HTTP_200_OK, message="Order Information"
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
         operation_description="Get order information",
         operation_summary="Get order information",
         tags=["Rider-Order"],

@@ -31,11 +31,10 @@ class CacheManager:
         cache.delete(key)
 
     @classmethod
-    def retrieve_all_cache_data(cls):
+    def retrieve_all_cache_data(cls, key=None):
         all_cache_data = {}
-        cache_keys = cache.keys(
-            f"{settings.ENVIRONMENT}:*"
-        )  # Retrieve all keys matching the environment prefix
+        key = f"{key}:*" if key else "*"
+        cache_keys = cache.keys(f"{settings.ENVIRONMENT}:{key}")
         for key in cache_keys:
             data = cache.get(key)
             all_cache_data[key] = data
