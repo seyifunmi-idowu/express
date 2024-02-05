@@ -5,23 +5,25 @@ services:
     image: 'postgres:12'
     hostname: postgres
     volumes:
-      - postgres_staging_data:/var/lib/postgresql/data/
+      - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.db-env
     ports:
-      - '5434:5432'
+      - '5433:5432'
     networks:
-      - fele-staging-network
+      - fele-network
 
   redis:
     image: 'redis:5'
     hostname: redis
     volumes:
-      - redis_staging_data:/data/
+      - redis_data:/data/
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
     ports:
-      - '6380:6379'
+      - '6379:6379'
     networks:
-      - fele-staging-network
+      - fele-network
+    restart: "always"
 
   web:
     build:
@@ -30,7 +32,7 @@ services:
     volumes:
       - ./:/app
     ports:
-      - "8001:8000"
+      - "8000:8000"
     env_file:
       - ./.env
     depends_on:
@@ -39,7 +41,7 @@ services:
     stdin_open: true
     tty: true
     networks:
-      - fele-staging-network
+      - fele-network
 
   celery_worker:
     build:
@@ -52,7 +54,7 @@ services:
       - db
       - redis
     networks:
-      - fele-staging-network
+      - fele-network
 
   celery_beat:
     build:
@@ -72,11 +74,11 @@ services:
       - db
       - redis
     networks:
-      - fele-staging-network
+      - fele-network
 
 volumes:
-  postgres_staging_data:
-  redis_staging_data:
+  postgres_data:
+  redis_data:
 
 networks:
-  fele-staging-network:
+  fele-network:
