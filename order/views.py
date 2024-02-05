@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, parser_classes
+from rest_framework.parsers import FormParser, MultiPartParser
 
 from feleexpress.middlewares.permissions.is_authenticated import (
     IsApprovedRider,
@@ -19,6 +20,7 @@ from order.serializers import (
     GetOrderSerializer,
     InitiateOrderSerializer,
     PlaceOrderSerializer,
+    RateRiderSerializer,
     RetrieveVehicleSerializer,
     RiderFailedPickupSerializer,
     RiderOrderSerializer,
@@ -113,15 +115,14 @@ class CustomerOrderViewset(viewsets.ViewSet):
         )
 
     @swagger_auto_schema(
-        methods=["post"],
         request_body=InitiateOrderSerializer,
         operation_description="Initiate order",
         operation_summary="Initiate order",
         tags=["Customer-Order"],
         responses=schema_doc.INITIATE_ORDER_RESPONSE,
     )
-    @action(detail=False, methods=["post"], url_path="initiate")
-    def initiate_order(self, request):
+    @parser_classes([MultiPartParser, FormParser])
+    def create(self, request):
         serialized_data = InitiateOrderSerializer(data=request.data)
         if not serialized_data.is_valid():
             return ResponseManager.handle_response(
@@ -179,6 +180,32 @@ class CustomerOrderViewset(viewsets.ViewSet):
             )
         response = OrderService.add_rider_tip(
             request.user, order_id, serialized_data.data.get("tip_amount")
+        )
+        return ResponseManager.handle_response(
+            data=response, status=status.HTTP_200_OK, message="Tip added"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=RateRiderSerializer,
+        operation_description="Rate rider",
+        operation_summary="Rate rider",
+        tags=["Customer-Order"],
+        responses=schema_doc.ADD_DRIVER_TIP_RESPONSE,
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="(?P<order_id>[a-z,A-Z,0-9]+)/rate-rider",
+    )
+    def rate_rider(self, request, order_id):
+        serialized_data = RateRiderSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        response = OrderService.rate_rider(
+            request.user, order_id, **serialized_data.data
         )
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Tip added"

@@ -247,3 +247,28 @@ class RiderRating(BaseAbstractModel):
         db_table = "rider_rating"
         verbose_name = "Rider Rating"
         verbose_name_plural = "Rider Ratings"
+
+
+class FavoriteRider(BaseAbstractModel):
+
+    rider = models.ForeignKey(
+        "rider.Rider",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="rider",
+        related_name="rider_favourite",
+    )
+    customer = models.ForeignKey(
+        "customer.Customer",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="customer",
+        related_name="favourite_riders",
+    )
+
+    class Meta:
+        db_table = "favourite_rider"
+        verbose_name = "Favorite Rider"
+        verbose_name_plural = "Favorite Riders"

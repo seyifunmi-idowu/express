@@ -7,6 +7,7 @@ from helpers.exceptions import CustomAPIException
 from helpers.googlemaps_service import GoogleMapsService
 from helpers.s3_uploader import S3Uploader
 from order.models import Address, Order, Vehicle
+from rider.models import FavoriteRider, RiderRating
 from rider.service import RiderService
 
 
@@ -388,6 +389,19 @@ class OrderService:
         order_data.update({"tip_amount": tip_amount})
         CacheManager.set_key(key_builder, order_data, minutes=120)
         return True
+
+    @classmethod
+    def rate_rider(cls, user, order_id, **kwargs):
+        order = cls.get_order(order_id, customer__user=user)
+        favorite_rider = kwargs.get("favorite_rider", False)
+        rating = kwargs.get("rating")
+        remark = kwargs.get("remark", "")
+        RiderRating.objects.create(
+            rider=order.rider, customer=order.customer, remark=remark, rating=rating
+        )
+        if favorite_rider:
+            FavoriteRider.objects.create(rider=order.rider, customer=order.customer)
+            return True
 
     @classmethod
     def rider_accept_customer_order(cls, user, order_id):
