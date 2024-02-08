@@ -107,8 +107,6 @@ class CustomerService:
 
         session_token = kwargs.get("session_token")
         user = kwargs.get("user", None)
-        email = user.email
-        phone_number = user.phone_number
         if user is None:
             key_builder = KeyBuilder.business_user_complete_signup(session_token)
             verification_data = CacheManager.retrieve_key(key_builder)
@@ -122,6 +120,8 @@ class CustomerService:
             user = UserService.get_user_instance(email=email, phone_number=phone_number)
             CacheManager.delete_key(key_builder)
 
+        email = user.email
+        phone_number = user.phone_number
         business_name = kwargs.get("business_name")
         business_address = kwargs.get("business_address")
         business_category = kwargs.get("business_category")

@@ -140,3 +140,23 @@ class Order(BaseAbstractModel):
         db_table = "order"
         verbose_name = "order"
         verbose_name_plural = "orders"
+
+    def get_pick_up_time(self):
+        return next(
+            (
+                x["date"]
+                for x in self.order_timeline
+                if x["status"] == "RIDER_PICKED_UP_ORDER"
+            ),
+            None,
+        )
+
+    def get_delivery_time(self):
+        return next(
+            (
+                x["date"]
+                for x in self.order_timeline
+                if x["status"] == "ORDER_DELIVERED"
+            ),
+            None,
+        )

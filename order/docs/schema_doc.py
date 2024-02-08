@@ -1,5 +1,27 @@
 from drf_yasg import openapi
 
+from order.models import Order
+
+STATUS = openapi.Parameter(
+    "status",
+    openapi.IN_QUERY,
+    description="Filter orders by status",
+    type=openapi.TYPE_STRING,
+    enum=[stat[0] for stat in Order.STATUS_CHOICES],
+)
+TIMEFRAME = openapi.Parameter(
+    "timeframe",
+    openapi.IN_QUERY,
+    description="Filter orders by timeframe, yesterday or today",
+    type=openapi.TYPE_STRING,
+    enum=["today", "yesterday"],
+)
+CREATED_AT = openapi.Parameter(
+    "created_at",
+    openapi.IN_QUERY,
+    description="Filter orders by created_at (YYYY-MM-DD)",
+    type=openapi.TYPE_STRING,
+)
 UNAUTHENTICATED = {"application/json": {"message": "Token is invalid or expired"}}
 NOT_FOUND = {"application/json": {"message": "Object not found."}}
 ORDER_NOT_FOUND_RESPONSE = {"application/json": {"message": "Order not found."}}
@@ -16,9 +38,6 @@ GET_ALL_ORDER = {
                 "delivery": {
                     "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria"
                 },
-                "total_amount": "4851.41",
-                "distance": "15.6 km",
-                "duration": "44 mins",
                 "created_at": "2024-02-04 18:39:17",
             },
             {
@@ -30,9 +49,6 @@ GET_ALL_ORDER = {
                 "delivery": {
                     "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria"
                 },
-                "total_amount": "4851.41",
-                "distance": "15.6 km",
-                "duration": "44 mins",
                 "created_at": "2024-02-04 18:45:33",
             },
             {
@@ -44,9 +60,6 @@ GET_ALL_ORDER = {
                 "delivery": {
                     "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria"
                 },
-                "total_amount": "4851.41",
-                "distance": "15.6 km",
-                "duration": "44 mins",
                 "created_at": "2024-02-04 18:47:11",
             },
         ],
@@ -216,6 +229,73 @@ ADDRESS_INFO_RESPONSE = {
 }
 GET_ALL_ORDER_RESPONSE = {
     200: openapi.Response(description="Order Information", examples=GET_ALL_ORDER),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
+GET_CURRENT_ORDER_SUCCESS_RESPONSE = {
+    "application/json": {
+        "data": [
+            {
+                "order_id": "glfut9cv8s",
+                "status": "ORDER_DELIVERED",
+                "pickup": {
+                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
+                    "short_address": "24 Olorunkemi Street",
+                    "complete_address": "Bariga, Lagos 102216, Lagos, Nigeria",
+                    "time": "2024-02-05 09:48:12",
+                },
+                "delivery": {
+                    "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
+                    "short_address": "70 Oduduwa Way",
+                    "complete_address": "Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
+                    "time": "2024-02-05 09:50:05",
+                },
+                "created_at": "2024-02-04 18:39:17",
+                "contact": {"contact": "", "destination": None},
+            },
+            {
+                "order_id": "ht737siecf",
+                "status": "RIDER_PICKED_UP_ORDER",
+                "pickup": {
+                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
+                    "short_address": "24 Olorunkemi Street",
+                    "complete_address": "Bariga, Lagos 102216, Lagos, Nigeria",
+                    "time": "2024-02-08 15:58:38",
+                },
+                "delivery": {
+                    "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
+                    "short_address": "70 Oduduwa Way",
+                    "complete_address": "Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
+                    "time": None,
+                },
+                "created_at": "2024-02-04 18:45:33",
+                "contact": {"contact": "+23481345678", "destination": "delivery"},
+            },
+            {
+                "order_id": "2nvdrcz756",
+                "status": "RIDER_ACCEPTED_ORDER",
+                "pickup": {
+                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
+                    "short_address": "24 Olorunkemi Street",
+                    "complete_address": "Bariga, Lagos 102216, Lagos, Nigeria",
+                    "time": None,
+                },
+                "delivery": {
+                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
+                    "short_address": "24 Olorunkemi Street",
+                    "complete_address": "Bariga, Lagos 102216, Lagos, Nigeria",
+                    "time": None,
+                },
+                "created_at": "2024-02-05 22:41:05",
+                "contact": {"contact": "+23481345678", "destination": "pickup"},
+            },
+        ],
+        "message": "Order Information",
+    }
+}
+GET_CURRENT_ORDER_RESPONSE = {
+    200: openapi.Response(
+        description="Order information", examples=GET_CURRENT_ORDER_SUCCESS_RESPONSE
+    ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }
 GET_ORDER_SUCCESS_RESPONSE = {

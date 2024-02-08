@@ -18,6 +18,23 @@ class GetOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
+        fields = ("order_id", "status", "pickup", "delivery", "created_at")
+
+    def get_pickup(self, obj):
+        return {"address": obj.pickup_location}
+
+    def get_created_at(self, obj):
+        return obj.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
+    def get_delivery(self, obj):
+        return {"address": obj.delivery_location}
+
+
+class GetCurrentOrder(GetOrderSerializer):
+    contact = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
         fields = (
             "order_id",
             "status",
@@ -27,16 +44,46 @@ class GetOrderSerializer(serializers.ModelSerializer):
             "distance",
             "duration",
             "created_at",
+            "contact",
         )
 
+    def get_contact(self, obj):
+        status = obj.status
+        if status in [
+            "PENDING",
+            "PROCESSING_ORDER",
+            "RIDER_ACCEPTED_ORDER",
+            "RIDER_AT_PICK_UP",
+        ]:
+            destination = "pickup"
+            contact = obj.pickup_number
+        elif status in ["RIDER_PICKED_UP_ORDER", "ORDER_ARRIVED"]:
+            destination = "delivery"
+            contact = obj.delivery_number
+        else:
+            destination = None
+            contact = ""
+
+        return {"contact": contact, "destination": destination}
+
     def get_pickup(self, obj):
-        return {"address": obj.pickup_location}
+        split_address = obj.pickup_location.split(", ", 1)
+
+        return {
+            "address": obj.pickup_location,
+            "short_address": split_address[0],
+            "complete_address": split_address[1] if len(split_address) > 1 else "",
+            "time": obj.get_pick_up_time(),
+        }
 
     def get_delivery(self, obj):
-        return {"address": obj.delivery_location}
-
-    def get_created_at(self, obj):
-        return obj.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        split_address = obj.delivery_location.split(", ", 1)
+        return {
+            "address": obj.delivery_location,
+            "short_address": split_address[0],
+            "complete_address": split_address[1] if len(split_address) > 1 else "",
+            "time": obj.get_delivery_time(),
+        }
 
     def get_distance(self, obj):
         from order.service import OrderService

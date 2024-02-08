@@ -17,6 +17,7 @@ from order.serializers import (
     AddDriverTipSerializer,
     CustomerOrderSerializer,
     GetAddressInfoSerializer,
+    GetCurrentOrder,
     GetOrderSerializer,
     InitiateOrderSerializer,
     PlaceOrderSerializer,
@@ -234,7 +235,8 @@ class RiderOrderViewset(viewsets.ViewSet):
         operation_description="Get completed orders",
         operation_summary="Get completed orders",
         tags=["Rider-Order"],
-        responses=schema_doc.GET_ALL_ORDER_RESPONSE,
+        responses=schema_doc.GET_CURRENT_ORDER_RESPONSE,
+        manual_parameters=[schema_doc.TIMEFRAME, schema_doc.CREATED_AT],
     )
     @action(
         detail=False,
@@ -243,11 +245,11 @@ class RiderOrderViewset(viewsets.ViewSet):
         permission_classes=(IsAuthenticated, IsRider),
     )
     def get_completed_order(self, request):
-        orders = OrderService.get_order_qs(
-            rider__user=request.user, status="ORDER_COMPLETED"
+        orders = OrderService.get_completed_order(
+            rider__user=request.user, status="ORDER_COMPLETED", request=request
         )
         return ResponseManager.handle_response(
-            data=GetOrderSerializer(orders, many=True).data,
+            data=GetCurrentOrder(orders, many=True).data,
             status=status.HTTP_200_OK,
             message="Order Information",
         )
@@ -257,13 +259,13 @@ class RiderOrderViewset(viewsets.ViewSet):
         operation_description="Get current orders",
         operation_summary="Get current orders",
         tags=["Rider-Order"],
-        responses=schema_doc.GET_ALL_ORDER_RESPONSE,
+        responses=schema_doc.GET_CURRENT_ORDER_RESPONSE,
     )
     @action(detail=False, methods=["get"], url_path="current")
     def get_current_order(self, request):
         orders = OrderService.get_current_order_qs(rider__user=request.user)
         return ResponseManager.handle_response(
-            data=GetOrderSerializer(orders, many=True).data,
+            data=GetCurrentOrder(orders, many=True).data,
             status=status.HTTP_200_OK,
             message="Order Information",
         )
