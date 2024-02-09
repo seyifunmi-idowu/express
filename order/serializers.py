@@ -12,8 +12,8 @@ class RetrieveVehicleSerializer(serializers.ModelSerializer):
 class GetOrderSerializer(serializers.ModelSerializer):
     pickup = serializers.SerializerMethodField()
     delivery = serializers.SerializerMethodField()
-    distance = serializers.SerializerMethodField()
-    duration = serializers.SerializerMethodField()
+    # distance = serializers.SerializerMethodField()
+    # duration = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
 
     class Meta:
