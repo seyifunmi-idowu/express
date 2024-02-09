@@ -89,7 +89,7 @@ class OrderService:
         return order
 
     @classmethod
-    def get_order_qs(cls, request, **kwargs):
+    def get_order_qs(cls, **kwargs):
         return Order.objects.filter(**kwargs)
 
     @classmethod
