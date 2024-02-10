@@ -74,8 +74,8 @@ class MapsViewset(viewsets.ViewSet):
             )
         else:
             response = MapService.get_info_from_latitude_and_longitude(
-                serialized_data.data.get("latitude"),
-                serialized_data.data.get("longitude"),
+                serialized_data.validated_data.get("latitude"),
+                serialized_data.validated_data.get("longitude"),
             )
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Address information"
@@ -129,7 +129,9 @@ class CustomerOrderViewset(viewsets.ViewSet):
             return ResponseManager.handle_response(
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
-        response = OrderService.initiate_order(request.user, serialized_data.data)
+        response = OrderService.initiate_order(
+            request.user, serialized_data.validated_data
+        )
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Order Information"
         )
