@@ -122,16 +122,17 @@ class CustomerService:
 
         email = user.email
         phone_number = user.phone_number
-        business_name = kwargs.get("business_name")
-        business_address = kwargs.get("business_address")
-        business_category = kwargs.get("business_category")
-        delivery_volume = kwargs.get("delivery_volume")
 
         customer = cls.get_customer(user=user)
         if customer.customer_type != "BUSINESS":
             raise CustomAPIException(
                 "User not a business customer.", status.HTTP_401_UNAUTHORIZED
             )
+        business_name = kwargs.get("business_name")
+        business_address = kwargs.get("business_address")
+        business_category = kwargs.get("business_category")
+        delivery_volume = kwargs.get("delivery_volume")
+
         customer.business_name = business_name
         customer.business_address = business_address
         customer.business_category = business_category

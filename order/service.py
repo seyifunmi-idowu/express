@@ -571,6 +571,16 @@ class OrderService:
         order.delivery_time = timezone.now()
         order.status = "ORDER_DELIVERED"
         order.save()
+        # if order.payment_method == "WALLET":
+        #     customer_user_wallet = order.customer.user.get_user_wallet()
+        #     if customer_user_wallet.balance < order.total_amount:
+        #         # debit card
+        #         pass
+        #     else:
+        #         # debit wallet and mark as completed
+        #         pass
+
+        return True
 
     @classmethod
     def rider_received_payment(cls, order_id, user):

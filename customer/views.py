@@ -161,7 +161,7 @@ class CustomerViewset(viewsets.ViewSet):
     def get_rider_info(self, request):
         rider = CustomerService.get_customer(user=request.user)
         return ResponseManager.handle_response(
-            data=RetrieveCustomerSerializer(rider).data,
+            data=RetrieveCustomerSerializer(rider).validated_data,
             status=status.HTTP_200_OK,
             message="Customer info",
         )
@@ -185,7 +185,7 @@ class CustomerViewset(viewsets.ViewSet):
             )
         session_id = generate_session_id()
         CustomerService.complete_business_customer_signup(
-            session_id, user=request.user, **serialized_data.data
+            session_id, user=request.user, **serialized_data.validated_data
         )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Customer sign up successful"
