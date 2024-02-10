@@ -67,7 +67,7 @@ class OrderAdmin(admin.ModelAdmin):
         "customer",
         "rider",
         "vehicle",
-        # "payment_method",
+        "payment_method",
         "payment_by",
         "paid",
         "total_amount",
