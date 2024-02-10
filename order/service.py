@@ -58,6 +58,9 @@ class MapService:
         if len(results) < 1:
             raise CustomAPIException("Cannot locate address", status.HTTP_404_NOT_FOUND)
 
+        print(results)
+        print("==========================")
+        print(len(results))
         results_list = [
             {
                 "latitude": result.get("geometry", {}).get("location", {}).get("lat"),
@@ -67,6 +70,8 @@ class MapService:
             for result in results
             if "street_address" in result.get("types")
         ]
+        print("=======================")
+        print(results_list)
         return results_list
 
     @classmethod
@@ -243,10 +248,18 @@ class OrderService:
         pickup_address_info = MapService.get_info_from_latitude_and_longitude(
             pickup_latitude, pickup_longitude
         )
+        if len(pickup_address_info) < 1:
+            raise CustomAPIException(
+                "Unable to locate pickup address", status.HTTP_404_NOT_FOUND
+            )
         pickup.update({"address": pickup_address_info[0].get("formatted_address")})
         delivery_address_info = MapService.get_info_from_latitude_and_longitude(
             delivery_latitude, delivery_longitude
         )
+        if len(pickup_address_info) < 1:
+            raise CustomAPIException(
+                "Unable to locate delivery address", status.HTTP_404_NOT_FOUND
+            )
         delivery.update({"address": delivery_address_info[0].get("formatted_address")})
 
         if stop_overs:
@@ -257,6 +270,10 @@ class OrderService:
                 stop_over_address_info = MapService.get_info_from_latitude_and_longitude(
                     stop_over_latitude, stop_over_longitude
                 )
+                if len(pickup_address_info) < 1:
+                    raise CustomAPIException(
+                        "Unable to locate stop over address", status.HTTP_404_NOT_FOUND
+                    )
                 stop_over.update(
                     {"address": stop_over_address_info[0].get("formatted_address")}
                 )
