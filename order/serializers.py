@@ -274,8 +274,8 @@ class GetAddressInfoSerializer(serializers.Serializer):
 
 
 class LocationSerializer(serializers.Serializer):
-    latitude = serializers.FloatField()
-    longitude = serializers.FloatField()
+    latitude = serializers.DecimalField(max_digits=50, decimal_places=18)
+    longitude = serializers.DecimalField(max_digits=50, decimal_places=18)
     address_details = serializers.CharField(max_length=200, required=False)
     contact_phone_number = serializers.CharField(max_length=50, required=False)
     contact_name = serializers.CharField(max_length=100, required=False)
