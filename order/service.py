@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta
+from decimal import Decimal
 
+from django.conf import settings
 from django.utils import timezone
 from rest_framework import status
 
 from customer.service import CustomerService
 from helpers.cache_manager import CacheManager, KeyBuilder
+from helpers.db_helpers import generate_id
 from helpers.exceptions import CustomAPIException
 from helpers.googlemaps_service import GoogleMapsService
 from helpers.s3_uploader import S3Uploader
@@ -427,6 +430,14 @@ class OrderService:
         if not order_data or order_data.get("user_id") != user.id:
             raise CustomAPIException("Order not found.", status.HTTP_404_NOT_FOUND)
 
+        if request["payment_method"] == "WALLET":
+            user_wallet = user.get_user_wallet()
+            if user_wallet.balance < order_data["amount"]:
+                raise CustomAPIException(
+                    "You don't have sufficient in you wallet to place order. Kindly fund you wallet.",
+                    status.HTTP_400_BAD_REQUEST,
+                )
+
         order_data.update(request)
         longitude = order_data.get("pickup", {}).get("longitude")
         latitude = order_data.get("pickup", {}).get("latitude")
@@ -583,14 +594,8 @@ class OrderService:
         order.delivery_time = timezone.now()
         order.status = "ORDER_DELIVERED"
         order.save()
-        # if order.payment_method == "WALLET":
-        #     customer_user_wallet = order.customer.user.get_user_wallet()
-        #     if customer_user_wallet.balance < order.total_amount:
-        #         # debit card
-        #         pass
-        #     else:
-        #         # debit wallet and mark as completed
-        #         pass
+        if order.payment_method == "WALLET":
+            cls.debit_customer(order)
 
         return True
 
@@ -603,12 +608,94 @@ class OrderService:
 
         order_timeline.append(
             {
-                "status": "ORDER_DELIVERED",
+                "status": "ORDER_COMPLETED",
                 "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
             }
         )
         order.paid = True
         order.order_timeline = order_timeline
         order.status = "ORDER_COMPLETED"
+        order.fele_amount = order.total_amount * Decimal(settings.FELE_CHARGE / 100)
         order.save()
         return order
+
+    @classmethod
+    def debit_customer(cls, order):
+        from helpers.paystack_service import PaystackService
+        from wallet.service import CardService, TransactionService
+
+        amount = order.total_amount
+        customer_user = order.customer.user
+        rider_user = order.rider.user
+        customer_user_wallet = customer_user.get_user_wallet()
+        transaction_obj = None
+        made_payment = False
+        if customer_user_wallet.balance > amount:
+            # debit wallet and mark as completed
+            reference = generate_id()
+            customer_user_wallet.withdraw(amount)
+            transaction_obj = TransactionService.create_transaction(
+                transaction_type="DEBIT",
+                transaction_status="SUCCESS",
+                amount=Decimal(amount),
+                user=customer_user,
+                reference=reference,
+                pssp="IN_HOUSE",
+                payment_category="CUSTOMER_PAY_RIDER",
+            )
+            made_payment = True
+
+        else:
+            # debit card
+            user_card = CardService.get_user_cards(customer_user).first()
+            if user_card:
+                response = PaystackService.charge_card(
+                    customer_user.email, amount, user_card.card_auth
+                )
+                if response["status"] and response["data"]["status"] == "success":
+                    reference = response["data"]["reference"]
+                    transaction_obj = TransactionService.create_transaction(
+                        transaction_type="DEBIT",
+                        transaction_status="SUCCESS",
+                        amount=Decimal(amount),
+                        user=customer_user,
+                        reference=reference,
+                        pssp="PAYSTACK",
+                        payment_category="CUSTOMER_PAY_RIDER",
+                    )
+                    made_payment = True
+
+        if made_payment:
+            order_timeline = order.order_timeline
+            if not order_timeline:
+                order_timeline = []
+
+            order_timeline.append(
+                {
+                    "status": "ORDER_COMPLETED",
+                    "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
+                }
+            )
+            order.paid = True
+            order.order_timeline = order_timeline
+            order.status = "ORDER_COMPLETED"
+            order.fele_amount = amount * Decimal(settings.FELE_CHARGE / 100)
+            order.paid_fele = True
+            order.save()
+
+            rider_user_wallet = rider_user.get_user_wallet()
+            TransactionService.create_transaction(
+                transaction_type="CREDIT",
+                transaction_status="SUCCESS",
+                amount=Decimal(amount),
+                user=rider_user,
+                reference=transaction_obj.reference,
+                pssp=transaction_obj.pssp,
+                payment_category="CUSTOMER_PAY_RIDER",
+                wallet_id=rider_user_wallet.id,
+            )
+            rider_user_wallet.deposit(order.total_amount - order.fele_amount)
+
+            # TODO: check if rider has outstanding and deduct it
+
+        return made_payment

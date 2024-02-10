@@ -220,6 +220,8 @@ SIMPLE_JWT = {
 
 LOGIN_URL = "/admin/login"
 
+FELE_CHARGE = config("FELE_CHARGE", 16, cast=int)
+
 SENDGRID_API_KEY = config("SENDGRID_API_KEY", "")
 SENDER_EMAIL = config("SENDER_EMAIL", "")
 SENDER_NAME = config("SENDER_NAME", "")

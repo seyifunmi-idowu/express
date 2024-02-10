@@ -120,8 +120,8 @@ class Order(BaseAbstractModel):
         default=list, help_text="Stop overs information"
     )
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    # fele_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    # paid_fele = models.BooleanField(default=False)
+    fele_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    paid_fele = models.BooleanField(default=False)
     tip_amount = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
