@@ -58,9 +58,6 @@ class MapService:
         if len(results) < 1:
             raise CustomAPIException("Cannot locate address", status.HTTP_404_NOT_FOUND)
 
-        print(results)
-        print("==========================")
-        print(len(results))
         results_list = [
             {
                 "latitude": result.get("geometry", {}).get("location", {}).get("lat"),
@@ -70,8 +67,6 @@ class MapService:
             for result in results
             if "street_address" in result.get("types")
         ]
-        print("=======================")
-        print(results_list)
         return results_list
 
     @classmethod
