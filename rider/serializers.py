@@ -1,8 +1,12 @@
+from datetime import timedelta
+
+from django.db.models import Sum
+from django.utils import timezone
 from rest_framework import serializers
 
 from authentication.serializers import UserProfileSerializer
 from helpers.validators import FieldValidators
-from rider.models import Rider
+from rider.models import Rider, RiderRating
 
 
 class RiderSignupSerializer(serializers.Serializer):
@@ -91,11 +95,82 @@ class RiderLoginSerializer(serializers.Serializer):
         return data
 
 
+class RiderHomepageSerializerSerializer(serializers.ModelSerializer):
+    total_deliveries = serializers.SerializerMethodField()
+    ongoing_deliveries = serializers.SerializerMethodField()
+    today_earns = serializers.SerializerMethodField()
+    this_week_earns = serializers.SerializerMethodField()
+    rider_activity = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Rider
+        fields = (
+            "id",
+            "total_deliveries",
+            "ongoing_deliveries",
+            "today_earns",
+            "this_week_earns",
+            "rider_activity",
+        )
+
+    def get_total_deliveries(self, obj):
+        from order.service import OrderService
+
+        return OrderService.get_order_qs(
+            rider=obj, status__in=["ORDER_DELIVERED", "ORDER_COMPLETED"]
+        ).count()
+
+    def get_ongoing_deliveries(self, obj):
+        from order.service import OrderService
+
+        return OrderService.get_order_qs(
+            rider=obj,
+            status__in=[
+                "RIDER_ACCEPTED_ORDER",
+                "RIDER_AT_PICK_UP",
+                "RIDER_PICKED_UP_ORDER",
+                "ORDER_ARRIVED",
+            ],
+        ).count()
+
+    def get_today_earns(self, obj):
+        from order.service import OrderService
+
+        today = timezone.now().date()
+        today_earnings = OrderService.get_order_qs(
+            rider=obj, created_at__date=today
+        ).aggregate(Sum("total_amount"))["total_amount__sum"]
+        return today_earnings or 0.0
+
+    def get_this_week_earns(self, obj):
+        from order.service import OrderService
+
+        today = timezone.now().date()
+        start_of_week = today - timedelta(days=today.weekday())
+        this_week_earnings = OrderService.get_order_qs(
+            rider=obj, created_at__date__range=[start_of_week, today]
+        ).aggregate(Sum("total_amount"))["total_amount__sum"]
+        return this_week_earnings or 0.0
+
+    def get_rider_activity(self, obj):
+        from wallet.serializers import GetTransactionsSerializer
+        from wallet.service import TransactionService
+
+        transactions = TransactionService.get_user_transaction(obj.user).order_by(
+            "-created_at"
+        )[:10]
+        serializer = GetTransactionsSerializer(transactions, many=True)
+        return serializer.data
+
+
 class RetrieveRiderSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
     status = serializers.SerializerMethodField()
     vehicle_photos = serializers.SerializerMethodField()
     vehicle = serializers.SerializerMethodField()
+    total_orders = serializers.SerializerMethodField()
+    total_earns = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Rider
@@ -112,6 +187,9 @@ class RetrieveRiderSerializer(serializers.ModelSerializer):
             "city",
             "avatar_url",
             "vehicle_photos",
+            "total_orders",
+            "total_earns",
+            "review_count",
         )
 
     def get_vehicle_photos(self, obj):
@@ -122,6 +200,31 @@ class RetrieveRiderSerializer(serializers.ModelSerializer):
 
     def get_status(self, obj):
         return obj.get_rider_status()
+
+    def get_total_orders(self, obj):
+        from order.service import OrderService
+
+        return (
+            OrderService.get_order_qs(rider=obj)
+            .exclude(status__in=["PROCESSING_ORDER", "PENDING", "ORDER_CANCELLED"])
+            .count()
+        )
+
+    def get_total_earns(self, obj):
+        from order.service import OrderService
+
+        orders = OrderService.get_order_qs(rider=obj, status__in=["ORDER_COMPLETED"])
+        total_amount_sum = (
+            orders.aggregate(Sum("total_amount"))["total_amount__sum"] or 0.0
+        )
+        fele_amount_sum = (
+            orders.aggregate(Sum("fele_amount"))["fele_amount__sum"] or 0.0
+        )
+        total_earns = total_amount_sum - fele_amount_sum
+        return total_earns
+
+    def get_review_count(self, obj):
+        return RiderRating.objects.filter(rider=obj).count()
 
 
 class DocumentUploadSerializer(serializers.Serializer):

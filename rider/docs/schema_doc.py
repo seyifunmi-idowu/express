@@ -1,5 +1,12 @@
 from drf_yasg import openapi
 
+PERIOD = openapi.Parameter(
+    "timeframe",
+    openapi.IN_QUERY,
+    description="Filter performance by period, yesterday or today",
+    type=openapi.TYPE_STRING,
+    enum=["today", "yesterday", "week", "month"],
+)
 RIDER_INFO = {
     "id": "1f1d831988564d0eb6adcf6a5bbcb0a0",
     "user": {
@@ -28,6 +35,9 @@ RIDER_INFO = {
     "city": None,
     "avatar_url": None,
     "vehicle_photos": [],
+    "total_orders": 5,
+    "total_earns": 8926.59,
+    "review_count": 1,
 }
 UNAUTHENTICATED = {
     "application/json": {"message": "Token is invalid or expired"}  # type: ignore
@@ -128,6 +138,63 @@ RIDER_INFO_SUCCESS_RESPONSE = {
 RIDER_INFO_RESPONSE = {
     200: openapi.Response(
         description="Rider information", examples=RIDER_INFO_SUCCESS_RESPONSE
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
+RIDER_HOME_SUCCESS_RESPONSE = {
+    "application/json": {
+        "data": {
+            "id": "2c4eccb6025d4c7693c5b9802224ab30",
+            "total_deliveries": 3,
+            "ongoing_deliveries": 2,
+            "today_earns": 0.0,
+            "this_week_earns": 9702.82,
+            "rider_activity": [
+                {
+                    "id": "35378c22c81e4744aecfb3f38e1f1257",
+                    "transaction_type": "CREDIT",
+                    "transaction_status": "SUCCESS",
+                    "amount": "4851.41",
+                    "currency": "₦",
+                    "reference": "5up8rw36sul1hlv",
+                    "description": None,
+                    "created_at": "2024-02-10T23:50:27.131823+01:00",
+                },
+                {
+                    "id": "f51c0e2b81304947a991bc3b86421f0a",
+                    "transaction_type": "CREDIT",
+                    "transaction_status": "SUCCESS",
+                    "amount": "4851.41",
+                    "currency": "₦",
+                    "reference": "f513fa16336c4ff186a96264227577b2",
+                    "description": None,
+                    "created_at": "2024-02-10T23:47:47.784923+01:00",
+                },
+            ],
+        },
+        "message": "Rider info",
+    }
+}
+RIDER_HOME_RESPONSE = {
+    200: openapi.Response(
+        description="Rider home", examples=RIDER_HOME_SUCCESS_RESPONSE
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
+RIDER_PERFORMANCE_SUCCESS_RESPONSE = {
+    "application/json": {
+        "data": {
+            "total_delivery": 2,
+            "earning": 8926.59,
+            "hours_worked": "87 mins",
+            "avg_delivery_time": "44 mins",
+        },
+        "message": "Rider performance",
+    }
+}
+RIDER_PERFORMANCE_RESPONSE = {
+    200: openapi.Response(
+        description="Rider performance", examples=RIDER_PERFORMANCE_SUCCESS_RESPONSE
     ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }

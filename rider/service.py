@@ -1,4 +1,6 @@
 from django.db import transaction
+from django.db.models import ExpressionWrapper, F, Func, IntegerField, Sum
+from django.utils import timezone
 from rest_framework import status
 
 from authentication.service import AuthService, UserService
@@ -162,6 +164,67 @@ class RiderService:
             rider.avatar_url = rider.photo_url()
             rider.save()
         return True
+
+    @classmethod
+    def get_rider_performance(cls, request, user):
+        from order.service import OrderService
+
+        # Define a custom function to convert the duration string to an integer
+        class DurationInSeconds(Func):
+            function = "CAST"
+            template = "%(function)s(%(expressions)s AS INTEGER)"
+            output_field = IntegerField()
+
+        period = request.GET.get("period", "today")
+        end_date = timezone.now()
+        if period.lower() == "yesterday":
+            start_date = end_date - timezone.timedelta(days=1)
+        elif period.lower() == "week":
+            start_date = end_date - timezone.timedelta(weeks=1)
+        elif period.lower() == "month":
+            start_date = end_date - timezone.timedelta(days=30)
+        else:
+            # for today
+            start_date = timezone.make_aware(
+                timezone.datetime(end_date.year, end_date.month, end_date.day)
+            )
+
+        orders = OrderService.get_order_qs(
+            rider__user=user,
+            status="ORDER_COMPLETED",
+            created_at__range=(start_date, end_date),
+        )
+
+        total_amount_sum = (
+            orders.aggregate(Sum("total_amount"))["total_amount__sum"] or 0.0
+        )
+        fele_amount_sum = (
+            orders.aggregate(Sum("fele_amount"))["fele_amount__sum"] or 0.0
+        )
+        total_earning = total_amount_sum - fele_amount_sum
+        total_delivery = orders.count()
+
+        orders = orders.annotate(
+            numeric_duration=ExpressionWrapper(
+                DurationInSeconds(F("duration")), output_field=IntegerField()
+            )
+        )
+        total_duration = (
+            orders.aggregate(Sum("numeric_duration"))["numeric_duration__sum"] or 0.0
+        )
+
+        # Calculate average duration in seconds
+        avg_duration_seconds = (
+            total_duration / total_delivery if total_delivery > 0 else 0
+        )
+
+        response = {
+            "total_delivery": total_delivery,
+            "earning": total_earning,
+            "hours_worked": OrderService.get_time_in_word(total_duration),
+            "avg_delivery_time": OrderService.get_time_in_word(avg_duration_seconds),
+        }
+        return response
 
 
 class RiderKYCService:

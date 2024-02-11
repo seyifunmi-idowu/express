@@ -17,6 +17,7 @@ from rider.serializers import (
     ResendVerificationSerializer,
     RetrieveKycSerializer,
     RetrieveRiderSerializer,
+    RiderHomepageSerializerSerializer,
     RiderLoginSerializer,
     RiderSignupSerializer,
     UpdateVehicleSerializer,
@@ -157,6 +158,39 @@ class RiderViewset(viewsets.ViewSet):
             data=RetrieveRiderSerializer(rider).data,
             status=status.HTTP_200_OK,
             message="Rider info",
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get rider home page details",
+        operation_summary="Get rider home page details",
+        tags=["Rider"],
+        responses=schema_doc.RIDER_HOME_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="home")
+    def get_rider_homepage(self, request):
+        rider = RiderService.get_rider(user=request.user)
+        return ResponseManager.handle_response(
+            data=RiderHomepageSerializerSerializer(rider).data,
+            status=status.HTTP_200_OK,
+            message="Rider home",
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get rider performance details",
+        operation_summary="Get rider performance details",
+        tags=["Rider"],
+        responses=schema_doc.RIDER_PERFORMANCE_RESPONSE,
+        manual_parameters=[schema_doc.PERIOD],
+    )
+    @action(detail=False, methods=["get"], url_path="performance")
+    def get_rider_performance(self, request):
+        response = RiderService.get_rider_performance(
+            request=request, user=request.user
+        )
+        return ResponseManager.handle_response(
+            data=response, status=status.HTTP_200_OK, message="Rider performance"
         )
 
     @swagger_auto_schema(
