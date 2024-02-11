@@ -15,10 +15,18 @@ class GetOrderSerializer(serializers.ModelSerializer):
     # distance = serializers.SerializerMethodField()
     # duration = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
+    assigned_by_customer = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ("order_id", "status", "pickup", "delivery", "created_at")
+        fields = (
+            "order_id",
+            "status",
+            "pickup",
+            "delivery",
+            "assigned_by_customer",
+            "created_at",
+        )
 
     def get_pickup(self, obj):
         return {"address": obj.pickup_location}
@@ -28,6 +36,9 @@ class GetOrderSerializer(serializers.ModelSerializer):
 
     def get_delivery(self, obj):
         return {"address": obj.delivery_location}
+
+    def get_assigned_by_customer(self, obj):
+        return obj.status == "PENDING_RIDER_CONFIRMATION"
 
 
 class GetCurrentOrder(GetOrderSerializer):
@@ -41,6 +52,8 @@ class GetCurrentOrder(GetOrderSerializer):
             "pickup",
             "delivery",
             "total_amount",
+            "payment_method",
+            "payment_by",
             "distance",
             "duration",
             "created_at",
@@ -73,6 +86,7 @@ class GetCurrentOrder(GetOrderSerializer):
             "address": obj.pickup_location,
             "short_address": split_address[0],
             "complete_address": split_address[1] if len(split_address) > 1 else "",
+            "contact": obj.pickup_number,
             "time": obj.get_pick_up_time(),
         }
 
@@ -82,6 +96,7 @@ class GetCurrentOrder(GetOrderSerializer):
             "address": obj.delivery_location,
             "short_address": split_address[0],
             "complete_address": split_address[1] if len(split_address) > 1 else "",
+            "contact": obj.delivery_number,
             "time": obj.get_delivery_time(),
         }
 
@@ -295,13 +310,17 @@ class PlaceOrderSerializer(serializers.Serializer):
 
     note_to_driver = serializers.CharField(max_length=500, required=False)
     payment_method = serializers.ChoiceField(choices=PAYMENT_METHOD_CHOICES)
-    payment_by = serializers.ChoiceField(choices=PAYMENT_BY_CHOICES)
+    payment_by = serializers.ChoiceField(choices=PAYMENT_BY_CHOICES, default="SENDER")
     favorite_rider = serializers.BooleanField(default=False)
     promo_code = serializers.CharField(max_length=20, required=False)
 
 
 class AddDriverTipSerializer(serializers.Serializer):
     tip_amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+
+class AssignRiderSerializer(serializers.Serializer):
+    rider_id = serializers.CharField(max_length=100)
 
 
 class RiderPickUpOrderSerializer(serializers.Serializer):

@@ -19,7 +19,11 @@ from feleexpress.middlewares.permissions.is_authenticated import (
 )
 from helpers.db_helpers import generate_session_id
 from helpers.utils import ResponseManager
-from rider.serializers import RiderLoginSerializer, VerifyOtpSerializer
+from rider.serializers import (
+    FavouriteRiderSerializer,
+    RiderLoginSerializer,
+    VerifyOtpSerializer,
+)
 
 
 class CustomerAuthViewset(viewsets.ViewSet):
@@ -158,12 +162,28 @@ class CustomerViewset(viewsets.ViewSet):
         responses=schema_doc.CUSTOMER_INFO_RESPONSE,
     )
     @action(detail=False, methods=["get"], url_path="info")
-    def get_rider_info(self, request):
+    def get_customer_info(self, request):
         rider = CustomerService.get_customer(user=request.user)
         return ResponseManager.handle_response(
             data=RetrieveCustomerSerializer(rider).validated_data,
             status=status.HTTP_200_OK,
             message="Customer info",
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get Customer favourite rider",
+        operation_summary="Get Customer favourite rider",
+        tags=["Customer"],
+        responses=schema_doc.CUSTOMER_FAVOURITE_RIDER_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="favourite-rider")
+    def get_customer_favourite_rider(self, request):
+        response = CustomerService.get_customer_favourite_rider(user=request.user)
+        return ResponseManager.handle_response(
+            data=FavouriteRiderSerializer(response, many=True).data,
+            status=status.HTTP_200_OK,
+            message="Customer favourite rider",
         )
 
     @swagger_auto_schema(

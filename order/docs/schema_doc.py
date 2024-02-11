@@ -30,37 +30,28 @@ GET_ALL_ORDER = {
     "application/json": {
         "data": [
             {
-                "order_id": "glfut9cv8s",
-                "status": "ORDER_COMPLETED",
-                "pickup": {
-                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria"
-                },
-                "delivery": {
-                    "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria"
-                },
-                "created_at": "2024-02-04 18:39:17",
-            },
-            {
-                "order_id": "ht737siecf",
+                "order_id": "rv5p05b82k",
                 "status": "PENDING",
                 "pickup": {
                     "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria"
                 },
                 "delivery": {
-                    "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria"
+                    "address": "34 Bajulaye Rd, Igbobi, Lagos 102216, Lagos, Nigeria"
                 },
-                "created_at": "2024-02-04 18:45:33",
+                "assigned_by_customer": False,
+                "created_at": "2024-02-10 16:41:02",
             },
             {
-                "order_id": "iwcyiop9kp",
-                "status": "RIDER_ACCEPTED_ORDER",
+                "order_id": "t12j2g0s71",
+                "status": "PENDING_RIDER_CONFIRMATION",
                 "pickup": {
-                    "address": "8 C. A. C St, Ojo, Lagos 102101, Lagos, Nigeria"
+                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria"
                 },
                 "delivery": {
-                    "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria"
+                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria"
                 },
-                "created_at": "2024-02-04 18:47:11",
+                "assigned_by_customer": True,
+                "created_at": "2024-02-11 18:57:25",
             },
         ],
         "message": "User orders",
@@ -241,52 +232,48 @@ GET_CURRENT_ORDER_SUCCESS_RESPONSE = {
                     "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
                     "short_address": "24 Olorunkemi Street",
                     "complete_address": "Bariga, Lagos 102216, Lagos, Nigeria",
+                    "contact": "+2348192635372",
                     "time": "2024-02-05 09:48:12",
                 },
                 "delivery": {
                     "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
                     "short_address": "70 Oduduwa Way",
                     "complete_address": "Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
+                    "contact": "+2348192635372",
                     "time": "2024-02-05 09:50:05",
                 },
+                "total_amount": "4851.41",
+                "payment_method": "WALLET",
+                "payment_by": "SENDER",
+                "distance": "15632",
+                "duration": "2614",
                 "created_at": "2024-02-04 18:39:17",
                 "contact": {"contact": "", "destination": None},
             },
             {
-                "order_id": "ht737siecf",
-                "status": "RIDER_PICKED_UP_ORDER",
+                "order_id": "iwcyiop9kp",
+                "status": "RIDER_ACCEPTED_ORDER",
                 "pickup": {
-                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
-                    "short_address": "24 Olorunkemi Street",
-                    "complete_address": "Bariga, Lagos 102216, Lagos, Nigeria",
-                    "time": "2024-02-08 15:58:38",
+                    "address": "8 C. A. C St, Ojo, Lagos 102101, Lagos, Nigeria",
+                    "short_address": "8 C. A. C St",
+                    "complete_address": "Ojo, Lagos 102101, Lagos, Nigeria",
+                    "contact": "+2348192635372",
+                    "time": None,
                 },
                 "delivery": {
                     "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
                     "short_address": "70 Oduduwa Way",
                     "complete_address": "Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
+                    "contact": "+2348192635372",
                     "time": None,
                 },
-                "created_at": "2024-02-04 18:45:33",
-                "contact": {"contact": "+23481345678", "destination": "delivery"},
-            },
-            {
-                "order_id": "2nvdrcz756",
-                "status": "RIDER_ACCEPTED_ORDER",
-                "pickup": {
-                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
-                    "short_address": "24 Olorunkemi Street",
-                    "complete_address": "Bariga, Lagos 102216, Lagos, Nigeria",
-                    "time": None,
-                },
-                "delivery": {
-                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
-                    "short_address": "24 Olorunkemi Street",
-                    "complete_address": "Bariga, Lagos 102216, Lagos, Nigeria",
-                    "time": None,
-                },
-                "created_at": "2024-02-05 22:41:05",
-                "contact": {"contact": "+23481345678", "destination": "pickup"},
+                "total_amount": "4851.41",
+                "payment_method": None,
+                "payment_by": None,
+                "distance": "15632",
+                "duration": "2614",
+                "created_at": "2024-02-04 18:47:11",
+                "contact": {"contact": "+2348192635372", "destination": "pickup"},
             },
         ],
         "message": "Order Information",

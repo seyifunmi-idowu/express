@@ -123,6 +123,36 @@ CUSTOMER_INFO_RESPONSE = {
     ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }
+CUSTOMER_FAVOURITE_RIDER_SUCCESS_RESPONSE = {
+    "application/json": {
+        "data": [
+            {
+                "rider": {
+                    "id": "2c4eccb6025d4c7693c5b9802224ab30",
+                    "display_name": "James St Patrick",
+                    "avatar_url": "https://feleexpress.s3.amazonaws.com/backend-dev/rider_document/passport_photo/7d09c9a2e6774d0f9ba727c652f14c2.pdf",
+                    "assigned_orders": 0,
+                }
+            },
+            {
+                "rider": {
+                    "id": "1b4eccb6025d4c7693c5b9802224ab30",
+                    "display_name": "Leonel Messi",
+                    "avatar_url": "https://feleexpress.s3.amazonaws.com/backend-dev/rider_document/passport_photo/7d09c9a2e677d0f9ba727c6752f14c2.pdf",
+                    "assigned_orders": 3,
+                }
+            },
+        ],
+        "message": "Customer favourite rider",
+    }
+}
+CUSTOMER_FAVOURITE_RIDER_RESPONSE = {
+    200: openapi.Response(
+        description="Customer information",
+        examples=CUSTOMER_FAVOURITE_RIDER_SUCCESS_RESPONSE,
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
 OTP_RESENT_SUCCESS_RESPONSE = {"application/json": {"data": {}, "message": "Otp sent"}}
 EMAIL_REGISTRATION_NONE_EXISITING_USER_RESPONSE = {
     "application/json": {"errors": {"email": ["User with email address not found"]}}

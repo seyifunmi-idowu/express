@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 from authentication.serializers import UserProfileSerializer
 from helpers.validators import FieldValidators
-from rider.models import Rider, RiderRating
+from rider.models import FavoriteRider, Rider, RiderRating
 
 
 class RiderSignupSerializer(serializers.Serializer):
@@ -412,3 +412,19 @@ class UpdateVehicleSerializer(serializers.ModelSerializer):
             "vehicle_plate_number",
             "vehicle_color",
         )
+
+
+class FavouriteRiderSerializer(serializers.ModelSerializer):
+    rider = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FavoriteRider
+        fields = ("rider",)
+
+    def get_rider(self, obj):
+        return {
+            "id": obj.rider.id,
+            "display_name": obj.rider.display_name,
+            "avatar_url": obj.rider.avatar_url,
+            "assigned_orders": obj.rider.get_active_order().count(),
+        }

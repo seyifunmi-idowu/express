@@ -121,6 +121,11 @@ class Rider(BaseAbstractModel):
         documents = RiderKYCService.get_rider_document(rider=self)
         return "PENDING_APPROVAL" if len(documents) > 0 else self.status
 
+    def get_active_order(self):
+        from order.service import OrderService
+
+        return OrderService.get_current_order_qs(rider=self)
+
     def delete(self, using=None, keep_parents=False, image_url=None, commit=True):
         """Hard deleting"""
         if self.avatar_url:

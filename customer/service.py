@@ -187,3 +187,9 @@ class CustomerService:
             "customer": RetrieveCustomerSerializer(customer).data,
             "token": login_token,
         }
+
+    @classmethod
+    def get_customer_favourite_rider(cls, user):
+        from rider.models import FavoriteRider
+
+        return FavoriteRider.objects.filter(customer__user=user)

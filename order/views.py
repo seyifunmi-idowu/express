@@ -15,6 +15,7 @@ from helpers.utils import ResponseManager
 from order.docs import schema_doc
 from order.serializers import (
     AddDriverTipSerializer,
+    AssignRiderSerializer,
     CustomerOrderSerializer,
     GetAddressInfoSerializer,
     GetCurrentOrder,
@@ -173,7 +174,7 @@ class CustomerOrderViewset(viewsets.ViewSet):
     @action(
         detail=False,
         methods=["post"],
-        url_path="(?P<order_id>[a-z,A-Z,0-9]+)/add-driver-tip",
+        url_path="(?P<order_id>[a-z,A-Z,0-9]+)/add-rider-tip",
     )
     def add_rider_tip(self, request, order_id):
         serialized_data = AddDriverTipSerializer(data=request.data)
@@ -186,6 +187,32 @@ class CustomerOrderViewset(viewsets.ViewSet):
         )
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Tip added"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=AssignRiderSerializer,
+        operation_description="Assign rider to pending order",
+        operation_summary="Add rider to pending order",
+        tags=["Customer-Order"],
+        responses=schema_doc.ADD_DRIVER_TIP_RESPONSE,
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="(?P<order_id>[a-z,A-Z,0-9]+)/assign-rider",
+    )
+    def assign_rider(self, request, order_id):
+        serialized_data = AssignRiderSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        response = OrderService.assign_rider_to_order(
+            request.user, order_id, serialized_data.data.get("rider_id")
+        )
+        return ResponseManager.handle_response(
+            data=response, status=status.HTTP_200_OK, message="Pending rider acceptance"
         )
 
     @swagger_auto_schema(
@@ -281,7 +308,7 @@ class RiderOrderViewset(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"], url_path="new")
     def get_new_order(self, request):
-        orders = OrderService.get_order_qs(rider__isnull=True, status="PENDING")
+        orders = OrderService.get_new_order(user=request.user)
         return ResponseManager.handle_response(
             data=GetOrderSerializer(orders, many=True).data,
             status=status.HTTP_200_OK,

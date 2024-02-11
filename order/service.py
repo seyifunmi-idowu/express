@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from django.conf import settings
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
 
@@ -96,6 +97,14 @@ class OrderService:
         return Order.objects.filter(**kwargs)
 
     @classmethod
+    def get_new_order(cls, user):
+        orders = Order.objects.filter(
+            Q(rider__user=user, status="PENDING_RIDER_CONFIRMATION")
+            | Q(rider__isnull=True, status="PENDING")
+        )
+        return orders
+
+    @classmethod
     def get_completed_order(cls, request, **kwargs):
         query_status = request.GET.get("status")
         paid = request.GET.get("paid")
@@ -131,23 +140,23 @@ class OrderService:
             status__in=["ORDER_COMPLETED", "ORDER_CANCELLED"]
         )
 
-    @classmethod
-    def get_new_order(cls):
-        data = CacheManager.retrieve_all_cache_data("customer:order")
-        formatted_data = []
-
-        for order_id, order_data in data.items():
-            formatted_order = {
-                "order_id": order_data["order_id"],
-                "status": "PENDING",
-                "pickup": {"address": order_data["pickup"]["address"]},
-                "delivery": {"address": order_data["delivery"]["address"]},
-                "total_amount": order_data["total_price"],
-                "distance": cls.get_km_in_word(order_data["total_distance"]),
-                "duration": cls.get_time_in_word(order_data["total_duration"]),
-            }
-            formatted_data.append(formatted_order)
-        return formatted_data
+    # @classmethod
+    # def get_new_order(cls):
+    #     data = CacheManager.retrieve_all_cache_data("customer:order")
+    #     formatted_data = []
+    #
+    #     for order_id, order_data in data.items():
+    #         formatted_order = {
+    #             "order_id": order_data["order_id"],
+    #             "status": "PENDING",
+    #             "pickup": {"address": order_data["pickup"]["address"]},
+    #             "delivery": {"address": order_data["delivery"]["address"]},
+    #             "total_amount": order_data["total_price"],
+    #             "distance": cls.get_km_in_word(order_data["total_distance"]),
+    #             "duration": cls.get_time_in_word(order_data["total_duration"]),
+    #         }
+    #         formatted_data.append(formatted_order)
+    #     return formatted_data
 
     @classmethod
     def create_order(cls, order_id, customer, data):
@@ -432,7 +441,7 @@ class OrderService:
 
         if request["payment_method"] == "WALLET":
             user_wallet = user.get_user_wallet()
-            if user_wallet.balance < order_data["amount"]:
+            if user_wallet.balance < order_data["total_price"]:
                 raise CustomAPIException(
                     "You don't have sufficient in you wallet to place order. Kindly fund you wallet.",
                     status.HTTP_400_BAD_REQUEST,
@@ -460,6 +469,44 @@ class OrderService:
         return True
 
     @classmethod
+    def add_order_timeline_entry(cls, order, order_status, **kwargs):
+        order_timeline = order.order_timeline or []
+        order_timeline.append(
+            {
+                "status": order_status,
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                **kwargs,
+            }
+        )
+        order.order_timeline = order_timeline
+        order.save()
+
+    @classmethod
+    def assign_rider_to_order(cls, user, order_id, rider_id):
+        order = cls.get_order(order_id, customer__user=user)
+        if order.status != "PENDING":
+            raise CustomAPIException("Order is not pending", status.HTTP_404_NOT_FOUND)
+        if order.rider is not None:
+            raise CustomAPIException(
+                "Rider already assigned to ride", status.HTTP_404_NOT_FOUND
+            )
+
+        favourite_rider = FavoriteRider.objects.filter(
+            rider__id=rider_id, customer__user=user
+        ).first()
+        if favourite_rider is None:
+            raise CustomAPIException(
+                "Rider not a part of your favourite riders.", status.HTTP_404_NOT_FOUND
+            )
+
+        cls.add_order_timeline_entry(order, "CUSTOMER_ASSIGN_RIDER")
+        cls.add_order_timeline_entry(order, "PENDING_RIDER_CONFIRMATION")
+
+        order.rider = favourite_rider.rider
+        order.status = "PENDING_RIDER_CONFIRMATION"
+        order.save()
+
+    @classmethod
     def rate_rider(cls, user, order_id, **kwargs):
         order = cls.get_order(order_id, customer__user=user)
         favorite_rider = kwargs.get("favorite_rider", False)
@@ -474,123 +521,68 @@ class OrderService:
 
     @classmethod
     def rider_accept_customer_order(cls, user, order_id):
-        order = cls.get_order(order_id, status="PENDING", rider__isnull=True)
-        if not order:
-            raise CustomAPIException(
-                "Order assigned to another rider or doesn't exist.",
-                status.HTTP_404_NOT_FOUND,
-            )
+        order = cls.get_order(order_id)
+        pass_rider = True
+        if order.rider is None and order.status == "PENDING":
+            pass_rider = True
+        if order.rider.user == user and order.status == "PENDING_RIDER_CONFIRMATION":
+            pass_rider = True
+        if not pass_rider:
+            raise CustomAPIException("Cannot accept order.", status.HTTP_404_NOT_FOUND)
         rider = RiderService.get_rider(user=user)
-        order_timeline = order.order_timeline
-        if not order_timeline:
-            order_timeline = []
+        cls.add_order_timeline_entry(order, "RIDER_ACCEPTED_ORDER")
 
-        order_timeline.append(
-            {
-                "status": "RIDER_ACCEPTED_ORDER",
-                "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        )
         order.rider = rider
         order.status = "RIDER_ACCEPTED_ORDER"
-        order.order_timeline = order_timeline
         order.save()
         return order
 
     @classmethod
     def rider_at_pickup(cls, order_id, user):
         order = cls.get_order(order_id, rider__user=user)
-        order_timeline = order.order_timeline
-        if not order_timeline:
-            order_timeline = []
-
-        order_timeline.append(
-            {
-                "status": "RIDER_AT_PICK_UP",
-                "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        )
-        order.order_timeline = order_timeline
+        cls.add_order_timeline_entry(order, "RIDER_AT_PICK_UP")
         order.status = "RIDER_AT_PICK_UP"
         order.save()
 
     @classmethod
     def rider_at_order_pickup(cls, order_id, user, file):
         order = cls.get_order(order_id, rider__user=user)
-        order_timeline = order.order_timeline
-        if not order_timeline:
-            order_timeline = []
 
         file_name = file.name
         file_url = S3Uploader(append_folder=f"/order/{order_id}").upload_file_object(
             file, file_name
         )
-
-        order_timeline.append(
-            {
-                "status": "RIDER_PICKED_UP_ORDER",
-                "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "proof_of_pickup_url": file_url,
-            }
+        cls.add_order_timeline_entry(
+            order, "RIDER_PICKED_UP_ORDER", **{"proof_of_pickup_url": file_url}
         )
-        order.order_timeline = order_timeline
         order.status = "RIDER_PICKED_UP_ORDER"
         order.save()
 
     @classmethod
     def rider_failed_pickup(cls, order_id, user, reason):
         order = cls.get_order(order_id, rider__user=user)
-        order_timeline = order.order_timeline
-        if not order_timeline:
-            order_timeline = []
 
-        order_timeline.append(
-            {
-                "status": "FAILED_PICKUP",
-                "reason": reason,
-                "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        )
-        order.order_timeline = order_timeline
+        cls.add_order_timeline_entry(order, "FAILED_PICKUP", **{"reason": reason})
         order.save()
 
     @classmethod
     def rider_at_destination(cls, order_id, user):
         order = cls.get_order(order_id, rider__user=user)
-        order_timeline = order.order_timeline
-        if not order_timeline:
-            order_timeline = []
-
-        order_timeline.append(
-            {
-                "status": "ORDER_ARRIVED",
-                "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        )
-        order.order_timeline = order_timeline
+        cls.add_order_timeline_entry(order, "ORDER_ARRIVED")
         order.status = "ORDER_ARRIVED"
         order.save()
 
     @classmethod
     def rider_made_delivery(cls, order_id, user, file):
         order = cls.get_order(order_id, rider__user=user)
-        order_timeline = order.order_timeline
-        if not order_timeline:
-            order_timeline = []
 
         file_name = file.name
         file_url = S3Uploader(append_folder=f"/order/{order_id}").upload_file_object(
             file, file_name
         )
-
-        order_timeline.append(
-            {
-                "status": "ORDER_DELIVERED",
-                "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "proof_of_delivery_url": file_url,
-            }
+        cls.add_order_timeline_entry(
+            order, "ORDER_DELIVERED", **{"proof_of_delivery_url": file_url}
         )
-        order.order_timeline = order_timeline
         order.delivery_time = timezone.now()
         order.status = "ORDER_DELIVERED"
         order.save()
@@ -602,18 +594,8 @@ class OrderService:
     @classmethod
     def rider_received_payment(cls, order_id, user):
         order = cls.get_order(order_id, rider__user=user)
-        order_timeline = order.order_timeline
-        if not order_timeline:
-            order_timeline = []
-
-        order_timeline.append(
-            {
-                "status": "ORDER_COMPLETED",
-                "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        )
+        cls.add_order_timeline_entry(order, "ORDER_COMPLETED")
         order.paid = True
-        order.order_timeline = order_timeline
         order.status = "ORDER_COMPLETED"
         order.fele_amount = order.total_amount * Decimal(settings.FELE_CHARGE / 100)
         order.save()
@@ -666,18 +648,8 @@ class OrderService:
                     made_payment = True
 
         if made_payment:
-            order_timeline = order.order_timeline
-            if not order_timeline:
-                order_timeline = []
-
-            order_timeline.append(
-                {
-                    "status": "ORDER_COMPLETED",
-                    "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
-                }
-            )
+            cls.add_order_timeline_entry(order, "ORDER_COMPLETED")
             order.paid = True
-            order.order_timeline = order_timeline
             order.status = "ORDER_COMPLETED"
             order.fele_amount = amount * Decimal(settings.FELE_CHARGE / 100)
             order.paid_fele = True

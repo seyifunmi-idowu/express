@@ -60,6 +60,7 @@ class Order(BaseAbstractModel):
     STATUS_CHOICES = [
         ("PENDING", "Pending"),
         ("PROCESSING_ORDER", "Processing"),
+        ("PENDING_RIDER_CONFIRMATION", "Awaiting rider confirmation"),
         ("RIDER_ACCEPTED_ORDER", "Rider accepted order"),
         ("RIDER_AT_PICK_UP", "Rider at pick up"),
         ("RIDER_PICKED_UP_ORDER", "Rider picked up order"),
