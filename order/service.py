@@ -135,10 +135,20 @@ class OrderService:
         return order_qs
 
     @classmethod
-    def get_current_order_qs(cls, **kwargs):
-        return Order.objects.filter(**kwargs).exclude(
-            status__in=["ORDER_COMPLETED", "ORDER_CANCELLED"]
+    def get_current_order_qs(cls, user):
+        return Order.objects.filter(
+            rider__user=user,
+            status__in=[
+                "RIDER_ACCEPTED_ORDER",
+                "RIDER_AT_PICK_UP",
+                "RIDER_PICKED_UP_ORDER",
+                "ORDER_ARRIVED",
+            ],
         )
+
+    @classmethod
+    def get_failed_order(cls, user):
+        return Order.objects.filter(rider__user=user, status__in=["ORDER_CANCELLED"])
 
     # @classmethod
     # def get_new_order(cls):
@@ -522,7 +532,7 @@ class OrderService:
     @classmethod
     def rider_accept_customer_order(cls, user, order_id):
         order = cls.get_order(order_id)
-        pass_rider = True
+        pass_rider = False
         if order.rider is None and order.status == "PENDING":
             pass_rider = True
         if order.rider.user == user and order.status == "PENDING_RIDER_CONFIRMATION":
@@ -563,6 +573,8 @@ class OrderService:
         order = cls.get_order(order_id, rider__user=user)
 
         cls.add_order_timeline_entry(order, "FAILED_PICKUP", **{"reason": reason})
+        cls.add_order_timeline_entry(order, "ORDER_CANCELLED")
+        order.status = "ORDER_CANCELLED"
         order.save()
 
     @classmethod

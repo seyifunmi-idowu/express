@@ -292,7 +292,23 @@ class RiderOrderViewset(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"], url_path="current")
     def get_current_order(self, request):
-        orders = OrderService.get_current_order_qs(rider__user=request.user)
+        orders = OrderService.get_current_order_qs(request.user)
+        return ResponseManager.handle_response(
+            data=GetCurrentOrder(orders, many=True).data,
+            status=status.HTTP_200_OK,
+            message="Order Information",
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get failed orders",
+        operation_summary="Get failed orders",
+        tags=["Rider-Order"],
+        responses=schema_doc.GET_CURRENT_ORDER_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="failed")
+    def get_failed_order(self, request):
+        orders = OrderService.get_failed_order(request.user)
         return ResponseManager.handle_response(
             data=GetCurrentOrder(orders, many=True).data,
             status=status.HTTP_200_OK,

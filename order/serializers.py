@@ -43,6 +43,7 @@ class GetOrderSerializer(serializers.ModelSerializer):
 
 class GetCurrentOrder(GetOrderSerializer):
     contact = serializers.SerializerMethodField()
+    note_to_rider = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -58,6 +59,7 @@ class GetCurrentOrder(GetOrderSerializer):
             "duration",
             "created_at",
             "contact",
+            "note_to_rider",
         )
 
     def get_contact(self, obj):
@@ -84,9 +86,12 @@ class GetCurrentOrder(GetOrderSerializer):
 
         return {
             "address": obj.pickup_location,
+            "longitude": obj.pickup_location_longitude,
+            "latitude": obj.pickup_location_latitude,
             "short_address": split_address[0],
             "complete_address": split_address[1] if len(split_address) > 1 else "",
             "contact": obj.pickup_number,
+            "contact_name": obj.pickup_contact_name,
             "time": obj.get_pick_up_time(),
         }
 
@@ -94,9 +99,12 @@ class GetCurrentOrder(GetOrderSerializer):
         split_address = obj.delivery_location.split(", ", 1)
         return {
             "address": obj.delivery_location,
+            "longitude": obj.delivery_location_longitude,
+            "latitude": obj.delivery_location_latitude,
             "short_address": split_address[0],
             "complete_address": split_address[1] if len(split_address) > 1 else "",
             "contact": obj.delivery_number,
+            "contact_name": obj.delivery_contact_name,
             "time": obj.get_delivery_time(),
         }
 
@@ -109,6 +117,9 @@ class GetCurrentOrder(GetOrderSerializer):
         from order.service import OrderService
 
         return OrderService.get_time_in_word(obj.duration)
+
+    def get_note_to_rider(self, obj):
+        return obj.order_meta_data.get("note_to_driver", "")
 
 
 class CustomerOrderSerializer(serializers.ModelSerializer):
