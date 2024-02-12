@@ -535,7 +535,11 @@ class OrderService:
         pass_rider = False
         if order.rider is None and order.status == "PENDING":
             pass_rider = True
-        if order.rider.user == user and order.status == "PENDING_RIDER_CONFIRMATION":
+        if (
+            order.rider
+            and order.rider.user == user
+            and order.status == "PENDING_RIDER_CONFIRMATION"
+        ):
             pass_rider = True
         if not pass_rider:
             raise CustomAPIException("Cannot accept order.", status.HTTP_404_NOT_FOUND)
