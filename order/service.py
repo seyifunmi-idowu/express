@@ -362,7 +362,7 @@ class OrderService:
                 (pickup_latitude, pickup_longitude),
                 (delivery_latitude, delivery_longitude),
             )
-            if len(pickup_address_info) < 1:
+            if distance_and_duration.get("distance") is None:
                 raise CustomAPIException(
                     "Unable to process, please check that the address or (longitude and latitude) are correct",
                     status.HTTP_400_BAD_REQUEST,
