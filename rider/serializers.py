@@ -220,7 +220,7 @@ class RetrieveRiderSerializer(serializers.ModelSerializer):
         fele_amount_sum = (
             orders.aggregate(Sum("fele_amount"))["fele_amount__sum"] or 0.0
         )
-        total_earns = total_amount_sum - fele_amount_sum
+        total_earns = float(total_amount_sum) - float(fele_amount_sum)
         return total_earns
 
     def get_review_count(self, obj):
