@@ -186,7 +186,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
         return obj.created_at.strftime("%Y-%m-%d %H:%M:%S")
 
     def get_note_to_driver(self, obj):
-        return obj.order_meta_data.get("note_to_driver")
+        return obj.order_meta_data.get("note_to_driver", "")
 
     def get_timeline(self, obj):
         return obj.order_timeline
