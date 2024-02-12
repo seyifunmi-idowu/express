@@ -105,19 +105,13 @@ class OrderService:
         return orders
 
     @classmethod
-    def get_completed_order(cls, request, **kwargs):
-        query_status = request.GET.get("status")
-        paid = request.GET.get("paid")
+    def get_completed_order(cls, request):
         created_at = request.GET.get("created_at")
         timeframe = request.GET.get("timeframe")
 
-        order_qs = Order.objects.filter(**kwargs)
-
-        if query_status:
-            order_qs = order_qs.filter(status=query_status)
-
-        if paid is not None:
-            order_qs = order_qs.filter(paid=paid)
+        order_qs = Order.objects.filter(
+            rider__user=request.user, status="ORDER_COMPLETED"
+        )
 
         if created_at:
             start_date = datetime.strptime(created_at, "%Y-%m-%d")
@@ -127,10 +121,10 @@ class OrderService:
         if timeframe:
             if timeframe.lower() == "today":
                 today = datetime.now().date()
-                order_qs = order_qs.filter(created_at__date=today)
+                order_qs = order_qs.filter(updated_at__date=today)
             elif timeframe.lower() == "yesterday":
                 yesterday = datetime.now().date() - timedelta(days=1)
-                order_qs = order_qs.filter(created_at__date=yesterday)
+                order_qs = order_qs.filter(updated_at__date=yesterday)
 
         return order_qs
 

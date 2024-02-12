@@ -274,9 +274,7 @@ class RiderOrderViewset(viewsets.ViewSet):
         permission_classes=(IsAuthenticated, IsRider),
     )
     def get_completed_order(self, request):
-        orders = OrderService.get_completed_order(
-            rider__user=request.user, status="ORDER_COMPLETED", request=request
-        )
+        orders = OrderService.get_completed_order(request=request)
         return ResponseManager.handle_response(
             data=GetCurrentOrder(orders, many=True).data,
             status=status.HTTP_200_OK,
