@@ -267,7 +267,7 @@ class OrderService:
         delivery_address_info = MapService.get_info_from_latitude_and_longitude(
             delivery_latitude, delivery_longitude
         )
-        if len(pickup_address_info) < 1:
+        if len(delivery_address_info) < 1:
             raise CustomAPIException(
                 "Unable to locate delivery address", status.HTTP_404_NOT_FOUND
             )

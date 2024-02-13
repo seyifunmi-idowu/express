@@ -100,6 +100,7 @@ class RiderHomepageSerializerSerializer(serializers.ModelSerializer):
     ongoing_deliveries = serializers.SerializerMethodField()
     today_earns = serializers.SerializerMethodField()
     this_week_earns = serializers.SerializerMethodField()
+    delivery_request = serializers.SerializerMethodField()
     rider_activity = serializers.SerializerMethodField()
 
     class Meta:
@@ -118,6 +119,13 @@ class RiderHomepageSerializerSerializer(serializers.ModelSerializer):
 
         return OrderService.get_order_qs(
             rider=obj, status__in=["ORDER_DELIVERED", "ORDER_COMPLETED"]
+        ).count()
+
+    def get_delivery_request(self, obj):
+        from order.service import OrderService
+
+        return OrderService.get_order_qs(
+            rider=obj, status="PENDING_RIDER_CONFIRMATION"
         ).count()
 
     def get_ongoing_deliveries(self, obj):
