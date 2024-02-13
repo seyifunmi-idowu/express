@@ -240,7 +240,7 @@ class RiderOrderSerializer(serializers.ModelSerializer):
             "address": obj.pickup_location,
             "short_address": split_address[0],
             "complete_address": split_address[1] if len(split_address) > 1 else "",
-            "contact": obj.pickup_number,
+            "contact_phone_number": obj.pickup_number,
             "contact_name": obj.pickup_contact_name,
             "time": obj.get_pick_up_time(),
         }
@@ -253,7 +253,7 @@ class RiderOrderSerializer(serializers.ModelSerializer):
             "latitude": obj.delivery_location_latitude,
             "short_address": split_address[0],
             "complete_address": split_address[1] if len(split_address) > 1 else "",
-            "contact": obj.delivery_number,
+            "contact_phone_number": obj.delivery_number,
             "contact_name": obj.delivery_contact_name,
             "time": obj.get_delivery_time(),
         }

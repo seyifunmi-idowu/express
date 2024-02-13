@@ -112,38 +112,49 @@ CUSTOMER_ORDER_RESPONSE = {
     ],
 }
 RIDER_ORDER_RESPONSE = {
-    "order_id": "iwcyiop9kp",
-    "status": "RIDER_ACCEPTED_ORDER",
-    "payment_method": None,
-    "payment_by": None,
-    "pickup": {
-        "latitude": 6.6421231,
-        "longitude": 3.2779737,
-        "address": "2 Church St, Abule Egba, Lagos 102213, Lagos, Nigeria",
-        "contact_name": "Tolu",
-        "contact_phone_number": "+23412345678",
+    "data": {
+        "order_id": "glfut9cv8s",
+        "status": "ORDER_DELIVERED",
+        "payment_method": "WALLET",
+        "payment_by": "SENDER",
+        "pickup": {
+            "longitude": "3.3829932",
+            "latitude": "6.5358762",
+            "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
+            "short_address": "24 Olorunkemi Street",
+            "complete_address": "Bariga, Lagos 102216, Lagos, Nigeria",
+            "contact_name": "Tolu",
+            "contact_phone_number": "+23412345678",
+            "time": "2024-02-05 09:48:12",
+        },
+        "delivery": {
+            "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
+            "longitude": "3.3509155",
+            "latitude": "6.5702086",
+            "short_address": "70 Oduduwa Way",
+            "complete_address": "Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
+            "contact_name": "Tolu",
+            "contact_phone_number": "+23412345678",
+            "time": "2024-02-05 09:50:05",
+        },
+        "stopover": [
+            {
+                "latitude": 6.5304791,
+                "longitude": 3.3786346,
+                "address": "34 Bajulaye Rd, Igbobi, Lagos 102216, Lagos, Nigeria",
+                "contact_name": "Tolu",
+                "contact_phone_number": "+23412345678",
+            }
+        ],
+        "total_amount": "4851.41",
+        "tip_amount": None,
+        "note_to_driver": "please be fast",
+        "distance": "15.6 km",
+        "duration": "44 mins",
+        "created_at": "2024-02-04 18:39:17",
+        "contact": {"contact": "", "destination": None},
     },
-    "delivery": {
-        "latitude": 6.5732056,
-        "longitude": 3.3509155,
-        "address": "14 Oduduwa GRA, Ikeja 101233, Lagos, Nigeria",
-        "contact_name": "Maguire",
-        "contact_phone_number": "+23412345278",
-    },
-    "stopover": [
-        {
-            "latitude": 6.5368722,
-            "longitude": 3.3128932,
-            "address": "24 Kale Street, Yaba, Lagos 102216, Lagos, Nigeria",
-            "contact_name": "tAME",
-            "contact_phone_number": "+23412445678",
-        }
-    ],
-    "total_amount": "4851.41",
-    "tip_amount": None,
-    "note_to_driver": None,
-    "distance": "15.6 km",
-    "duration": "44 mins",
+    "message": "Order Information",
 }
 RIDER_INFO_SUCCESS_RESPONSE = {
     "application/json": {
