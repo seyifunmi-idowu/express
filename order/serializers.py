@@ -210,6 +210,7 @@ class RiderOrderSerializer(serializers.ModelSerializer):
     distance = serializers.SerializerMethodField()
     duration = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
+    contact = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -227,24 +228,34 @@ class RiderOrderSerializer(serializers.ModelSerializer):
             "distance",
             "duration",
             "created_at",
+            "contact",
         )
 
     def get_pickup(self, obj):
+        split_address = obj.pickup_location.split(", ", 1)
+
         return {
-            "latitude": obj.pickup_location_latitude,
             "longitude": obj.pickup_location_longitude,
+            "latitude": obj.pickup_location_latitude,
             "address": obj.pickup_location,
+            "short_address": split_address[0],
+            "complete_address": split_address[1] if len(split_address) > 1 else "",
+            "contact": obj.pickup_number,
             "contact_name": obj.pickup_contact_name,
-            "contact_phone_number": obj.pickup_number,
+            "time": obj.get_pick_up_time(),
         }
 
     def get_delivery(self, obj):
+        split_address = obj.delivery_location.split(", ", 1)
         return {
-            "latitude": obj.delivery_location_latitude,
-            "longitude": obj.delivery_location_longitude,
             "address": obj.delivery_location,
+            "longitude": obj.delivery_location_longitude,
+            "latitude": obj.delivery_location_latitude,
+            "short_address": split_address[0],
+            "complete_address": split_address[1] if len(split_address) > 1 else "",
+            "contact": obj.delivery_number,
             "contact_name": obj.delivery_contact_name,
-            "contact_phone_number": obj.delivery_number,
+            "time": obj.get_delivery_time(),
         }
 
     def get_stopover(self, obj):
@@ -275,6 +286,25 @@ class RiderOrderSerializer(serializers.ModelSerializer):
         from order.service import OrderService
 
         return OrderService.get_time_in_word(obj.duration)
+
+    def get_contact(self, obj):
+        status = obj.status
+        if status in [
+            "PENDING",
+            "PROCESSING_ORDER",
+            "RIDER_ACCEPTED_ORDER",
+            "RIDER_AT_PICK_UP",
+        ]:
+            destination = "pickup"
+            contact = obj.pickup_number
+        elif status in ["RIDER_PICKED_UP_ORDER", "ORDER_ARRIVED"]:
+            destination = "delivery"
+            contact = obj.delivery_number
+        else:
+            destination = None
+            contact = ""
+
+        return {"contact": contact, "destination": destination}
 
 
 class GetAddressInfoSerializer(serializers.Serializer):
