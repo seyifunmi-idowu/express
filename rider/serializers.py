@@ -109,6 +109,7 @@ class RiderHomepageSerializerSerializer(serializers.ModelSerializer):
             "id",
             "total_deliveries",
             "ongoing_deliveries",
+            "delivery_request",
             "today_earns",
             "this_week_earns",
             "rider_activity",
