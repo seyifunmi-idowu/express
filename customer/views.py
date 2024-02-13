@@ -165,7 +165,7 @@ class CustomerViewset(viewsets.ViewSet):
     def get_customer_info(self, request):
         rider = CustomerService.get_customer(user=request.user)
         return ResponseManager.handle_response(
-            data=RetrieveCustomerSerializer(rider).validated_data,
+            data=RetrieveCustomerSerializer(rider).data,
             status=status.HTTP_200_OK,
             message="Customer info",
         )
