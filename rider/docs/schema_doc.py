@@ -147,6 +147,7 @@ RIDER_HOME_SUCCESS_RESPONSE = {
             "id": "2c4eccb6025d4c7693c5b9802224ab30",
             "total_deliveries": 3,
             "ongoing_deliveries": 2,
+            "delivery_request": 2,
             "today_earns": 0.0,
             "this_week_earns": 9702.82,
             "rider_activity": [

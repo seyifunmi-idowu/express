@@ -98,9 +98,9 @@ class RiderLoginSerializer(serializers.Serializer):
 class RiderHomepageSerializerSerializer(serializers.ModelSerializer):
     total_deliveries = serializers.SerializerMethodField()
     ongoing_deliveries = serializers.SerializerMethodField()
+    delivery_request = serializers.SerializerMethodField()
     today_earns = serializers.SerializerMethodField()
     this_week_earns = serializers.SerializerMethodField()
-    delivery_request = serializers.SerializerMethodField()
     rider_activity = serializers.SerializerMethodField()
 
     class Meta:
