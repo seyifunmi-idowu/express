@@ -69,7 +69,7 @@ class MapService:
                 "formatted_address": result.get("formatted_address"),
             }
             for result in results
-            if "street_address" in result.get("types")
+            # if "street_address" in result.get("types")
         ]
         return results_list
 
