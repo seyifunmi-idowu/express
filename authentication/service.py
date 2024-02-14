@@ -22,7 +22,7 @@ class UserService:
 
         one_signal_id = kwargs.pop("one_signal_id", None)
         if one_signal_id:
-            user_notification = NotificationService.get_user_notification(
+            user_notification = NotificationService.get_user_one_signal(
                 one_signal_id=one_signal_id
             )
             if user_notification:

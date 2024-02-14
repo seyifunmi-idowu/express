@@ -1,14 +1,15 @@
+from datetime import datetime
 from typing import Dict, List
 
 import sendgrid
 from django.conf import settings
-from django.db.models import Q
 from django.template.loader import get_template
+from rest_framework import status
 from sendgrid.helpers.mail import Content, Email, From, Mail, Subject, To
 
+from helpers.exceptions import CustomAPIException
 from helpers.logger import CustomLogging
-from helpers.onesignal_integration import OneSignalIntegration
-from notification.models import UserNotification
+from notification.models import Notification, ThirdPartyNotification
 
 
 class EmailManager:
@@ -78,45 +79,42 @@ class SmsManager:
 class NotificationService:
     @classmethod
     def add_user_one_signal(cls, user, one_signal_id, **kwargs):
-        return UserNotification.objects.create(
+        return ThirdPartyNotification.objects.create(
             user=user, one_signal_id=one_signal_id, **kwargs
         )
 
     @classmethod
-    def get_user_notification(cls, **kwargs):
-        return UserNotification.objects.filter(**kwargs)
-
-    @classmethod
-    def add_user_for_sms_notification(cls, user):
-        user_notification = UserNotification.objects.filter(
-            Q(meta_data__contains=[{"phone_number": user.phone_number}])
-        )
-        if user_notification and user_notification.first().subscription_id:
-            return True
-
-        response = OneSignalIntegration.add_sms_device(
-            user.phone_number, user.id, user.first_name, user.last_name
-        )
-        subscription_id = response["id"]
-        UserNotification.objects.create(
-            user=user,
-            subscription_id=subscription_id,
-            notification_type="SMS",
-            meta_data={"phone_number": user.phone_number},
-        )
-        return True
-
-    @classmethod
-    def delete_user_from_sms_notification(cls, user, message):
-        user_notification = cls.get_user_notification(
-            user=user, notification_type="SMS"
-        ).first()
-        phone_number = user_notification.get_phone_number()
-        response = OneSignalIntegration.send_sms_notification(phone_number, message)
-        return response.get("success", False)
+    def get_user_one_signal(cls, one_signal_id):
+        return ThirdPartyNotification.objects.filter(one_signal_id=one_signal_id)
 
     @classmethod
     def send_sms_message(cls, user, message):
         phone_number = user.phone_number
         response = SmsManager.send_sms(phone_number, message)
         return response.get("success", False)
+
+    @classmethod
+    def add_user_notification(cls, user, title, message):
+        return Notification.objects.create(user=user, title=title, message=message)
+
+    @classmethod
+    def get_user_notifications(cls, user):
+        return Notification.objects.filter(user=user).order_by("-created_at")
+
+    @classmethod
+    def opened_notification(cls, notification_id, user):
+        notification = Notification.objects.filter(
+            id=notification_id, user=user
+        ).first()
+        if notification is None:
+            raise CustomAPIException(
+                "Notification not found.", status.HTTP_409_CONFLICT
+            )
+        notification.opened = True
+        meta_data = notification.meta_data
+        notification.meta_data = {
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            **meta_data,
+        }
+        notification.save()
+        return True

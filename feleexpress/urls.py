@@ -31,6 +31,7 @@ urlpatterns = [
     ),
     path("api/v1/", include("authentication.urls")),
     path("api/v1/", include("customer.urls")),
+    path("api/v1/", include("notification.urls")),
     path("api/v1/", include("order.urls")),
     path("api/v1/", include("rider.urls")),
     path("api/v1/", include("wallet.urls")),
