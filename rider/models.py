@@ -56,6 +56,7 @@ class Rider(BaseAbstractModel):
         blank=True,
         verbose_name="Locations where rider operate in Nigeria",
     )
+    on_duty = models.BooleanField(default=False)
 
     class Meta:
         db_table = "rider"

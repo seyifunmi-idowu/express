@@ -108,7 +108,7 @@ class NotificationService:
         ).first()
         if notification is None:
             raise CustomAPIException(
-                "Notification not found.", status.HTTP_409_CONFLICT
+                "Notification not found.", status.HTTP_404_NOT_FOUND
             )
         notification.opened = True
         meta_data = notification.meta_data

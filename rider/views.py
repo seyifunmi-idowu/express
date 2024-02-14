@@ -20,6 +20,7 @@ from rider.serializers import (
     RiderHomepageSerializerSerializer,
     RiderLoginSerializer,
     RiderSignupSerializer,
+    SetRiderDutySerializer,
     UpdateVehicleSerializer,
     VehicleInformationSerializer,
     VerifyOtpSerializer,
@@ -231,6 +232,29 @@ class RiderViewset(viewsets.ViewSet):
             data=response,
             status=status.HTTP_200_OK,
             message="Vehicle information updated",
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=SetRiderDutySerializer,
+        operation_description="Set rider duty status",
+        operation_summary="Set rider duty status",
+        tags=["Rider"],
+        responses=schema_doc.SET_RIDER_STATUS_RESPONSE,
+    )
+    @action(detail=False, methods=["post"], url_path="on-duty")
+    def set_rider_duty_status(self, request):
+        serialized_data = SetRiderDutySerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        RiderService.set_rider_duty_status(
+            request.user, session_id, serialized_data.validated_data.get("on_duty")
+        )
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="rider duty status set"
         )
 
 

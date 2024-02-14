@@ -26,6 +26,7 @@ RIDER_INFO = {
         "wallet_balance": 1000.0,
     },
     "status": "UNAPPROVED",
+    "on_duty": True,
     "vehicle": "CAR (Sedan)",
     "vehicle_make": None,
     "vehicle_model": None,
@@ -145,6 +146,7 @@ RIDER_HOME_SUCCESS_RESPONSE = {
     "application/json": {
         "data": {
             "id": "2c4eccb6025d4c7693c5b9802224ab30",
+            "on_duty": True,
             "total_deliveries": 3,
             "ongoing_deliveries": 2,
             "delivery_request": 2,
@@ -300,6 +302,15 @@ UPDATE_VEHICLE_RESPONSE = {
     200: openapi.Response(
         description="Vehicle information updated",
         examples=VEHICLE_INFO_SUCCESS_RESPONSE,
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
+SET_RIDER_STATUS = {
+    "application/json": {"data": {}, "message": "rider duty status set"}
+}
+SET_RIDER_STATUS_RESPONSE = {
+    200: openapi.Response(
+        description="Set rider duty status success", examples=SET_RIDER_STATUS
     ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }

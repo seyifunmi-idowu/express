@@ -226,6 +226,21 @@ class RiderService:
         }
         return response
 
+    @classmethod
+    def set_rider_duty_status(cls, user, session_id, on_duty):
+        rider = cls.get_rider(user=user)
+        rider.on_duty = on_duty
+        rider.save()
+        track_user_activity(
+            context={"on_duty": on_duty},
+            category="RIDER",
+            action="RIDER_SET_ACTIVITY_STATUS",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+
 
 class RiderKYCService:
     @classmethod

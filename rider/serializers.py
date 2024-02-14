@@ -46,6 +46,10 @@ class RiderSignupSerializer(serializers.Serializer):
         return data
 
 
+class SetRiderDutySerializer(serializers.Serializer):
+    on_duty = serializers.BooleanField()
+
+
 class ResendVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField(
         validators=[FieldValidators.validate_existing_user_email], required=False
@@ -107,6 +111,7 @@ class RiderHomepageSerializerSerializer(serializers.ModelSerializer):
         model = Rider
         fields = (
             "id",
+            "on_duty",
             "total_deliveries",
             "ongoing_deliveries",
             "delivery_request",
@@ -187,6 +192,7 @@ class RetrieveRiderSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "status",
+            "on_duty",
             "vehicle",
             "vehicle_make",
             "vehicle_model",

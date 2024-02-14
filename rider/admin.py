@@ -57,8 +57,9 @@ class RiderAdmin(admin.ModelAdmin):
         "vehicle_model",
         "city",
         "rider_status",
+        "on_duty",
     )
-    list_display = ("get_name", "rider_status")
+    list_display = ("get_name", "rider_status", "on_duty")
     ordering = ("-created_at",)
     exclude = (
         "status_updates",
