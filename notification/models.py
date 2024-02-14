@@ -4,14 +4,20 @@ from feleexpress import settings
 from helpers.db_helpers import BaseAbstractModel
 
 
-class UserNotification(BaseAbstractModel):
-    STATUS = [("ACTIVE", "ACTIVE"), ("INACTIVE", "INACTIVE")]
-    TYPE = [("SMS", "SMS"), ("PUSH", "PUSH")]
+class Notification(BaseAbstractModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name="user",
         related_name="user_notification",
+    )
+
+
+class UserNotification(BaseAbstractModel):
+    STATUS = [("ACTIVE", "ACTIVE"), ("INACTIVE", "INACTIVE")]
+    TYPE = [("SMS", "SMS"), ("PUSH", "PUSH")]
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="user"
     )
     one_signal_id = models.CharField(
         max_length=100, verbose_name="one_signal id", blank=True, null=True

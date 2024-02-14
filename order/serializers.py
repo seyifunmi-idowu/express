@@ -309,8 +309,8 @@ class RiderOrderSerializer(serializers.ModelSerializer):
 
 class GetAddressInfoSerializer(serializers.Serializer):
     address = serializers.CharField(required=False)
-    latitude = serializers.CharField(max_length=50)
-    longitude = serializers.CharField(max_length=50)
+    latitude = serializers.CharField(max_length=50, required=False)
+    longitude = serializers.CharField(max_length=50, required=False)
 
     def validate(self, data):
         address = data.get("address")
