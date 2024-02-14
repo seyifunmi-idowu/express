@@ -76,12 +76,15 @@ class MapService:
     @classmethod
     def get_distance_between_locations(cls, start_lat_lng, end_lat_lng):
         response = GoogleMapsService.get_distance_matrix(start_lat_lng, end_lat_lng)
+        print(response)
+        print("=======================")
         if response.get("status") == "OK":
             rows = response.get("rows", [])[0]
             elements = rows.get("elements", [])[0]
             distance = elements.get("distance", {}).get("value")
             duration = elements.get("duration", {}).get("value")
             return {"distance": distance, "duration": duration}
+        return {}
 
 
 class OrderService:
@@ -353,8 +356,8 @@ class OrderService:
 
         else:
             distance_and_duration = MapService.get_distance_between_locations(
-                (pickup_latitude, pickup_longitude),
-                (delivery_latitude, delivery_longitude),
+                f"{pickup_latitude},{pickup_longitude}",
+                f"{delivery_latitude},{delivery_longitude}",
             )
             if distance_and_duration.get("distance") is None:
                 raise CustomAPIException(
