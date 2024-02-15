@@ -19,6 +19,7 @@ CUSTOMER_INFO = {
         "wallet_balance": 1000.0,
     },
     "status": "UNAPPROVED",
+    "business_profile_updated": True,
     "vehicle_type": "CAR",
 }
 UNAUTHENTICATED = {

@@ -78,14 +78,18 @@ class ResendCustomerVerificationSerializer(serializers.Serializer):
 
 class RetrieveCustomerSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer()
+    business_profile_updated = serializers.SerializerMethodField()
 
     class Meta:
         model = Customer
-        fields = ("id", "user", "customer_type")
+        fields = ("id", "user", "customer_type", "business_profile_updated")
+
+    def get_business_profile_updated(self, obj):
+        return obj.customer_type == "BUSINESS" and obj.business_name is not None
 
 
 class CompleteAuthBusinessCustomerSignupSerializer(serializers.Serializer):
     business_name = serializers.CharField(required=True)
-    business_address = serializers.CharField(required=True)
-    business_category = serializers.CharField(required=True)
-    delivery_volume = serializers.IntegerField(required=True)
+    business_address = serializers.CharField(required=False)
+    business_category = serializers.CharField(required=False)
+    delivery_volume = serializers.IntegerField(required=False)
