@@ -9,7 +9,7 @@ from sendgrid.helpers.mail import Content, Email, From, Mail, Subject, To
 
 from helpers.exceptions import CustomAPIException
 from helpers.logger import CustomLogging
-from notification.models import Notification, ThirdPartyNotification
+from notification.models import Notification, UserNotification
 
 
 class EmailManager:
@@ -79,13 +79,17 @@ class SmsManager:
 class NotificationService:
     @classmethod
     def add_user_one_signal(cls, user, one_signal_id, **kwargs):
-        return ThirdPartyNotification.objects.create(
+        return UserNotification.objects.create(
             user=user, one_signal_id=one_signal_id, **kwargs
         )
 
     @classmethod
-    def get_user_one_signal(cls, one_signal_id):
-        return ThirdPartyNotification.objects.filter(one_signal_id=one_signal_id)
+    def get_one_signal(cls, one_signal_id):
+        return UserNotification.objects.filter(one_signal_id=one_signal_id)
+
+    @classmethod
+    def get_user_one_signal(cls, user):
+        return UserNotification.objects.filter(user=user)
 
     @classmethod
     def send_sms_message(cls, user, message):
