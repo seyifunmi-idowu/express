@@ -1,6 +1,5 @@
-# from django.contrib import admin
-#
-# from notification.models import Notification
-#
-#
-# admin.site.register(Notification)
+from django.contrib import admin
+
+from notification.models import ThirdPartyNotification
+
+admin.site.register(ThirdPartyNotification)
