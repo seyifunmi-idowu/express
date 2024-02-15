@@ -67,3 +67,15 @@ class OneSignalIntegration:
         url = f"{cls.base_url}notifications"
         response = requests.post(url, headers=cls.headers, json=data)
         return response.json()
+
+    @classmethod
+    def send_push_notification(cls, subscription_list, title, message):
+        data = {
+            "app_id": cls.app_id,
+            "include_subscription_ids": subscription_list,
+            "contents": {"en": message},
+            "headings": {"en": title},
+        }
+        url = f"{cls.base_url}notifications"
+        response = requests.post(url, headers=cls.headers, json=data)
+        return response.json()

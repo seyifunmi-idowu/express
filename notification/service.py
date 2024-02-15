@@ -9,6 +9,7 @@ from sendgrid.helpers.mail import Content, Email, From, Mail, Subject, To
 
 from helpers.exceptions import CustomAPIException
 from helpers.logger import CustomLogging
+from helpers.onesignal_integration import OneSignalIntegration
 from notification.models import Notification, UserNotification
 
 
@@ -96,6 +97,13 @@ class NotificationService:
         phone_number = user.phone_number
         response = SmsManager.send_sms(phone_number, message)
         return response.get("success", False)
+
+    @classmethod
+    def send_push_notification(cls, user, title, message):
+        user_notification = cls.get_user_one_signal(user).first()
+        if user_notification is not None:
+            one_signal_id = user_notification.one_signal_id
+            OneSignalIntegration.send_push_notification([one_signal_id], title, message)
 
     @classmethod
     def add_user_notification(cls, user, title, message):
