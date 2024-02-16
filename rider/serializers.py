@@ -29,6 +29,7 @@ class RiderSignupSerializer(serializers.Serializer):
     password = serializers.CharField(validators=[FieldValidators.validate_password])
     verify_password = serializers.CharField()
     one_signal_id = serializers.CharField(required=False)
+    referral_code = serializers.CharField(required=False)
 
     def validate(self, data):
         fullname = data.get("fullname")

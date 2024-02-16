@@ -8,7 +8,7 @@ from rest_framework import status
 
 from customer.service import CustomerService
 from helpers.cache_manager import CacheManager, KeyBuilder
-from helpers.db_helpers import generate_id
+from helpers.db_helpers import generate_id, generate_orderid
 from helpers.exceptions import CustomAPIException
 from helpers.googlemaps_service import GoogleMapsService
 from helpers.s3_uploader import S3Uploader
@@ -225,13 +225,6 @@ class OrderService:
         )
 
     @classmethod
-    def generate_orderid(cls):
-        import random
-        import string
-
-        return "".join(random.choices(string.ascii_lowercase + string.digits, k=10))
-
-    @classmethod
     def get_km_in_word(cls, distance_in_meters):
         distance_in_km = int(distance_in_meters) / 1000
         formatted_distance = "{:.1f}".format(distance_in_km)
@@ -390,7 +383,7 @@ class OrderService:
                 }
             )
 
-        order_id = cls.generate_orderid()
+        order_id = generate_orderid()
         data = {
             "user_id": user.id,
             "order_id": order_id,

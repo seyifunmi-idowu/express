@@ -23,6 +23,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "street_address",
             "city",
             "last_login",
+            "referral_code",
             "is_rider",
             "is_customer",
             "display_name",
@@ -63,6 +64,10 @@ class VerifyForgotPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords do not match.")
 
         return data
+
+
+class CustomizeReferralCodeSerializer(serializers.Serializer):
+    referral_code = serializers.CharField(max_length=30)
 
 
 class ChangePasswordSerializer(serializers.Serializer):

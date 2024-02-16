@@ -4,11 +4,11 @@ from django.contrib.auth.hashers import check_password
 from django.utils import timezone
 from rest_framework import status
 
-from authentication.models import User, UserActivity
+from authentication.models import ReferralUser, User, UserActivity
 from authentication.tasks import track_user_activity
 from feleexpress import settings
 from helpers.cache_manager import CacheManager, KeyBuilder
-from helpers.db_helpers import generate_otp
+from helpers.db_helpers import generate_otp, generate_referral_code
 from helpers.exceptions import CustomAPIException, CustomFieldValidationException
 from helpers.token_manager import TokenManager
 from notification.service import EmailManager
@@ -25,15 +25,27 @@ class UserService:
             user_notification = NotificationService.get_one_signal(
                 one_signal_id=one_signal_id
             )
-            if user_notification:
+            if user_notification and settings.ENVIRONMENT != "dev":
                 raise CustomAPIException(
                     "One signal id assigned to another user", status.HTTP_409_CONFLICT
                 )
 
-        user = User.objects.create_user(**kwargs)
+        referral_code = kwargs.pop("referral_code", None)
+        referred_by = User.objects.filter(referral_code=referral_code).first()
+        if referred_by is None:
+            raise CustomAPIException(
+                "Invalid referral code. Edit referral code or sign up without referral code",
+                status.HTTP_409_CONFLICT,
+            )
+
+        user = User.objects.create_user(
+            referral_code=generate_referral_code(), **kwargs
+        )
 
         one_signal_id and NotificationService.add_user_one_signal(user, one_signal_id)
-
+        ReferralUser.objects.create(
+            referred_by=referred_by, referred_user=user, referral_code=referral_code
+        )
         WalletService.create_user_wallet(user)
         return user
 
@@ -53,6 +65,24 @@ class UserService:
                 return user
 
         return None
+
+    @classmethod
+    def customize_referral_code(cls, user, referral_code, session_id):
+        referral_code_user = User.objects.filter(referral_code=referral_code).first()
+        if referral_code_user:
+            raise CustomAPIException("Referral code taken", status.HTTP_409_CONFLICT)
+        user.referral_code = referral_code
+        user.save()
+        track_user_activity(
+            context={"referral_code": referral_code},
+            category="USER",
+            action="USER_CUSTOMIZE_REFERRAL_CODE",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+        return user
 
 
 class AuthService:

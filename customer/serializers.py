@@ -29,6 +29,7 @@ class CustomerSignupSerializer(serializers.Serializer):
     business_address = serializers.CharField(required=False)
     business_category = serializers.CharField(required=False)
     delivery_volume = serializers.IntegerField(required=False)
+    referral_code = serializers.CharField(required=False)
 
     def validate(self, data):
         errors = {}

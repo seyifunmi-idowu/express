@@ -57,6 +57,7 @@ class CustomerService:
         business_category = kwargs.get("business_category")
         delivery_volume = kwargs.get("delivery_volume")
         one_signal_id = kwargs.get("one_signal_id")
+        referral_code = kwargs.get("referral_code")
         first_name = fullname.split(" ")[0]
         last_name = fullname.split(" ")[1]
 
@@ -70,6 +71,7 @@ class CustomerService:
                 password=password,
                 receive_email_promotions=receive_email_promotions,
                 one_signal_id=one_signal_id,
+                referral_code=referral_code,
             )
             cls.create_customer(
                 user=instance_user,

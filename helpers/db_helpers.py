@@ -47,6 +47,20 @@ def generate_otp():
     return "".join(random.choices(string.digits, k=6))
 
 
+def generate_referral_code(length=8):
+    from authentication.models import User
+
+    characters = string.ascii_letters + string.digits
+    referral_code = "".join(random.choice(characters) for _ in range(length))
+    if User.objects.filter(referral_code=referral_code).exists():
+        return generate_referral_code(length=8)  #
+    return referral_code
+
+
+def generate_orderid():
+    return "".join(random.choices(string.ascii_lowercase + string.digits, k=10))
+
+
 class BaseAbstractModel(models.Model):
     """Base Abstract Model"""
 

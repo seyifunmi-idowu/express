@@ -106,6 +106,7 @@ class User(BaseAbstractModel, AbstractBaseUser, PermissionsMixin):
         default=False,
         help_text="Designates whether the user will receive newsletter and all.",
     )
+    referral_code = models.CharField(max_length=30, blank=True, null=True)
 
     objects = UserManager()
 
@@ -200,3 +201,27 @@ class UserActivity(BaseAbstractModel):
         db_table = "user_activity"
         verbose_name = "user activity"
         verbose_name_plural = "user activities"
+
+
+class ReferralUser(BaseAbstractModel):
+    referred_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Referred By",
+        related_name="referred_users",
+    )
+    referred_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Referred User",
+        related_name="referral_users",
+    )
+    referral_code = models.CharField(max_length=30, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.referred_by} referred {self.referred_user} "
+
+    class Meta:
+        db_table = "referral_user"
+        verbose_name = "referral user"
+        verbose_name_plural = "referral users"

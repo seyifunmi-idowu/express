@@ -13,6 +13,7 @@ CUSTOMER_INFO = {
         "street_address": None,
         "city": None,
         "last_login": "2023-10-04T07:17:48.924120Z",
+        "referral_code": "pebDRVQM",
         "is_rider": False,
         "is_customer": True,
         "display_name": "John Mark",

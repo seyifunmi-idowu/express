@@ -17,7 +17,6 @@ VERIFY_OTP_RESPONSES = {
     400: openapi.Response(description="Bad Input", examples=EXPIRE_RESPONSE),
 }
 
-
 USER_DATA_EXAMPLE = {
     "id": "3979c56f95d4474580f466b7123e955f",
     "first_name": "John",
@@ -29,6 +28,7 @@ USER_DATA_EXAMPLE = {
     "street_address": None,
     "city": None,
     "last_login": "2023-10-02T20:43:57.009396Z",
+    "referral_code": "lionelMessi",
     "is_rider": True,
     "is_customer": False,
     "display_name": "John Mark",

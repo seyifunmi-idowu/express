@@ -7,6 +7,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from authentication.docs import scehma_doc
 from authentication.serializers import (
     ChangePasswordSerializer,
+    CustomizeReferralCodeSerializer,
     ForgotPasswordSerializer,
     UserProfileSerializer,
     VerifyForgotPasswordSerializer,
@@ -80,6 +81,32 @@ class UserViewset(viewsets.ViewSet):
         )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Password changed successful"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=CustomizeReferralCodeSerializer,
+        operation_description="Customize user referral code",
+        operation_summary="Customize user referral code",
+        tags=["User"],
+        responses=scehma_doc.GET_USER_DATA,
+    )
+    @action(detail=False, methods=["post"], url_path="customize-referral-code")
+    def customize_referral_code(self, request):
+        serialized_data = CustomizeReferralCodeSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        user = UserService.customize_referral_code(
+            request.user,
+            serialized_data.validated_data.get("referral_code"),
+            generate_session_id(),
+        )
+        return ResponseManager.handle_response(
+            data=UserProfileSerializer(user).data,
+            status=status.HTTP_200_OK,
+            message="Password changed successful",
         )
 
 
