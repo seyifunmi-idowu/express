@@ -9,7 +9,14 @@ from helpers.admin_helpers import BaseModelAdmin
 class CustomUserAdmin(BaseModelAdmin, UserAdmin):
     actions = ["delete_user"]
     model = User
-    list_display = ("first_name", "last_name", "email", "user_type", "is_staff")
+    list_display = (
+        "first_name",
+        "last_name",
+        "email",
+        "user_type",
+        "is_staff",
+        "referral_code",
+    )
     list_filter = ("first_name", "last_name", "user_type")
     readonly_fields = ("deleted_at", "email_verified", "phone_verified")
     fieldsets = (
