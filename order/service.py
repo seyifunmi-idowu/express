@@ -516,10 +516,18 @@ class OrderService:
         order = cls.get_order(order_id, customer__user=user)
         favorite_rider = kwargs.get("favorite_rider", False)
         rating = kwargs.get("rating")
-        remark = kwargs.get("remark", "")
-        RiderRating.objects.create(
-            rider=order.rider, customer=order.customer, remark=remark, rating=rating
-        )
+        remark = kwargs.get("remark", None)
+        rider_rating = RiderRating.objects.get(
+            rider=order.rider, customer=order.customer
+        ).first()
+        if rider_rating:
+            rider_rating.remark = remark
+            rider_rating.rating = rating
+            rider_rating.save()
+        else:
+            RiderRating.objects.create(
+                rider=order.rider, customer=order.customer, remark=remark, rating=rating
+            )
         if favorite_rider:
             FavoriteRider.objects.create(rider=order.rider, customer=order.customer)
         return True

@@ -9,6 +9,56 @@ class RetrieveVehicleSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "note", "file_url")
 
 
+class GetCustomerOrderSerializer(serializers.ModelSerializer):
+    pickup = serializers.SerializerMethodField()
+    delivery = serializers.SerializerMethodField()
+    rider = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = ("order_id", "status", "pickup", "delivery", "rider")
+
+    def get_pickup(self, obj):
+        return {"address": obj.pickup_location, "time": obj.get_pick_up_time()}
+
+    def get_rider(self, obj):
+        if obj.rider:
+            return {
+                "name": obj.rider.display_name,
+                "contact": obj.rider.user.phone_number,
+            }
+        return {"name": None, "contact": None}
+
+    def get_delivery(self, obj):
+        return {"address": obj.delivery_location, "time": obj.get_delivery_time()}
+
+
+class OrderHistorySerializer(serializers.ModelSerializer):
+    pickup = serializers.SerializerMethodField()
+    delivery = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = (
+            "order_id",
+            "status",
+            "total_amount",
+            "pickup",
+            "delivery",
+            "created_at",
+        )
+
+    def get_pickup(self, obj):
+        return {"address": obj.pickup_location}
+
+    def get_created_at(self, obj):
+        return obj.created_at.strftime("%Y-%B-%d %H:%M:%S")
+
+    def get_delivery(self, obj):
+        return {"address": obj.delivery_location}
+
+
 class GetOrderSerializer(serializers.ModelSerializer):
     pickup = serializers.SerializerMethodField()
     delivery = serializers.SerializerMethodField()
@@ -132,6 +182,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
     duration = serializers.SerializerMethodField()
     timeline = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -151,6 +202,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
             "duration",
             "timeline",
             "created_at",
+            "rating",
         )
 
     def get_pickup(self, obj):
@@ -205,6 +257,20 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
 
     def get_rider_contact(self, obj):
         return obj.rider.user.phone_number
+
+    def get_rating(self, obj):
+        from rider.models import RiderRating
+
+        rating = RiderRating.objects.filter(
+            rider=obj.rider, customer=obj.customer
+        ).first()
+        if rating:
+            return {
+                "rating": rating.rating,
+                "created_at": rating.created_at.strftime("%Y-%B-%d %H:%M:%S"),
+            }
+        else:
+            return {"rating": None, "created_at": None}
 
 
 class RiderOrderSerializer(serializers.ModelSerializer):

@@ -28,33 +28,70 @@ ORDER_NOT_FOUND_RESPONSE = {"application/json": {"message": "Order not found."}}
 
 GET_ALL_ORDER = {
     "application/json": {
+        "count": 7,
+        "total_pages": 1,
+        "current_page": 1,
         "data": [
+            {
+                "order_id": "glfut9cv8s",
+                "status": "ORDER_DELIVERED",
+                "pickup": {
+                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
+                    "time": "2024-02-05 09:48:12",
+                },
+                "delivery": {
+                    "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
+                    "time": "2024-02-05 09:50:05",
+                },
+                "rider": {"name": "Messi Messi", "contact": "+2348105474514"},
+            },
             {
                 "order_id": "rv5p05b82k",
                 "status": "PENDING",
                 "pickup": {
-                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria"
+                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
+                    "time": None,
                 },
                 "delivery": {
-                    "address": "34 Bajulaye Rd, Igbobi, Lagos 102216, Lagos, Nigeria"
+                    "address": "34 Bajulaye Rd, Igbobi, Lagos 102216, Lagos, Nigeria",
+                    "time": None,
                 },
-                "assigned_by_customer": False,
-                "created_at": "2024-02-10 16:41:02",
+                "rider": {"name": None, "contact": None},
             },
+        ],
+    }
+}
+GET_ORDER_HISTORY_SUCCESS = {
+    "application/json": {
+        "count": 7,
+        "total_pages": 1,
+        "current_page": 1,
+        "data": [
             {
-                "order_id": "t12j2g0s71",
-                "status": "PENDING_RIDER_CONFIRMATION",
+                "order_id": "glfut9cv8s",
+                "status": "ORDER_DELIVERED",
+                "total_amount": "4851.41",
                 "pickup": {
                     "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria"
                 },
                 "delivery": {
-                    "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria"
+                    "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria"
                 },
-                "assigned_by_customer": True,
-                "created_at": "2024-02-11 18:57:25",
+                "created_at": "2024-February-04 18:39:17",
+            },
+            {
+                "order_id": "iwcyiop9kp",
+                "status": "RIDER_ACCEPTED_ORDER",
+                "total_amount": "4851.41",
+                "pickup": {
+                    "address": "8 C. A. C St, Ojo, Lagos 102101, Lagos, Nigeria"
+                },
+                "delivery": {
+                    "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria"
+                },
+                "created_at": "2024-February-04 18:47:11",
             },
         ],
-        "message": "User orders",
     }
 }
 GET_CUSTOMER_ORDER_SUCCESS = {
@@ -292,6 +329,12 @@ ADDRESS_INFO_RESPONSE = {
     404: openapi.Response(
         description="Address not found", examples=ADDRESS_INFO_NOT_FOUND_RESPONSE
     ),
+}
+GET_ORDER_HISTORY_RESPONSE = {
+    200: openapi.Response(
+        description="Order Information", examples=GET_ORDER_HISTORY_SUCCESS
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }
 GET_ALL_ORDER_RESPONSE = {
     200: openapi.Response(description="Order Information", examples=GET_ALL_ORDER),

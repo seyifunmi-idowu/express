@@ -11,7 +11,7 @@ from feleexpress.middlewares.permissions.is_authenticated import (
     IsRider,
 )
 from helpers.googlemaps_service import GoogleMapsService
-from helpers.utils import ResponseManager
+from helpers.utils import ResponseManager, paginate_response
 from order.docs import schema_doc
 from order.serializers import (
     AddDriverTipSerializer,
@@ -19,8 +19,10 @@ from order.serializers import (
     CustomerOrderSerializer,
     GetAddressInfoSerializer,
     GetCurrentOrder,
+    GetCustomerOrderSerializer,
     GetOrderSerializer,
     InitiateOrderSerializer,
+    OrderHistorySerializer,
     PlaceOrderSerializer,
     RateRiderSerializer,
     RetrieveVehicleSerializer,
@@ -87,6 +89,20 @@ class CustomerOrderViewset(viewsets.ViewSet):
     permission_classes = (IsAuthenticated, IsCustomer)
 
     @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get customer order history",
+        operation_summary="Get customer order history",
+        tags=["Customer-Order"],
+        responses=schema_doc.GET_ORDER_HISTORY_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="history")
+    def get_history_order(self, request):
+        orders = OrderService.get_order_qs(customer__user=request.user)
+        return paginate_response(
+            queryset=orders, serializer_=OrderHistorySerializer, request=request
+        )
+
+    @swagger_auto_schema(
         operation_description="Get all user orders",
         operation_summary="Get all user orders",
         tags=["Customer-Order"],
@@ -94,10 +110,8 @@ class CustomerOrderViewset(viewsets.ViewSet):
     )
     def list(self, request):
         orders = OrderService.get_order_qs(customer__user=request.user)
-        return ResponseManager.handle_response(
-            data=GetOrderSerializer(orders, many=True).data,
-            status=status.HTTP_200_OK,
-            message="User orders",
+        return paginate_response(
+            queryset=orders, serializer_=GetCustomerOrderSerializer, request=request
         )
 
     @swagger_auto_schema(
