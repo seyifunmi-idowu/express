@@ -105,7 +105,7 @@ class CustomerOrderViewset(viewsets.ViewSet):
         operation_description="Get order information",
         operation_summary="Get order information",
         tags=["Customer-Order"],
-        responses=schema_doc.PLACE_ORDER_RESPONSE,
+        responses=schema_doc.GET_CUSTOMER_ORDER_RESPONSE,
     )
     @action(detail=False, methods=["get"], url_path="(?P<order_id>[a-z,A-Z,0-9]+)")
     def get_order(self, request, order_id):

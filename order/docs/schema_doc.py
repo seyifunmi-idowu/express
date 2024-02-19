@@ -57,6 +57,70 @@ GET_ALL_ORDER = {
         "message": "User orders",
     }
 }
+GET_CUSTOMER_ORDER_SUCCESS = {
+    "application/json": {
+        "data": {
+            "order_id": "glfut9cv8s",
+            "status": "ORDER_DELIVERED",
+            "payment_method": "WALLET",
+            "payment_by": "SENDER",
+            "rider_contact": "+2348105474514",
+            "pickup": {
+                "latitude": "6.5358762",
+                "longitude": "3.3829932",
+                "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
+                "contact_name": None,
+                "contact_phone_number": None,
+            },
+            "delivery": {
+                "latitude": "6.5702086",
+                "longitude": "3.3509155",
+                "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
+                "contact_name": None,
+                "contact_phone_number": None,
+            },
+            "stopover": [
+                {
+                    "latitude": 6.5304791,
+                    "longitude": 3.3786346,
+                    "address": "34 Bajulaye Rd, Igbobi, Lagos 102216, Lagos, Nigeria",
+                    "contact_name": None,
+                    "contact_phone_number": None,
+                }
+            ],
+            "total_amount": "4851.41",
+            "tip_amount": None,
+            "note_to_driver": "please be fast",
+            "distance": "15.6 km",
+            "duration": "44 mins",
+            "timeline": [
+                {
+                    "date": "2024-02-04 20:36:33.507815+00:00",
+                    "status": "RIDER_ACCEPTED_ORDER",
+                },
+                {"date": "2024-02-05 09:47:45", "status": "RIDER_AT_PICK_UP"},
+                {
+                    "date": "2024-02-05 09:48:12",
+                    "status": "RIDER_PICKED_UP_ORDER",
+                    "proof_of_pickup_url": "https://feleexpress.s3.amazonaws.com/backend-dev/order/glfut9cv8s/e6892e9ae7664bc6a6fa2805d6874081.pdf",
+                },
+                {"date": "2024-02-05 09:49:48", "status": "ORDER_ARRIVED"},
+                {
+                    "date": "2024-02-05 09:50:05",
+                    "status": "ORDER_DELIVERED",
+                    "proof_of_delivery_url": "https://feleexpress.s3.amazonaws.com/backend-dev/order/glfut9cv8s/0a952dc3a4b54bc0825b5baf34a2cff2.pdf",
+                },
+                {
+                    "date": "2024-02-05 09:50:32",
+                    "status": "ORDER_DELIVERED",
+                    "proof_of_delivery_url": "https://feleexpress.s3.amazonaws.com/backend-dev/order/glfut9cv8s/7ec69823ccd3433c84276fd9938d9131.pdf",
+                },
+            ],
+            "created_at": "2024-02-04 18:39:17",
+        },
+        "message": "Order Information",
+    }
+}
 CUSTOMER_ORDER_RESPONSE = {
     "order_id": "glfut9cv8s",
     "status": "ORDER_DELIVERED",
@@ -231,6 +295,12 @@ ADDRESS_INFO_RESPONSE = {
 }
 GET_ALL_ORDER_RESPONSE = {
     200: openapi.Response(description="Order Information", examples=GET_ALL_ORDER),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
+GET_CUSTOMER_ORDER_RESPONSE = {
+    200: openapi.Response(
+        description="Order Information", examples=GET_CUSTOMER_ORDER_SUCCESS
+    ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }
 GET_CURRENT_ORDER_SUCCESS_RESPONSE = {

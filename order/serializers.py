@@ -123,6 +123,7 @@ class GetCurrentOrder(GetOrderSerializer):
 
 
 class CustomerOrderSerializer(serializers.ModelSerializer):
+    rider_contact = serializers.SerializerMethodField()
     pickup = serializers.SerializerMethodField()
     delivery = serializers.SerializerMethodField()
     stopover = serializers.SerializerMethodField()
@@ -139,6 +140,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
             "status",
             "payment_method",
             "payment_by",
+            "rider_contact",
             "pickup",
             "delivery",
             "stopover",
@@ -200,6 +202,9 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
         from order.service import OrderService
 
         return OrderService.get_time_in_word(obj.duration)
+
+    def get_rider_contact(self, obj):
+        return obj.rider.user.phone_number
 
 
 class RiderOrderSerializer(serializers.ModelSerializer):
