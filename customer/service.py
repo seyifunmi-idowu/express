@@ -44,6 +44,45 @@ class CustomerService:
         return customer
 
     @classmethod
+    def update_customer_profile(cls, user, session_id, **kwargs):
+        from helpers.s3_uploader import S3Uploader
+
+        email = kwargs.get("email", None)
+        first_name = kwargs.get("first_name", None)
+        phone_number = kwargs.get("phone_number", None)
+        last_name = kwargs.get("last_name", None)
+
+        avatar_file = kwargs.pop("avatar", None)
+        if avatar_file:
+            file_name = avatar_file.name
+            file_url = S3Uploader(
+                append_folder=f"/avatar/{user.id}"
+            ).upload_file_object(avatar_file, file_name)
+            user.avatar_url = file_url
+
+        if first_name:
+            user.first_name = first_name
+        if last_name:
+            user.last_name = last_name
+        if email:
+            user.email = email
+            user.email_verified = False
+        if phone_number:
+            user.phone_number = phone_number
+            user.phone_verified = False
+
+        user.save()
+        track_user_activity(
+            context=dict(**kwargs),
+            category="CUSTOMER_AUTH",
+            action="CUSTOMER_UPDATE_PROFILE",
+            email=user.email if user.email else user.phone_number,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+        return user
+
+    @classmethod
     def register_customer(cls, session_id, **kwargs):
         from helpers.cache_manager import CacheManager, KeyBuilder
 

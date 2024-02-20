@@ -227,3 +227,33 @@ COMPLETE_AUTH_BUSINESS_CUSTOMER_REGISTRATION_RESPONSES = {
     ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }
+UPDATE_CUSTOMER_PROFILE_SUCCESS_RESPONSE = {
+    "application/json": {
+        "data": {
+            "id": "a5801b61a0cc4afa9087fea8cfcb5a33",
+            "first_name": "Nathan",
+            "last_name": "Mbappe",
+            "email": "kylianmbappe@gmail.com",
+            "email_verified": False,
+            "phone_number": "+2348105573517",
+            "phone_verified": False,
+            "avatar_url": "https://feleexpress.s3.amazonaws.com/backend-dev/avatar/a5801b6446e2aec449c9729c6f20.jpg",
+            "street_address": None,
+            "city": None,
+            "last_login": "2024-02-05T23:37:34.375171+01:00",
+            "referral_code": "R2sRkRQJ",
+            "is_rider": False,
+            "is_customer": True,
+            "display_name": "Nathan Mbappe",
+            "wallet_balance": 95148.59,
+        },
+        "message": "Customer updated successful",
+    }
+}
+UPDATE_CUSTOMER_PROFILE_RESPONSES = {
+    201: openapi.Response(
+        description="Customer updated successful",
+        examples=REGISTRATION_SUCCESS_RESPONSE,
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}

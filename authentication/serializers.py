@@ -20,6 +20,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "email_verified",
             "phone_number",
             "phone_verified",
+            "avatar_url",
             "street_address",
             "city",
             "last_login",

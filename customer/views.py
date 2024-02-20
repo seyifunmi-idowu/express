@@ -3,6 +3,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from authentication.docs.scehma_doc import VERIFY_OTP_RESPONSES
+from authentication.serializers import UserProfileSerializer
 from authentication.service import AuthService
 from customer.docs import schema_doc
 from customer.serializers import (
@@ -14,6 +15,7 @@ from customer.serializers import (
     ResendCustomerVerificationSerializer,
     RetrieveCustomerSerializer,
     UpdateAddressSerializer,
+    UpdateCustomerProfileSerializer,
 )
 from customer.service import CustomerAddressService, CustomerService
 from feleexpress.middlewares.permissions.is_authenticated import (
@@ -212,6 +214,31 @@ class CustomerViewset(viewsets.ViewSet):
         )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Customer sign up successful"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=UpdateCustomerProfileSerializer,
+        operation_description="Update customer profile",
+        operation_summary="Update customer profile",
+        tags=["Customer"],
+        responses=schema_doc.UPDATE_CUSTOMER_PROFILE_RESPONSES,
+    )
+    @action(detail=False, methods=["post"], url_path="update-profile")
+    def update_profile(self, request):
+        serialized_data = UpdateCustomerProfileSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        response = CustomerService.update_customer_profile(
+            request.user, session_id, **serialized_data.validated_data
+        )
+        return ResponseManager.handle_response(
+            data=UserProfileSerializer(response).data,
+            status=status.HTTP_200_OK,
+            message="Customer updated successful",
         )
 
 

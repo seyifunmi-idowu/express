@@ -97,6 +97,24 @@ class CompleteAuthBusinessCustomerSignupSerializer(serializers.Serializer):
     delivery_volume = serializers.IntegerField(required=False)
 
 
+class UpdateCustomerProfileSerializer(serializers.Serializer):
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=False)
+    email = serializers.EmailField(
+        validators=[FieldValidators.validate_non_existing_user_email], required=False
+    )
+    phone_number = serializers.CharField(
+        min_length=10,
+        max_length=15,
+        validators=[
+            FieldValidators.validate_phone_number,
+            FieldValidators.validate_non_existing_user_phone,
+        ],
+        required=False,
+    )
+    avatar = serializers.FileField(write_only=True, required=False)
+
+
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
