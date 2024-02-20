@@ -64,6 +64,7 @@ class RiderService:
         password = kwargs.get("password")
         one_signal_id = kwargs.get("one_signal_id")
         referral_code = kwargs.get("referral_code")
+        city = kwargs.get("city")
         first_name = fullname.split(" ")[0]
         last_name = fullname.split(" ")[1]
 
@@ -77,8 +78,9 @@ class RiderService:
                 password=password,
                 one_signal_id=one_signal_id,
                 referral_code=referral_code,
+                city=city,
             )
-            cls.create_rider(user=instance_user)
+            cls.create_rider(user=instance_user, city=city)
 
             # AuthService.initiate_email_verification(email=email, name=fullname)
             AuthService.initiate_phone_verification(phone_number)
@@ -274,8 +276,12 @@ class RiderKYCService:
             )
 
         rider = RiderService.get_rider(user=user)
-        rider.vehicle_color = kwargs.pop("vehicle_color", None)
-        rider.vehicle_plate_number = kwargs.pop("vehicle_plate_number", None)
+        rider.vehicle_make = kwargs.pop("vehicle_make", rider.vehicle_make)
+        rider.vehicle_model = kwargs.pop("vehicle_model", rider.vehicle_model)
+        rider.vehicle_color = kwargs.pop("vehicle_color", rider.vehicle_color)
+        rider.vehicle_plate_number = kwargs.pop(
+            "vehicle_plate_number", rider.vehicle_plate_number
+        )
         rider.vehicle = vehicle
         rider.save()
 

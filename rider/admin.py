@@ -55,7 +55,6 @@ class RiderAdmin(admin.ModelAdmin):
         "vehicle",
         "vehicle_make",
         "vehicle_model",
-        "city",
         "rider_status",
         "on_duty",
     )
