@@ -6,6 +6,7 @@ from authentication.docs.scehma_doc import VERIFY_OTP_RESPONSES
 from authentication.service import AuthService
 from customer.docs import schema_doc
 from customer.serializers import (
+    AddressSerializer,
     CompleteAuthBusinessCustomerSignupSerializer,
     CompleteBusinessCustomerSignupSerializer,
     CustomerSignupSerializer,
@@ -184,6 +185,24 @@ class CustomerViewset(viewsets.ViewSet):
             data=FavouriteRiderSerializer(response, many=True).data,
             status=status.HTTP_200_OK,
             message="Customer favourite rider",
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get Customer saved addresses",
+        operation_summary="Get Customer saved addresses",
+        tags=["Customer"],
+        responses=schema_doc.CUSTOMER_SAVED_ADDRESS_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="saved-address")
+    def get_customer_saved_addresses(self, request):
+        from order.models import Address
+
+        response = Address.objects.filter(customer__user=request.user)
+        return ResponseManager.handle_response(
+            data=AddressSerializer(response, many=True).data,
+            status=status.HTTP_200_OK,
+            message="Customer saved address",
         )
 
     @swagger_auto_schema(

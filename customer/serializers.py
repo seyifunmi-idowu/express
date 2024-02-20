@@ -3,6 +3,7 @@ from rest_framework import serializers
 from authentication.serializers import UserProfileSerializer
 from customer.models import Customer
 from helpers.validators import FieldValidators
+from order.models import Address
 
 
 class CustomerSignupSerializer(serializers.Serializer):
@@ -94,3 +95,9 @@ class CompleteAuthBusinessCustomerSignupSerializer(serializers.Serializer):
     business_address = serializers.CharField(required=False)
     business_category = serializers.CharField(required=False)
     delivery_volume = serializers.IntegerField(required=False)
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ("id", "formatted_address", "longitude", "latitude")

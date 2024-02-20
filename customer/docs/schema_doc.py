@@ -155,6 +155,26 @@ CUSTOMER_FAVOURITE_RIDER_RESPONSE = {
     ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }
+CUSTOMER_SAVED_ADDRESS_SUCCESS_RESPONSE = {
+    "application/json": {
+        "data": [
+            {
+                "id": "23480c9395584af9983d5e872fa25fa1",
+                "formatted_address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
+                "longitude": "3.3829932",
+                "latitude": "6.5358762",
+            }
+        ],
+        "message": "Customer saved address",
+    }
+}
+CUSTOMER_SAVED_ADDRESS_RESPONSE = {
+    200: openapi.Response(
+        description="Customer saved address",
+        examples=CUSTOMER_SAVED_ADDRESS_SUCCESS_RESPONSE,
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
 OTP_RESENT_SUCCESS_RESPONSE = {"application/json": {"data": {}, "message": "Otp sent"}}
 EMAIL_REGISTRATION_NONE_EXISITING_USER_RESPONSE = {
     "application/json": {"errors": {"email": ["User with email address not found"]}}
