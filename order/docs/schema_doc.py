@@ -438,6 +438,20 @@ GET_ORDER_RESPONSE = {
         description="Order not found", examples=ORDER_NOT_FOUND_RESPONSE
     ),
 }
+CANCEL_CUSTOMER_ORDER_SUCCESS_RESPONSE = {
+    "application/json": {"data": {}, "message": "Order cancelled"}
+}
+
+CANCEL_CUSTOMER_ORDER_RESPONSE = {
+    200: openapi.Response(
+        description="Order cancelled", examples=CANCEL_CUSTOMER_ORDER_SUCCESS_RESPONSE
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+    404: openapi.Response(
+        description="Order not found", examples=ORDER_NOT_FOUND_RESPONSE
+    ),
+}
+
 INITIATE_ORDER_SUCCESS_RESPONSE = {
     "application/json": {
         "data": {

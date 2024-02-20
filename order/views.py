@@ -10,6 +10,7 @@ from feleexpress.middlewares.permissions.is_authenticated import (
     IsCustomer,
     IsRider,
 )
+from helpers.db_helpers import generate_session_id
 from helpers.googlemaps_service import GoogleMapsService
 from helpers.utils import ResponseManager, paginate_response
 from order.docs import schema_doc
@@ -253,6 +254,25 @@ class CustomerOrderViewset(viewsets.ViewSet):
         )
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Rider rated"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        operation_description="Customer cancel order",
+        operation_summary="Customer cancel order",
+        tags=["Customer-Order"],
+        responses=schema_doc.ACCEPT_CUSTOMER_ORDER_RESPONSE,
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="(?P<order_id>[a-z,A-Z,0-9]+)/cancel-order",
+    )
+    def customer_cancel_order(self, request, order_id):
+        session_id = generate_session_id()
+        OrderService.customer_cancel_order(request.user, order_id, session_id)
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Order cancelled"
         )
 
 

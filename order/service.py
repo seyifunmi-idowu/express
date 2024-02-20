@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
 
+from authentication.tasks import track_user_activity
 from customer.service import CustomerService
 from helpers.cache_manager import CacheManager, KeyBuilder
 from helpers.db_helpers import generate_id, generate_orderid
@@ -535,6 +536,33 @@ class OrderService:
             )
         if favorite_rider:
             FavoriteRider.objects.create(rider=order.rider, customer=order.customer)
+        return True
+
+    @classmethod
+    def customer_cancel_order(cls, user, order_id, session_id):
+        order = cls.get_order(order_id, customer__user=user)
+        if order.status in [
+            "RIDER_PICKED_UP_ORDER",
+            "ORDER_ARRIVED",
+            "ORDER_DELIVERED",
+            "ORDER_COMPLETED",
+        ]:
+            raise CustomAPIException(
+                "Cannot cancel an on going order.", status.HTTP_400_BAD_REQUEST
+            )
+        cls.add_order_timeline_entry(
+            order, "ORDER_CANCELLED", **{"cancelled_by": "customer"}
+        )
+        order.status = "ORDER_CANCELLED"
+        order.save()
+        track_user_activity(
+            context=dict({"order_id": order_id}),
+            category="ORDER",
+            action="CUSTOMER_CANCELLED_ORDER",
+            email=user.email if user.email else user.phone_number,
+            level="SUCCESS",
+            session_id=session_id,
+        )
         return True
 
     @classmethod
