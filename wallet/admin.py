@@ -7,7 +7,7 @@ from wallet.models import Transaction, Wallet
 
 class WalletAdmin(admin.ModelAdmin):
     search_fields = ("user__first_name", "user__last_name")
-    readonly_fields = ("user", "balance")
+    # readonly_fields = ("user", "balance")
     list_display = ("user", "balance")
     ordering = ("user__first_name", "user__last_name")
     exclude = ("state", "created_by", "deleted_by", "updated_by", "deleted_at")
@@ -15,8 +15,8 @@ class WalletAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
-    def has_change_permission(self, request, obj=None):
-        return False
+    # def has_change_permission(self, request, obj=None):
+    #     return False
 
 
 class TransactionAdmin(admin.ModelAdmin):
