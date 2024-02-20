@@ -12,10 +12,12 @@ from helpers.cache_manager import CacheManager, KeyBuilder
 from helpers.db_helpers import generate_id, generate_orderid
 from helpers.exceptions import CustomAPIException
 from helpers.googlemaps_service import GoogleMapsService
+from helpers.paystack_service import PaystackService
 from helpers.s3_uploader import S3Uploader
 from order.models import Address, Order, Vehicle
 from rider.models import FavoriteRider, RiderRating
 from rider.service import RiderService
+from wallet.service import CardService, TransactionService
 
 
 class VehicleService:
@@ -651,12 +653,24 @@ class OrderService:
         order.status = "ORDER_COMPLETED"
         order.fele_amount = order.total_amount * Decimal(settings.FELE_CHARGE / 100)
         order.save()
+        rider_user = order.rider.user
+        rider_user_wallet = rider_user.get_user_wallet()
+        reference = generate_id()
+        TransactionService.create_transaction(
+            transaction_type="CREDIT",
+            transaction_status="SUCCESS",
+            amount=order.total_amount,
+            user=rider_user,
+            reference=reference,
+            payment_category="CUSTOMER_PAY_RIDER",
+            wallet_id=rider_user_wallet.id,
+        )
+        rider_user_wallet.withdraw(order.fele_amount, deduct_negative=True)
+
         return order
 
     @classmethod
     def debit_customer(cls, order):
-        from helpers.paystack_service import PaystackService
-        from wallet.service import CardService, TransactionService
 
         amount = order.total_amount
         customer_user = order.customer.user

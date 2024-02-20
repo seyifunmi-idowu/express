@@ -19,11 +19,11 @@ class Wallet(BaseAbstractModel):
         self.balance += Decimal(amount)
         self.save()
 
-    def withdraw(self, amount):
+    def withdraw(self, amount, deduct_negative=False):
         """
         Withdraw money from the wallet.
         """
-        if self.balance >= amount:
+        if deduct_negative or self.balance >= amount:
             self.balance -= Decimal(amount)
             self.save()
         else:

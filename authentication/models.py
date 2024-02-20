@@ -149,6 +149,24 @@ class User(BaseAbstractModel, AbstractBaseUser, PermissionsMixin):
             )
         return super(User, self).delete(using=using, keep_parents=keep_parents)
 
+    # def delete(self, soft_delete: bool = True, actor=None):
+    #     import uuid
+    #
+    #     from helpers.cache_manager import CacheManager
+    #
+    #     generated_key = f"{settings.DEACTIVATION_PREPEND_VALUE}-{uuid.uuid4().hex}"
+    #     self.email = f"{generated_key}-{self.email}"
+    #     self.phone_number = f"{generated_key}-{self.phone_number}"
+    #     # Delete user's cached data
+    #     CacheManager.delete_key(f"user:fail_login_counter:{self.id}")
+    #     CacheManager.delete_key(f"user:verification:{self.email}")
+    #     CacheManager.delete_key(f"user:otp-verification:{self.email}")
+    #     CacheManager.delete_key(f"user:verification:{self.phone_number}")
+    #     CacheManager.delete_key(f"password:reset:{self.email}")
+    #     CacheManager.delete_key(f"password:reset:{self.phone_number}")
+    #
+    #     super(User, self).delete(soft_delete, actor)
+
     def get_user_wallet(self):
         return self.user_wallet.get()
 
