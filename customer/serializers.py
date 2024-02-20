@@ -100,4 +100,23 @@ class CompleteAuthBusinessCustomerSignupSerializer(serializers.Serializer):
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = ("id", "formatted_address", "longitude", "latitude")
+        fields = (
+            "id",
+            "formatted_address",
+            "longitude",
+            "latitude",
+            "landmark",
+            "direction",
+        )
+
+
+class UpdateAddressSerializer(serializers.Serializer):
+    formatted_address = serializers.CharField(required=False)
+    landmark = serializers.CharField(required=False)
+    direction = serializers.CharField(required=False)
+    label = serializers.CharField(required=False)
+
+
+class CreateAddressSerializer(UpdateAddressSerializer):
+    latitude = serializers.CharField(max_length=50)
+    longitude = serializers.CharField(max_length=50)

@@ -9,11 +9,13 @@ from customer.serializers import (
     AddressSerializer,
     CompleteAuthBusinessCustomerSignupSerializer,
     CompleteBusinessCustomerSignupSerializer,
+    CreateAddressSerializer,
     CustomerSignupSerializer,
     ResendCustomerVerificationSerializer,
     RetrieveCustomerSerializer,
+    UpdateAddressSerializer,
 )
-from customer.service import CustomerService
+from customer.service import CustomerAddressService, CustomerService
 from feleexpress.middlewares.permissions.is_authenticated import (
     IsAuthenticated,
     IsCustomer,
@@ -188,24 +190,6 @@ class CustomerViewset(viewsets.ViewSet):
         )
 
     @swagger_auto_schema(
-        methods=["get"],
-        operation_description="Get Customer saved addresses",
-        operation_summary="Get Customer saved addresses",
-        tags=["Customer"],
-        responses=schema_doc.CUSTOMER_SAVED_ADDRESS_RESPONSE,
-    )
-    @action(detail=False, methods=["get"], url_path="saved-address")
-    def get_customer_saved_addresses(self, request):
-        from order.models import Address
-
-        response = Address.objects.filter(customer__user=request.user)
-        return ResponseManager.handle_response(
-            data=AddressSerializer(response, many=True).data,
-            status=status.HTTP_200_OK,
-            message="Customer saved address",
-        )
-
-    @swagger_auto_schema(
         methods=["post"],
         request_body=CompleteAuthBusinessCustomerSignupSerializer,
         operation_description="Complete business customer registration",
@@ -228,4 +212,79 @@ class CustomerViewset(viewsets.ViewSet):
         )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Customer sign up successful"
+        )
+
+
+class CustomerAddressViewset(viewsets.ViewSet):
+    @swagger_auto_schema(
+        operation_description="Update Customer saved address",
+        operation_summary="Update Customer saved address",
+        tags=["Customer-Address"],
+        request_body=CreateAddressSerializer,
+        responses=schema_doc.CREATE_CUSTOMER_ADDRESS_RESPONSE,
+    )
+    def create(self, request):
+        serialized_data = CreateAddressSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        response = CustomerAddressService.create_customer_address(
+            user=request.user, **serialized_data.validated_data
+        )
+        return ResponseManager.handle_response(
+            data=AddressSerializer(response).data,
+            status=status.HTTP_200_OK,
+            message="Address created successfully",
+        )
+
+    @swagger_auto_schema(
+        operation_description="Get Customer saved addresses",
+        operation_summary="Get Customer saved addresses",
+        tags=["Customer-Address"],
+        responses=schema_doc.CUSTOMER_SAVED_ADDRESS_RESPONSE,
+    )
+    def list(self, request):
+        response = CustomerAddressService.get_customer_address(user=request.user)
+        return ResponseManager.handle_response(
+            data=AddressSerializer(response, many=True).data,
+            status=status.HTTP_200_OK,
+            message="Customer saved address",
+        )
+
+    @swagger_auto_schema(
+        operation_description="Delete Customer saved address",
+        operation_summary="Delete Customer saved address",
+        tags=["Customer-Address"],
+        responses=schema_doc.DELETE_CUSTOMER_ADDRESS_RESPONSE,
+    )
+    def destroy(self, request, pk):
+        CustomerAddressService.delete_customer_address(user=request.user, address_id=pk)
+        return ResponseManager.handle_response(
+            data={},
+            status=status.HTTP_204_NO_CONTENT,
+            message="Address deleted successfully",
+        )
+
+    @swagger_auto_schema(
+        operation_description="Update Customer saved address",
+        operation_summary="Update Customer saved address",
+        tags=["Customer-Address"],
+        request_body=UpdateAddressSerializer,
+        responses=schema_doc.CREATE_CUSTOMER_ADDRESS_RESPONSE,
+    )
+    def update(self, request, pk):
+        serialized_data = UpdateAddressSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        response = CustomerAddressService.update_customer_address(
+            user=request.user, address_id=pk, **serialized_data.validated_data
+        )
+        return ResponseManager.handle_response(
+            data=AddressSerializer(response).data,
+            status=status.HTTP_200_OK,
+            message="Address updated successfully",
         )

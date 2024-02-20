@@ -42,12 +42,15 @@ class Address(BaseAbstractModel):
         verbose_name="customer",
         related_name="customer_address",
     )
-    formatted_address = models.CharField(max_length=255, help_text="Full address")
-    state = models.CharField(max_length=100, help_text="Full address")
-    country = models.CharField(max_length=100, help_text="Full address")
-    longitude = models.CharField(max_length=50, help_text="Address longitude")
-    latitude = models.CharField(max_length=50, help_text="Address latitude")
-    meta_data = models.JSONField()
+    formatted_address = models.CharField(max_length=255)
+    longitude = models.CharField(max_length=50)
+    latitude = models.CharField(max_length=50)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    country = models.CharField(max_length=100, null=True, blank=True)
+    landmark = models.CharField(max_length=100, null=True, blank=True)
+    direction = models.CharField(max_length=255, null=True, blank=True)
+    label = models.CharField(max_length=255, null=True, blank=True)
+    meta_data = models.JSONField(null=True, blank=True)
     save_address = models.BooleanField(default=False)
 
     class Meta:

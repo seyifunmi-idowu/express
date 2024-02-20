@@ -160,9 +160,11 @@ CUSTOMER_SAVED_ADDRESS_SUCCESS_RESPONSE = {
         "data": [
             {
                 "id": "23480c9395584af9983d5e872fa25fa1",
-                "formatted_address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
+                "formatted_address": "24 Olorunkemi Street, Lekki, Lagos 102216, Lagos, Nigeria",
                 "longitude": "3.3829932",
                 "latitude": "6.5358762",
+                "landmark": "Fola Osibo bustop",
+                "direction": None,
             }
         ],
         "message": "Customer saved address",
@@ -172,6 +174,36 @@ CUSTOMER_SAVED_ADDRESS_RESPONSE = {
     200: openapi.Response(
         description="Customer saved address",
         examples=CUSTOMER_SAVED_ADDRESS_SUCCESS_RESPONSE,
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
+DELETE_CUSTOMER_ADDRESS_SUCCESS_RESPONSE = {
+    "application/json": {"data": {}, "message": "Address deleted successfully"}
+}
+DELETE_CUSTOMER_ADDRESS_RESPONSE = {
+    200: openapi.Response(
+        description="Address deleted successfully",
+        examples=DELETE_CUSTOMER_ADDRESS_SUCCESS_RESPONSE,
+    ),
+    401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
+}
+CREATE_CUSTOMER_ADDRESS_SUCCESS_RESPONSE = {
+    "application/json": {
+        "data": {
+            "id": "23480c9395584af9983d5e872fa25fa1",
+            "formatted_address": "84 Olorunkemi Street, Lekki, Lagos 102216, Lagos, Nigeria",
+            "longitude": "3.1829932",
+            "latitude": "6.5558762",
+            "landmark": "Fola Osibo bustop",
+            "direction": "Get down at Phase 1 and take a cab to fola osibo",
+        },
+        "message": "Address deleted successfully",
+    }
+}
+CREATE_CUSTOMER_ADDRESS_RESPONSE = {
+    200: openapi.Response(
+        description="Customer saved address",
+        examples=CREATE_CUSTOMER_ADDRESS_SUCCESS_RESPONSE,
     ),
     401: openapi.Response(description="Invalid Credentials", examples=UNAUTHENTICATED),
 }

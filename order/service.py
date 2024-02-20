@@ -62,22 +62,27 @@ class MapService:
         if len(results) < 1:
             raise CustomAPIException("Cannot locate address", status.HTTP_404_NOT_FOUND)
 
-        results_list = [
-            {
-                "latitude": result.get("geometry", {}).get("location", {}).get("lat"),
-                "longitude": result.get("geometry", {}).get("location", {}).get("lng"),
-                "formatted_address": result.get("formatted_address"),
-            }
-            for result in results
-            # if "street_address" in result.get("types")
-        ]
+        results_list = sorted(
+            [
+                {
+                    "latitude": result.get("geometry", {})
+                    .get("location", {})
+                    .get("lat"),
+                    "longitude": result.get("geometry", {})
+                    .get("location", {})
+                    .get("lng"),
+                    "formatted_address": result.get("formatted_address"),
+                }
+                for result in results
+            ],
+            key=lambda x: "street_address" in x.get("types", []),
+            reverse=True,
+        )
         return results_list
 
     @classmethod
     def get_distance_between_locations(cls, start_lat_lng, end_lat_lng):
         response = GoogleMapsService.get_distance_matrix(start_lat_lng, end_lat_lng)
-        print(response)
-        print("=======================")
         if response.get("status") == "OK":
             rows = response.get("rows", [])[0]
             elements = rows.get("elements", [])[0]

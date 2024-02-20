@@ -7,6 +7,7 @@ from customer.models import Customer
 from customer.serializers import RetrieveCustomerSerializer
 from helpers.db_helpers import select_for_update
 from helpers.exceptions import CustomAPIException
+from order.models import Address
 
 
 class CustomerService:
@@ -195,3 +196,64 @@ class CustomerService:
         from rider.models import FavoriteRider
 
         return FavoriteRider.objects.filter(customer__user=user)
+
+
+class CustomerAddressService:
+    @classmethod
+    def create_customer_address(cls, user, **kwargs):
+        from order.service import MapService
+
+        customer = CustomerService.get_customer(user=user)
+        latitude = kwargs.get("latitude")
+        longitude = kwargs.get("longitude")
+        direction = kwargs.get("direction", None)
+        landmark = kwargs.get("landmark", None)
+        label = kwargs.get("label", None)
+
+        address_info = MapService.get_info_from_latitude_and_longitude(
+            latitude, longitude
+        )
+        if len(address_info) < 1:
+            raise CustomAPIException(
+                "Unable to locate address", status.HTTP_404_NOT_FOUND
+            )
+        address = Address.objects.create(
+            formatted_address=address_info[0].get("formatted_address"),
+            customer=customer,
+            direction=direction,
+            landmark=landmark,
+            label=label,
+            latitude=address_info[0].get("latitude"),
+            longitude=address_info[0].get("longitude"),
+        )
+        return address
+
+    @classmethod
+    def get_customer_address(cls, user):
+        return Address.objects.filter(customer__user=user)
+
+    @classmethod
+    def delete_customer_address(cls, user, address_id):
+        address = Address.objects.filter(id=address_id, customer__user=user).first()
+        if not address:
+            raise CustomAPIException("Address not found", status.HTTP_404_NOT_FOUND)
+        address.delete()
+        return True
+
+    @classmethod
+    def update_customer_address(cls, user, address_id, **kwargs):
+        address = Address.objects.filter(id=address_id, customer__user=user).first()
+        if not address:
+            raise CustomAPIException("Address not found", status.HTTP_404_NOT_FOUND)
+
+        formatted_address = kwargs.get("formatted_address", address.formatted_address)
+        landmark = kwargs.get("landmark", address.landmark)
+        direction = kwargs.get("direction", address.direction)
+        label = kwargs.get("label", address.label)
+
+        address.formatted_address = formatted_address
+        address.direction = direction
+        address.landmark = landmark
+        address.label = label
+        address.save()
+        return address
