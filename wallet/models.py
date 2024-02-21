@@ -28,9 +28,19 @@ class Wallet(BaseAbstractModel):
         """
         Withdraw money from the wallet.
         """
+        from notification.service import NotificationService
+
         if deduct_negative or self.balance >= amount:
             self.balance -= Decimal(amount)
             self.save()
+            title = "Wallet withdrawal"
+            message = f"N {round(float(amount), 2)} has been debited from your wallet."
+            NotificationService.send_push_notification(self.user, title, message)
+            if self.balance < 0:
+                title = "Low balance"
+                message = f"Your wallet has hit rock bottom with N {round(float(amount), 2)}. Kindly fund wallet."
+                NotificationService.send_push_notification(self.user, title, message)
+
         else:
             raise ValueError("Insufficient balance for withdrawal.")
 
