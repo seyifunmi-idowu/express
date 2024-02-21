@@ -89,7 +89,8 @@ class RiderService:
                 context={"full_name": fullname},
                 category="RIDER_AUTH",
                 action="RIDER_SIGNUP",
-                email=email,
+                email=email if email else None,
+                phone_number=phone_number if phone_number else None,
                 level="SUCCESS",
                 session_id=session_id,
             )
@@ -119,7 +120,8 @@ class RiderService:
             context={"user": email or phone_number},
             category="RIDER_AUTH",
             action="RIDER_RESEND_OTP",
-            email=email,
+            email=email if email else None,
+            phone_number=phone_number if phone_number else None,
             level="SUCCESS",
             session_id=session_id,
         )
@@ -130,9 +132,14 @@ class RiderService:
         email = kwargs.get("email")
         phone = kwargs.get("phone")
         password = kwargs.get("password")
+        one_signal_id = kwargs.get("one_signal_id", None)
 
         login_token = AuthService.login_user(
-            email=email, phone_number=phone, password=password, session_id=session_id
+            email=email,
+            phone_number=phone,
+            password=password,
+            session_id=session_id,
+            one_signal_id=one_signal_id,
         )
         user = UserService.get_user_instance(email=email)
         rider = cls.get_rider(user=user)

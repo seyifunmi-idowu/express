@@ -89,7 +89,8 @@ class WalletService:
             context=activity_data,
             category="USER_WALLET",
             action="USER_WITHDRAW",
-            email=user.email,
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
             level="SUCCESS",
             session_id=session_id,
         )
@@ -244,7 +245,8 @@ class CardService:
             context=activity_data,
             category="USER_CARD",
             action="INITIATE_CARD_TRANSACTION",
-            email=user.email,
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
             level="SUCCESS",
             session_id=session_id,
         )
@@ -332,7 +334,8 @@ class CardService:
                 context=activity_data,
                 category="USER_CARD",
                 action="DEBIT_CARD_TRANSACTION",
-                email=user.email,
+                email=user.email if user.email else None,
+                phone_number=user.phone_number if user.phone_number else None,
                 level="SUCCESS",
                 session_id=session_id,
             )

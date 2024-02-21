@@ -14,6 +14,7 @@ from helpers.exceptions import CustomAPIException
 from helpers.googlemaps_service import GoogleMapsService
 from helpers.paystack_service import PaystackService
 from helpers.s3_uploader import S3Uploader
+from notification.service import NotificationService
 from order.models import Address, Order, Vehicle
 from rider.models import FavoriteRider, RiderRating
 from rider.service import RiderService
@@ -446,13 +447,13 @@ class OrderService:
         return total_price
 
     @classmethod
-    def place_order(cls, user, order_id, request):
+    def place_order(cls, user, order_id, data, session_id):
         key_builder = KeyBuilder.initiate_order(order_id)
         order_data = CacheManager.retrieve_key(key_builder)
         if not order_data or order_data.get("user_id") != user.id:
             raise CustomAPIException("Order not found.", status.HTTP_404_NOT_FOUND)
 
-        if request["payment_method"] == "WALLET":
+        if data["payment_method"] == "WALLET":
             user_wallet = user.get_user_wallet()
             if user_wallet.balance < order_data["total_price"]:
                 raise CustomAPIException(
@@ -460,13 +461,22 @@ class OrderService:
                     status.HTTP_400_BAD_REQUEST,
                 )
 
-        order_data.update(request)
+        order_data.update(data)
         longitude = order_data.get("pickup", {}).get("longitude")
         latitude = order_data.get("pickup", {}).get("latitude")
         customer = CustomerService.get_customer(user=user)
         cls.create_order(order_id, customer, order_data)
         cls.notify_riders_around_location(longitude, latitude)
         CacheManager.delete_key(key_builder)
+        track_user_activity(
+            context=dict({"order_id": order_id}),
+            category="ORDER",
+            action="CUSTOMER_PLACE_ORDER",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
         return True
 
     @classmethod
@@ -475,10 +485,19 @@ class OrderService:
         pass
 
     @classmethod
-    def add_rider_tip(cls, user, order_id, tip_amount):
+    def add_rider_tip(cls, user, order_id, tip_amount, session_id):
         order = cls.get_order(order_id, customer__user=user)
         order.tip_amount += tip_amount
         order.save()
+        track_user_activity(
+            context=dict({"tip_amount": tip_amount, "order_id": order.id}),
+            category="ORDER",
+            action="CUSTOMER_ADDED_TIP",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
         return True
 
     @classmethod
@@ -495,7 +514,7 @@ class OrderService:
         order.save()
 
     @classmethod
-    def assign_rider_to_order(cls, user, order_id, rider_id):
+    def assign_rider_to_order(cls, user, order_id, rider_id, session_id):
         order = cls.get_order(order_id, customer__user=user)
         if order.status != "PENDING":
             raise CustomAPIException("Order is not pending", status.HTTP_404_NOT_FOUND)
@@ -518,9 +537,24 @@ class OrderService:
         order.rider = favourite_rider.rider
         order.status = "PENDING_RIDER_CONFIRMATION"
         order.save()
+        title = f"New order request #{order_id}"
+        message = "A customer assigned you to an order. See order to accept or decline."
+        NotificationService.send_push_notification(
+            favourite_rider.rider.user, title, message
+        )
+
+        track_user_activity(
+            context=dict({"rider": order.rider.id, "order_id": order.id}),
+            category="ORDER",
+            action="CUSTOMER_ASSIGN_RIDER",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
 
     @classmethod
-    def rate_rider(cls, user, order_id, **kwargs):
+    def rate_rider(cls, user, order_id, session_id, **kwargs):
         order = cls.get_order(order_id, customer__user=user)
         favorite_rider = kwargs.get("favorite_rider", False)
         rating = kwargs.get("rating")
@@ -538,6 +572,17 @@ class OrderService:
             )
         if favorite_rider:
             FavoriteRider.objects.create(rider=order.rider, customer=order.customer)
+        track_user_activity(
+            context=dict(
+                {"rider": order.rider.id, "customer": order.customer.id, **kwargs}
+            ),
+            category="ORDER",
+            action="CUSTOMER_RATE_RIDER",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
         return True
 
     @classmethod
@@ -561,14 +606,15 @@ class OrderService:
             context=dict({"order_id": order_id, "reason": reason}),
             category="ORDER",
             action="CUSTOMER_CANCELLED_ORDER",
-            email=user.email if user.email else user.phone_number,
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
             level="SUCCESS",
             session_id=session_id,
         )
         return True
 
     @classmethod
-    def rider_accept_customer_order(cls, user, order_id):
+    def rider_accept_customer_order(cls, user, order_id, session_id):
         order = cls.get_order(order_id)
         pass_rider = False
         if order.rider is None and order.status == "PENDING":
@@ -587,17 +633,41 @@ class OrderService:
         order.rider = rider
         order.status = "RIDER_ACCEPTED_ORDER"
         order.save()
+        title = f"Rider accept order #{order_id}"
+        message = f"You order has been accepted by {rider.display_name}. Vehicle type: {rider.vehicle_type} \n Plate number: {rider.vehicle_plate_number}"
+        NotificationService.send_push_notification(order.customer.user, title, message)
+        track_user_activity(
+            context=dict({"order_id": order_id}),
+            category="ORDER",
+            action="RIDER_ACCEPTED_ORDER",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
         return order
 
     @classmethod
-    def rider_at_pickup(cls, order_id, user):
+    def rider_at_pickup(cls, order_id, user, session_id):
         order = cls.get_order(order_id, rider__user=user)
         cls.add_order_timeline_entry(order, "RIDER_AT_PICK_UP")
         order.status = "RIDER_AT_PICK_UP"
         order.save()
+        title = f"Rider arrived at pickup: #{order_id}"
+        message = f"Your rider {order.rider.display_name}, is at pickup location: {order.pickup_location}"
+        NotificationService.send_push_notification(order.customer.user, title, message)
+        track_user_activity(
+            context=dict({"order_id": order_id}),
+            category="ORDER",
+            action="RIDER_AT_PICK_UP",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
 
     @classmethod
-    def rider_at_order_pickup(cls, order_id, user, file):
+    def rider_at_order_pickup(cls, order_id, user, file, session_id):
         order = cls.get_order(order_id, rider__user=user)
 
         file_name = file.name
@@ -609,25 +679,62 @@ class OrderService:
         )
         order.status = "RIDER_PICKED_UP_ORDER"
         order.save()
+        title = f"Rider on the way to deliver: #{order_id}"
+        message = "Your goods are on the way to drop off"
+        NotificationService.send_push_notification(order.customer.user, title, message)
+        track_user_activity(
+            context=dict({"order_id": order_id, "proof_of_pickup_url": file_url}),
+            category="ORDER",
+            action="RIDER_PICKED_UP_ORDER",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
 
     @classmethod
-    def rider_failed_pickup(cls, order_id, user, reason):
+    def rider_failed_pickup(cls, order_id, user, reason, session_id):
         order = cls.get_order(order_id, rider__user=user)
 
         cls.add_order_timeline_entry(order, "FAILED_PICKUP", **{"reason": reason})
         cls.add_order_timeline_entry(order, "ORDER_CANCELLED")
         order.status = "ORDER_CANCELLED"
         order.save()
+        title = f"Rider failed to pick order: #{order_id}"
+        message = f"Your rider {order.rider.display_name}, failed to pick up because: {reason}"
+        NotificationService.send_push_notification(order.customer.user, title, message)
+
+        track_user_activity(
+            context=dict({"order_id": order_id, "reason": reason}),
+            category="ORDER",
+            action="RIDER_FAILED_PICKUP",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
 
     @classmethod
-    def rider_at_destination(cls, order_id, user):
+    def rider_at_destination(cls, order_id, user, session_id):
         order = cls.get_order(order_id, rider__user=user)
         cls.add_order_timeline_entry(order, "ORDER_ARRIVED")
         order.status = "ORDER_ARRIVED"
         order.save()
+        title = f"Rider at drop off: #{order_id}"
+        message = f"Your rider {order.rider.display_name}, is at drop off point: {order.delivery_location}"
+        NotificationService.send_push_notification(order.customer.user, title, message)
+        track_user_activity(
+            context=dict({"order_id": order_id}),
+            category="ORDER",
+            action="RIDER_AT_DESTINATION",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
 
     @classmethod
-    def rider_made_delivery(cls, order_id, user, file):
+    def rider_made_delivery(cls, order_id, user, file, session_id):
         order = cls.get_order(order_id, rider__user=user)
 
         file_name = file.name
@@ -640,13 +747,22 @@ class OrderService:
         order.delivery_time = timezone.now()
         order.status = "ORDER_DELIVERED"
         order.save()
+        track_user_activity(
+            context=dict({"order_id": order_id, "proof_of_delivery_url": file_url}),
+            category="ORDER",
+            action="RIDER_MADE_DELIVERY",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
         if order.payment_method == "WALLET":
-            cls.debit_customer(order)
+            cls.debit_customer(order, session_id)
 
         return True
 
     @classmethod
-    def rider_received_payment(cls, order_id, user):
+    def rider_received_payment(cls, order_id, user, session_id):
         order = cls.get_order(order_id, rider__user=user)
         cls.add_order_timeline_entry(order, "ORDER_COMPLETED")
         order.paid = True
@@ -666,11 +782,23 @@ class OrderService:
             wallet_id=rider_user_wallet.id,
         )
         rider_user_wallet.withdraw(order.fele_amount, deduct_negative=True)
+        title = f"Order Completed: #{order_id}"
+        message = "Order completed, don't forget to rate rider."
+        NotificationService.send_push_notification(order.customer.user, title, message)
 
+        track_user_activity(
+            context=dict({"order_id": order_id}),
+            category="ORDER",
+            action="RIDER_RECEIVED_PAYMENT",
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
         return order
 
     @classmethod
-    def debit_customer(cls, order):
+    def debit_customer(cls, order, session_id):
 
         amount = order.total_amount
         customer_user = order.customer.user
@@ -691,6 +819,17 @@ class OrderService:
                 pssp="IN_HOUSE",
                 payment_category="CUSTOMER_PAY_RIDER",
             )
+            track_user_activity(
+                context=dict({"order_id": order.id, "amount": float(amount)}),
+                category="ORDER",
+                action="CUSTOMER_PAY_RIDER_WITH_WALLET",
+                email=order.customer.user.email if order.customer.user.email else None,
+                phone_number=order.customer.user.phone_number
+                if order.customer.user.phone_number
+                else None,
+                level="SUCCESS",
+                session_id=session_id,
+            )
             made_payment = True
 
         else:
@@ -710,6 +849,19 @@ class OrderService:
                         reference=reference,
                         pssp="PAYSTACK",
                         payment_category="CUSTOMER_PAY_RIDER",
+                    )
+                    track_user_activity(
+                        context=dict({"order_id": order.id, "amount": float(amount)}),
+                        category="ORDER",
+                        action="CUSTOMER_PAY_RIDER_WITH_CARD",
+                        email=order.customer.user.email
+                        if order.customer.user.email
+                        else None,
+                        phone_number=order.customer.user.phone_number
+                        if order.customer.user.phone_number
+                        else None,
+                        level="SUCCESS",
+                        session_id=session_id,
                     )
                     made_payment = True
 
@@ -733,6 +885,22 @@ class OrderService:
                 wallet_id=rider_user_wallet.id,
             )
             rider_user_wallet.deposit(order.total_amount - order.fele_amount)
+            title = f"Order Completed: #{order.id}"
+            message = "Order completed, don't forget to rate rider."
+            NotificationService.send_push_notification(
+                order.customer.user, title, message
+            )
+            track_user_activity(
+                context=dict({"order_id": order.id, "amount": float(amount)}),
+                category="ORDER",
+                action="RIDER_RECEIVE_PAYMENT",
+                email=order.rider.user.email if order.rider.user.email else None,
+                phone_number=order.rider.user.phone_number
+                if order.rider.user.phone_number
+                else None,
+                level="SUCCESS",
+                session_id=session_id,
+            )
 
             # TODO: check if rider has outstanding and deduct it
 

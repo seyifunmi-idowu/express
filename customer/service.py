@@ -76,7 +76,8 @@ class CustomerService:
             context=dict(**kwargs),
             category="CUSTOMER_AUTH",
             action="CUSTOMER_UPDATE_PROFILE",
-            email=user.email if user.email else user.phone_number,
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
             level="SUCCESS",
             session_id=session_id,
         )
@@ -129,7 +130,8 @@ class CustomerService:
                 context={"full_name": fullname},
                 category="CUSTOMER_AUTH",
                 action="CUSTOMER_SIGNUP",
-                email=email if email else phone_number,
+                email=email if email else None,
+                phone_number=phone_number if phone_number else None,
                 level="SUCCESS",
                 session_id=session_id,
             )
@@ -184,7 +186,8 @@ class CustomerService:
             context={"business_name": business_name},
             category="CUSTOMER_AUTH",
             action="CUSTOMER_COMPLETE_SIGNUP",
-            email=email if email else phone_number,
+            email=email if email else None,
+            phone_number=phone_number if phone_number else None,
             level="SUCCESS",
             session_id=session_id,
         )
@@ -207,7 +210,8 @@ class CustomerService:
             context={"user": email or phone_number},
             category="CUSTOMER_AUTH",
             action="CUSTOMER_RESEND_OTP",
-            email=email,
+            email=user.email if user.email else None,
+            phone_number=user.phone_number if user.phone_number else None,
             level="SUCCESS",
             session_id=session_id,
         )
@@ -218,9 +222,14 @@ class CustomerService:
         email = kwargs.get("email")
         phone = kwargs.get("phone")
         password = kwargs.get("password")
+        one_signal_id = kwargs.get("one_signal_id", None)
 
         login_token = AuthService.login_user(
-            email=email, phone_number=phone, password=password, session_id=session_id
+            email=email,
+            phone_number=phone,
+            password=password,
+            session_id=session_id,
+            one_signal_id=one_signal_id,
         )
         user = UserService.get_user_instance(email=email)
         customer = cls.get_customer(user=user)

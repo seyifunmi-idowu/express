@@ -80,9 +80,27 @@ class SmsManager:
 class NotificationService:
     @classmethod
     def add_user_one_signal(cls, user, one_signal_id, **kwargs):
-        return UserNotification.objects.create(
-            user=user, one_signal_id=one_signal_id, **kwargs
-        )
+        user_notification = UserNotification.objects.filter(
+            one_signal_id=one_signal_id, status="ACTIVE", user=user
+        ).first()
+        if user_notification:
+            return user_notification
+
+        actual_user_notification = None
+        user_notifications = cls.get_one_signal(one_signal_id=one_signal_id)
+        for user_notification in user_notifications:
+            if user_notification.user == user:
+                user_notification.status = "ACTIVE"
+                actual_user_notification = user_notification
+            else:
+                user_notification.status = "INACTIVE"
+            user_notification.save()
+        if actual_user_notification:
+            return actual_user_notification
+        else:
+            return UserNotification.objects.create(
+                user=user, one_signal_id=one_signal_id, **kwargs
+            )
 
     @classmethod
     def get_one_signal(cls, one_signal_id):
@@ -90,7 +108,7 @@ class NotificationService:
 
     @classmethod
     def get_user_one_signal(cls, user):
-        return UserNotification.objects.filter(user=user)
+        return UserNotification.objects.filter(user=user, status="ACTIVE")
 
     @classmethod
     def send_sms_message(cls, user, message):
@@ -99,11 +117,16 @@ class NotificationService:
         return response.get("success", False)
 
     @classmethod
-    def send_push_notification(cls, user, title, message):
+    def send_push_notification(cls, user, title, message, add_to_notification=True):
         user_notification = cls.get_user_one_signal(user).first()
         if user_notification is not None:
             one_signal_id = user_notification.one_signal_id
-            OneSignalIntegration.send_push_notification([one_signal_id], title, message)
+            formatted_message = message[:100] + "..." if len(message) > 50 else message
+            OneSignalIntegration.send_push_notification(
+                [one_signal_id], title, formatted_message
+            )
+
+        add_to_notification and cls.add_user_notification(user, title, message)
 
     @classmethod
     def add_user_notification(cls, user, title, message):

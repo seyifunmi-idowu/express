@@ -11,24 +11,15 @@ from helpers.cache_manager import CacheManager, KeyBuilder
 from helpers.db_helpers import generate_otp, generate_referral_code
 from helpers.exceptions import CustomAPIException, CustomFieldValidationException
 from helpers.token_manager import TokenManager
-from notification.service import EmailManager
+from notification.service import EmailManager, NotificationService
 
 
 class UserService:
     @classmethod
     def create_user(cls, **kwargs):
-        from notification.service import NotificationService
         from wallet.service import WalletService
 
         one_signal_id = kwargs.pop("one_signal_id", None)
-        if one_signal_id:
-            user_notification = NotificationService.get_one_signal(
-                one_signal_id=one_signal_id
-            )
-            if user_notification and settings.ENVIRONMENT != "dev":
-                raise CustomAPIException(
-                    "One signal id assigned to another user", status.HTTP_409_CONFLICT
-                )
 
         referral_code = kwargs.pop("referral_code", None)
         referred_by = User.objects.filter(referral_code=referral_code).first()
@@ -330,6 +321,7 @@ class AuthService:
         email: str = None,
         phone_number: str = None,
         password: str = None,
+        one_signal_id: str = None,
     ):
         if email is not None:
             field_verbose_name = "email"
@@ -353,6 +345,7 @@ class AuthService:
 
         user.last_login = timezone.now()
         user.save()
+        one_signal_id and NotificationService.add_user_one_signal(user, one_signal_id)
         return TokenManager.prepare_user_token(user=user, session_id=session_id)
 
     @classmethod

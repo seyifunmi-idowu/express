@@ -16,8 +16,13 @@ class Wallet(BaseAbstractModel):
         """
         Deposit money into the wallet.
         """
+        from notification.service import NotificationService
+
         self.balance += Decimal(amount)
         self.save()
+        title = "Wallet credited"
+        message = f"N {round(float(amount), 2)} has been credited into your wallet."
+        NotificationService.send_push_notification(self.user, title, message)
 
     def withdraw(self, amount, deduct_negative=False):
         """

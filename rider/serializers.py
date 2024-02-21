@@ -94,6 +94,7 @@ class RiderLoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False)
     phone_number = serializers.CharField(required=False)
     password = serializers.CharField()
+    one_signal_id = serializers.CharField(required=False)
 
     def validate(self, data):
         FieldValidators.validate_email_or_phone_number(data)

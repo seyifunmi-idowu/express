@@ -173,7 +173,7 @@ class CustomerOrderViewset(viewsets.ViewSet):
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         response = OrderService.place_order(
-            request.user, order_id, serialized_data.data
+            request.user, order_id, serialized_data.data, generate_session_id()
         )
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Finding nearby driver"
@@ -199,7 +199,10 @@ class CustomerOrderViewset(viewsets.ViewSet):
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         response = OrderService.add_rider_tip(
-            request.user, order_id, serialized_data.data.get("tip_amount")
+            request.user,
+            order_id,
+            serialized_data.data.get("tip_amount"),
+            generate_session_id(),
         )
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Tip added"
@@ -225,7 +228,10 @@ class CustomerOrderViewset(viewsets.ViewSet):
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         response = OrderService.assign_rider_to_order(
-            request.user, order_id, serialized_data.data.get("rider_id")
+            request.user,
+            order_id,
+            serialized_data.data.get("rider_id"),
+            generate_session_id(),
         )
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Pending rider acceptance"
@@ -251,7 +257,7 @@ class CustomerOrderViewset(viewsets.ViewSet):
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         response = OrderService.rate_rider(
-            request.user, order_id, **serialized_data.data
+            request.user, order_id, generate_session_id(), **serialized_data.data
         )
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Rider rated"
@@ -276,11 +282,10 @@ class CustomerOrderViewset(viewsets.ViewSet):
             return ResponseManager.handle_response(
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
-        session_id = generate_session_id()
         OrderService.customer_cancel_order(
             request.user,
             order_id,
-            session_id,
+            generate_session_id(),
             serialized_data.validated_data.get("reason"),
         )
         return ResponseManager.handle_response(
@@ -402,7 +407,9 @@ class RiderOrderViewset(viewsets.ViewSet):
         detail=False, methods=["post"], url_path="(?P<order_id>[a-z,A-Z,0-9]+)/accept"
     )
     def rider_accept_customer_order(self, request, order_id):
-        order = OrderService.rider_accept_customer_order(request.user, order_id)
+        order = OrderService.rider_accept_customer_order(
+            request.user, order_id, generate_session_id()
+        )
         return ResponseManager.handle_response(
             data=RiderOrderSerializer(order).data,
             status=status.HTTP_200_OK,
@@ -422,7 +429,7 @@ class RiderOrderViewset(viewsets.ViewSet):
         url_path="(?P<order_id>[a-z,A-Z,0-9]+)/at-pick-up",
     )
     def rider_at_pickup(self, request, order_id):
-        OrderService.rider_at_pickup(order_id, request.user)
+        OrderService.rider_at_pickup(order_id, request.user, generate_session_id())
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Order Updated"
         )
@@ -447,7 +454,10 @@ class RiderOrderViewset(viewsets.ViewSet):
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         OrderService.rider_at_order_pickup(
-            order_id, request.user, serialized_data.validated_data.get("proof")
+            order_id,
+            request.user,
+            serialized_data.validated_data.get("proof"),
+            generate_session_id(),
         )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Order Updated"
@@ -473,7 +483,10 @@ class RiderOrderViewset(viewsets.ViewSet):
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         OrderService.rider_failed_pickup(
-            order_id, request.user, serialized_data.validated_data.get("reason")
+            order_id,
+            request.user,
+            serialized_data.validated_data.get("reason"),
+            generate_session_id(),
         )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Order Updated"
@@ -493,7 +506,7 @@ class RiderOrderViewset(viewsets.ViewSet):
         url_path="(?P<order_id>[a-z,A-Z,0-9]+)/at-destination",
     )
     def rider_at_destination(self, request, order_id):
-        OrderService.rider_at_destination(order_id, request.user)
+        OrderService.rider_at_destination(order_id, request.user, generate_session_id())
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Order Updated"
         )
@@ -518,7 +531,10 @@ class RiderOrderViewset(viewsets.ViewSet):
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         OrderService.rider_made_delivery(
-            order_id, request.user, serialized_data.validated_data.get("proof")
+            order_id,
+            request.user,
+            serialized_data.validated_data.get("proof"),
+            generate_session_id(),
         )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Order Updated"
@@ -537,7 +553,9 @@ class RiderOrderViewset(viewsets.ViewSet):
         url_path="(?P<order_id>[a-z,A-Z,0-9]+)/received-payment",
     )
     def rider_received_payment(self, request, order_id):
-        order = OrderService.rider_received_payment(order_id, request.user)
+        order = OrderService.rider_received_payment(
+            order_id, request.user, generate_session_id()
+        )
         return ResponseManager.handle_response(
             data=RiderOrderSerializer(order).data,
             status=status.HTTP_200_OK,
