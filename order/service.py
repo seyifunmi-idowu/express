@@ -490,7 +490,7 @@ class OrderService:
         order.tip_amount += tip_amount
         order.save()
         track_user_activity(
-            context=dict({"tip_amount": tip_amount, "order_id": order.id}),
+            context=dict({"tip_amount": tip_amount, "order_id": order.order_id}),
             category="ORDER",
             action="CUSTOMER_ADDED_TIP",
             email=user.email if user.email else None,
@@ -544,7 +544,7 @@ class OrderService:
         )
 
         track_user_activity(
-            context=dict({"rider": order.rider.id, "order_id": order.id}),
+            context=dict({"rider": order.rider.id, "order_id": order.order_id}),
             category="ORDER",
             action="CUSTOMER_ASSIGN_RIDER",
             email=user.email if user.email else None,
@@ -820,7 +820,7 @@ class OrderService:
                 payment_category="CUSTOMER_PAY_RIDER",
             )
             track_user_activity(
-                context=dict({"order_id": order.id, "amount": float(amount)}),
+                context=dict({"order_id": order.order_id, "amount": float(amount)}),
                 category="ORDER",
                 action="CUSTOMER_PAY_RIDER_WITH_WALLET",
                 email=order.customer.user.email if order.customer.user.email else None,
@@ -851,7 +851,9 @@ class OrderService:
                         payment_category="CUSTOMER_PAY_RIDER",
                     )
                     track_user_activity(
-                        context=dict({"order_id": order.id, "amount": float(amount)}),
+                        context=dict(
+                            {"order_id": order.order_id, "amount": float(amount)}
+                        ),
                         category="ORDER",
                         action="CUSTOMER_PAY_RIDER_WITH_CARD",
                         email=order.customer.user.email
@@ -885,13 +887,13 @@ class OrderService:
                 wallet_id=rider_user_wallet.id,
             )
             rider_user_wallet.deposit(order.total_amount - order.fele_amount)
-            title = f"Order Completed: #{order.id}"
+            title = f"Order Completed: #{order.order_id}"
             message = "Order completed, don't forget to rate rider."
             NotificationService.send_push_notification(
                 order.customer.user, title, message
             )
             track_user_activity(
-                context=dict({"order_id": order.id, "amount": float(amount)}),
+                context=dict({"order_id": order.order_id, "amount": float(amount)}),
                 category="ORDER",
                 action="RIDER_RECEIVE_PAYMENT",
                 email=order.rider.user.email if order.rider.user.email else None,
