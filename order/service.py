@@ -541,7 +541,7 @@ class OrderService:
         return True
 
     @classmethod
-    def customer_cancel_order(cls, user, order_id, session_id):
+    def customer_cancel_order(cls, user, order_id, session_id, reason):
         order = cls.get_order(order_id, customer__user=user)
         if order.status in [
             "RIDER_PICKED_UP_ORDER",
@@ -553,12 +553,12 @@ class OrderService:
                 "Cannot cancel an on going order.", status.HTTP_400_BAD_REQUEST
             )
         cls.add_order_timeline_entry(
-            order, "ORDER_CANCELLED", **{"cancelled_by": "customer"}
+            order, "ORDER_CANCELLED", **{"cancelled_by": "customer", "reason": reason}
         )
         order.status = "ORDER_CANCELLED"
         order.save()
         track_user_activity(
-            context=dict({"order_id": order_id}),
+            context=dict({"order_id": order_id, "reason": reason}),
             category="ORDER",
             action="CUSTOMER_CANCELLED_ORDER",
             email=user.email if user.email else user.phone_number,

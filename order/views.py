@@ -17,6 +17,7 @@ from order.docs import schema_doc
 from order.serializers import (
     AddDriverTipSerializer,
     AssignRiderSerializer,
+    CustomerCancelOrder,
     CustomerOrderSerializer,
     GetAddressInfoSerializer,
     GetCurrentOrder,
@@ -258,6 +259,7 @@ class CustomerOrderViewset(viewsets.ViewSet):
 
     @swagger_auto_schema(
         methods=["post"],
+        request_body=CustomerCancelOrder,
         operation_description="Customer cancel order",
         operation_summary="Customer cancel order",
         tags=["Customer-Order"],
@@ -269,8 +271,18 @@ class CustomerOrderViewset(viewsets.ViewSet):
         url_path="(?P<order_id>[a-z,A-Z,0-9]+)/cancel-order",
     )
     def customer_cancel_order(self, request, order_id):
+        serialized_data = CustomerCancelOrder(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         session_id = generate_session_id()
-        OrderService.customer_cancel_order(request.user, order_id, session_id)
+        OrderService.customer_cancel_order(
+            request.user,
+            order_id,
+            session_id,
+            serialized_data.validated_data.get("reason"),
+        )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Order cancelled"
         )

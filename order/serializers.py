@@ -447,3 +447,7 @@ class RateRiderSerializer(serializers.Serializer):
     rating = serializers.IntegerField(max_value=5, min_value=1)
     remark = serializers.CharField(max_length=100, required=False)
     favorite_rider = serializers.BooleanField(default=False)
+
+
+class CustomerCancelOrder(RiderFailedPickupSerializer):
+    pass
