@@ -284,7 +284,7 @@ class CustomerOrderViewset(viewsets.ViewSet):
             serialized_data.validated_data.get("reason"),
         )
         return ResponseManager.handle_response(
-            data={}, status=status.HTTP_200_OK, message="Order cancelled"
+            data={}, status=status.HTTP_200_OK, message="Order successfully cancelled"
         )
 
 
