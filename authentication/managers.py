@@ -12,11 +12,13 @@ class UserManager(BaseUserManager):
         phone_number = kwargs.get("phone_number")
         user_type = kwargs.get("user_type")
         is_staff = kwargs.get("is_staff")
+        referral_code = kwargs.get("referral_code")
         user = self.model(
             first_name=first_name.capitalize() if first_name else None,
             last_name=last_name.capitalize() if last_name else None,
             email=self.normalize_email(email),
             phone_number=phone_number,
+            referral_code=referral_code,
         )
         if password:
             user.set_password(password)

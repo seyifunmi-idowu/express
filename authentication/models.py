@@ -141,31 +141,47 @@ class User(BaseAbstractModel, AbstractBaseUser, PermissionsMixin):
     def user_location(self):
         return f"{self.street_address}, {self.city}, {self.state_of_residence}"
 
-    def delete(self, using=None, keep_parents=False, image_url=None, commit=True):
+    def hard_delete(self, using=None, keep_parents=False, image_url=None, commit=True):
         """Hard deleting"""
         if self.avatar_url:
-            return super(User, self).delete(
+            return super(User, self).hard_delete(
                 using=using, keep_parents=keep_parents, image_url=self.avatar_url
             )
-        return super(User, self).delete(using=using, keep_parents=keep_parents)
+        return super(User, self).hard_delete(using=using, keep_parents=keep_parents)
 
-    # def delete(self, soft_delete: bool = True, actor=None):
-    #     import uuid
-    #
-    #     from helpers.cache_manager import CacheManager
-    #
-    #     generated_key = f"{settings.DEACTIVATION_PREPEND_VALUE}-{uuid.uuid4().hex}"
-    #     self.email = f"{generated_key}-{self.email}"
-    #     self.phone_number = f"{generated_key}-{self.phone_number}"
-    #     # Delete user's cached data
-    #     CacheManager.delete_key(f"user:fail_login_counter:{self.id}")
-    #     CacheManager.delete_key(f"user:verification:{self.email}")
-    #     CacheManager.delete_key(f"user:otp-verification:{self.email}")
-    #     CacheManager.delete_key(f"user:verification:{self.phone_number}")
-    #     CacheManager.delete_key(f"password:reset:{self.email}")
-    #     CacheManager.delete_key(f"password:reset:{self.phone_number}")
-    #
-    #     super(User, self).delete(soft_delete, actor)
+    def delete(self, soft_delete: bool = True, actor=None):
+        import uuid
+
+        from helpers.cache_manager import CacheManager
+
+        generated_key = f"{settings.DEACTIVATION_PREPEND_VALUE}-{uuid.uuid4().hex}"
+        self.email = f"{generated_key}-{self.email}"
+        self.phone_number = f"{generated_key}-{self.phone_number}"
+        self.first_name = f"{generated_key}-{self.first_name}"
+        self.last_name = f"{generated_key}-{self.last_name}"
+        self.deleted_at = None
+        self.deleted_by = None
+        self.state = self.RECORD_STATE[0][0]
+        self.save()
+        # Delete user's cached data
+        CacheManager.delete_key(f"user:auth-verification:{self.email}")
+
+        super(User, self).delete(soft_delete, actor)
+
+    def undelete(self):
+        if self.email.startswith(settings.DEACTIVATION_PREPEND_VALUE):
+            self.email = self.email.split("-")[-1]
+
+        if self.phone_number.startswith(settings.DEACTIVATION_PREPEND_VALUE):
+            self.phone_number = self.phone_number.split("-")[-1]
+
+        if self.first_name.startswith(settings.DEACTIVATION_PREPEND_VALUE):
+            self.first_name = self.first_name.split("-")[-1]
+
+        if self.last_name.startswith(settings.DEACTIVATION_PREPEND_VALUE):
+            self.last_name = self.last_name.split("-")[-1]
+
+        super(User, self).undelete()
 
     def get_user_wallet(self):
         return self.user_wallet.get()

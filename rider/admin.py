@@ -133,6 +133,9 @@ class RiderAdmin(admin.ModelAdmin):
     def has_add_permission(self, request, obj=None):
         return False
 
+    def get_queryset(self, request):
+        return self.model.objects.filter(state="ACTIVE")
+
 
 class ApprovedRiderAdmin(RiderAdmin):
     def get_queryset(self, request):

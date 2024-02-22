@@ -252,3 +252,6 @@ TERMII_SECRET_KEY = config("TERMII_SECRET_KEY", "")
 TERMII_SMS_FROM = config("TERMII_SMS_FROM", "")
 
 GOOGLE_API_KEY = config("GOOGLE_API_KEY", "")
+DEACTIVATION_PREPEND_VALUE = config(
+    "DEACTIVATION_PREPEND_VALUE", default="fele_deactivated_user"
+)

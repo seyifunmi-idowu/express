@@ -12,8 +12,6 @@ class CustomerAdmin(admin.ModelAdmin):
     )
     readonly_fields = (
         "user",
-        "customer_type",
-        "business_name",
         "business_address",
         "business_category",
         "delivery_volume",
@@ -24,6 +22,9 @@ class CustomerAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request, obj=None):
         return False
+
+    def get_queryset(self, request):
+        return self.model.objects.filter(user__state="ACTIVE")
 
 
 class IndividualCustomerAdmin(admin.ModelAdmin):
@@ -47,12 +48,14 @@ class IndividualCustomerAdmin(admin.ModelAdmin):
         return False
 
     def get_queryset(self, request):
-        return self.model.objects.filter(customer_type="INDIVIDUAL")
+        return self.model.objects.filter(
+            customer_type="INDIVIDUAL", user__state="ACTIVE"
+        )
 
 
 class BusinessCustomerAdmin(CustomerAdmin):
     def get_queryset(self, request):
-        return self.model.objects.filter(customer_type="BUSINESS")
+        return self.model.objects.filter(customer_type="BUSINESS", user__state="ACTIVE")
 
 
 admin.site.register(Customer, CustomerAdmin)

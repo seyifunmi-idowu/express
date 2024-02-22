@@ -12,6 +12,9 @@ class WalletAdmin(admin.ModelAdmin):
     ordering = ("user__first_name", "user__last_name")
     exclude = ("state", "created_by", "deleted_by", "updated_by", "deleted_at")
 
+    def get_queryset(self, request):
+        return self.model.objects.filter(user__state="ACTIVE")
+
     def has_add_permission(self, request):
         return False
 
