@@ -12,6 +12,7 @@ class CustomUserAdmin(BaseModelAdmin, UserAdmin):
     list_display = ("first_name", "last_name", "email", "user_type", "is_staff")
     list_filter = ("user_type",)
     readonly_fields = (
+        "user_type",
         "deleted_at",
         "email_verified",
         "phone_verified",
