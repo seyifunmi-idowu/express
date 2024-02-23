@@ -22,8 +22,10 @@ class UserService:
         one_signal_id = kwargs.pop("one_signal_id", None)
 
         referral_code = kwargs.pop("referral_code", "")
+        if referral_code == "":
+            referral_code = None
         referred_by = None
-        if referral_code != "" and referral_code is not None:
+        if referral_code is not None:
             referred_by = User.objects.filter(referral_code=referral_code).first()
             if referred_by is None:
                 raise CustomAPIException(
