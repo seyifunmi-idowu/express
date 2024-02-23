@@ -487,7 +487,10 @@ class OrderService:
     @classmethod
     def add_rider_tip(cls, user, order_id, tip_amount, session_id):
         order = cls.get_order(order_id, customer__user=user)
-        order.tip_amount += tip_amount
+        if order.tip_amount is None:
+            order.tip_amount = Decimal(tip_amount)
+        else:
+            order.tip_amount += Decimal(tip_amount)
         order.save()
         track_user_activity(
             context=dict({"tip_amount": tip_amount, "order_id": order.order_id}),
@@ -530,7 +533,10 @@ class OrderService:
             raise CustomAPIException(
                 "Rider not a part of your favourite riders.", status.HTTP_404_NOT_FOUND
             )
-
+        if favourite_rider.rider.on_duty is False:
+            raise CustomAPIException(
+                "Rider is not on duty.", status.HTTP_400_BAD_REQUEST
+            )
         cls.add_order_timeline_entry(order, "CUSTOMER_ASSIGN_RIDER")
         cls.add_order_timeline_entry(order, "PENDING_RIDER_CONFIRMATION")
 
