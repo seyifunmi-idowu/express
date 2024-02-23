@@ -21,13 +21,14 @@ class UserService:
 
         one_signal_id = kwargs.pop("one_signal_id", None)
 
-        referral_code = kwargs.pop("referral_code", None)
-        referred_by = User.objects.filter(referral_code=referral_code).first()
-        if referred_by is None:
-            raise CustomAPIException(
-                "Invalid referral code. Edit referral code or sign up without referral code",
-                status.HTTP_409_CONFLICT,
-            )
+        referral_code = kwargs.pop("referral_code", "")
+        if referral_code != "":
+            referred_by = User.objects.filter(referral_code=referral_code).first()
+            if referred_by is None:
+                raise CustomAPIException(
+                    "Invalid referral code. Edit referral code or sign up without referral code",
+                    status.HTTP_409_CONFLICT,
+                )
 
         user = User.objects.create_user(
             referral_code=generate_referral_code(), **kwargs
