@@ -22,7 +22,8 @@ class UserService:
         one_signal_id = kwargs.pop("one_signal_id", None)
 
         referral_code = kwargs.pop("referral_code", "")
-        if referral_code != "":
+        referred_by = None
+        if referral_code != "" and referral_code is not None:
             referred_by = User.objects.filter(referral_code=referral_code).first()
             if referred_by is None:
                 raise CustomAPIException(
@@ -35,10 +36,11 @@ class UserService:
         )
 
         one_signal_id and NotificationService.add_user_one_signal(user, one_signal_id)
-        ReferralUser.objects.create(
-            referred_by=referred_by, referred_user=user, referral_code=referral_code
-        )
         WalletService.create_user_wallet(user)
+        if referred_by:
+            ReferralUser.objects.create(
+                referred_by=referred_by, referred_user=user, referral_code=referral_code
+            )
         return user
 
     @classmethod

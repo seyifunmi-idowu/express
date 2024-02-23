@@ -140,7 +140,8 @@ AWS_S3_BUCKET = config("AWS_S3_BUCKET", "")
 AWS_ACCESS_KEY = config("AWS_ACCESS_KEY", "")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", "")
 
-USE_S3 = config("USE_S3", cast=bool, default=True)
+# USE_S3 = config("USE_S3", cast=bool, default=True)
+USE_S3 = True
 if USE_S3:
     # aws settings
     AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY")
