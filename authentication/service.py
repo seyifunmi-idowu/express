@@ -22,9 +22,6 @@ class UserService:
         one_signal_id = kwargs.pop("one_signal_id", None)
 
         referral_code = kwargs.pop("referral_code", "")
-        print(referral_code)
-        print("========== referral_code ============")
-        print("========== referral_code ============")
         if referral_code == "":
             referral_code = None
         referred_by = None
