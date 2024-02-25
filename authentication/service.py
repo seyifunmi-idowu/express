@@ -80,6 +80,10 @@ class UserService:
         )
         return user
 
+    @classmethod
+    def get_user_qs(cls, **kwargs):
+        return User.objects.filter(**kwargs)
+
 
 class AuthService:
     @classmethod

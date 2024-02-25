@@ -256,7 +256,9 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
         return OrderService.get_time_in_word(obj.duration)
 
     def get_rider_contact(self, obj):
-        return obj.rider.user.phone_number
+        if obj.rider:
+            return obj.rider.user.phone_number
+        return None
 
     def get_rating(self, obj):
         from rider.models import RiderRating

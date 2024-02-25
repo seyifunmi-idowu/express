@@ -129,6 +129,25 @@ class NotificationService:
         add_to_notification and cls.add_user_notification(user, title, message)
 
     @classmethod
+    def send_collective_push_notification(
+        cls, users, title, message, add_to_notification=True
+    ):
+        subscription_list = []
+        for user in users:
+            user_notification = cls.get_user_one_signal(user).first()
+            if user_notification is not None:
+                subscription_list.append(user_notification.one_signal_id)
+
+        formatted_message = message[:100] + "..." if len(message) > 50 else message
+        OneSignalIntegration.send_push_notification(
+            subscription_list, title, formatted_message
+        )
+
+        if add_to_notification:
+            for user in users:
+                cls.add_user_notification(user, title, message)
+
+    @classmethod
     def add_user_notification(cls, user, title, message):
         return Notification.objects.create(user=user, title=title, message=message)
 

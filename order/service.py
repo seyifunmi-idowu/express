@@ -462,11 +462,9 @@ class OrderService:
                 )
 
         order_data.update(data)
-        longitude = order_data.get("pickup", {}).get("longitude")
-        latitude = order_data.get("pickup", {}).get("latitude")
         customer = CustomerService.get_customer(user=user)
-        cls.create_order(order_id, customer, order_data)
-        cls.notify_riders_around_location(longitude, latitude)
+        order = cls.create_order(order_id, customer, order_data)
+        cls.notify_riders_around_location(order)
         CacheManager.delete_key(key_builder)
         track_user_activity(
             context=dict({"order_id": order_id}),
@@ -480,9 +478,17 @@ class OrderService:
         return True
 
     @classmethod
-    def notify_riders_around_location(cls, longitude, latitude):
+    def notify_riders_around_location(cls, order):
+        from authentication.service import UserService
+
+        on_duty_users = UserService.get_user_qs(rider__on_duty=True)
+
+        title = f"New order request #{order.order_id}"
+        message = f"New customer order. Pick up: {order.pickup_location}."
+        NotificationService.send_collective_push_notification(
+            on_duty_users, title, message
+        )
         # TODO: check not busy, active riders within 5km and notify
-        pass
 
     @classmethod
     def add_rider_tip(cls, user, order_id, tip_amount, session_id):
