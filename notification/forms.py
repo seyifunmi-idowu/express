@@ -5,7 +5,7 @@ from notification.models import Notification
 
 class NotificationActionForm(forms.ModelForm):
     DELIVERY_TYPE__CHOICES = (
-        ("", "Select action"),
+        ("", "Select delivery type"),
         ("PUSH", "Push notification"),
         ("SILENT", "Silent notification"),
     )
