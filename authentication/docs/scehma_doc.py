@@ -77,3 +77,12 @@ VERIFY_FORGOT_PASSWORD_RESPONSE = {
         description="Bad request", examples=FORGOT_PASSWORD_WRONG_OTP
     ),
 }
+DELETE_USER = {
+    200: openapi.Response(
+        description="User deleted",
+        examples={
+            "application/json": {"data": {}, "message": "User deleted successful"}
+        },
+    ),
+    403: openapi.Response(description="Unauthorized", examples=UNAUTHENTICATED),
+}

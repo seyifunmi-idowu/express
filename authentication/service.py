@@ -63,6 +63,12 @@ class UserService:
         return None
 
     @classmethod
+    def delete_user(cls, user):
+        user = cls.get_user_instance(user_id=user.id)
+        user.delete()
+        return None
+
+    @classmethod
     def customize_referral_code(cls, user, referral_code, session_id):
         referral_code_user = User.objects.filter(referral_code=referral_code).first()
         if referral_code_user:

@@ -109,6 +109,22 @@ class UserViewset(viewsets.ViewSet):
             message="Password changed successful",
         )
 
+    @swagger_auto_schema(
+        methods=["delete"],
+        operation_description="Delete user",
+        operation_summary="Delete user",
+        tags=["User"],
+        responses=scehma_doc.DELETE_USER,
+    )
+    @action(detail=False, methods=["delete"], url_path="delete")
+    def delete_user(self, request):
+        UserService.delete_user(request.user)
+        return ResponseManager.handle_response(
+            data={},
+            status=status.HTTP_204_NO_CONTENT,
+            message="User deleted successfully",
+        )
+
 
 class AuthViewset(viewsets.ViewSet):
     permission_classes = ()

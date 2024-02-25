@@ -134,7 +134,7 @@ class RiderAdmin(admin.ModelAdmin):
         return False
 
     def get_queryset(self, request):
-        return self.model.objects.filter(state="ACTIVE")
+        return self.model.objects.filter(user__state="ACTIVE")
 
 
 class ApprovedRiderAdmin(RiderAdmin):
