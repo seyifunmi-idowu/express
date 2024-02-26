@@ -1,7 +1,7 @@
 from drf_yasg import openapi
 
 PERIOD = openapi.Parameter(
-    "timeframe",
+    "period",
     openapi.IN_QUERY,
     description="Filter performance by period, yesterday or today",
     type=openapi.TYPE_STRING,

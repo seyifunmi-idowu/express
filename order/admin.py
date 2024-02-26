@@ -61,7 +61,7 @@ class VehiclesAdmin(admin.ModelAdmin):
 
 class OrderAdmin(admin.ModelAdmin):
     search_fields = ("order_id", "status")
-    list_display = ("order_id", "customer", "rider", "status", "distance")
+    list_display = ("order_id", "customer", "rider", "status", "distance", "created_at")
     ordering = ["created_at"]
     readonly_fields = (
         "customer",

@@ -33,5 +33,4 @@ class TokenManager:
             token = CustomAccessToken(access_token)
             token.blacklist()
         except TokenError:
-            # TODO: Log this exception to Sentry but don't raise it
             pass
