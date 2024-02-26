@@ -98,7 +98,7 @@ class CompleteAuthBusinessCustomerSignupSerializer(serializers.Serializer):
 
 
 class UpdateCustomerProfileSerializer(serializers.Serializer):
-    first_name = serializers.CharField(required=True)
+    first_name = serializers.CharField(required=False)
     last_name = serializers.CharField(required=False)
     email = serializers.EmailField(
         validators=[FieldValidators.validate_non_existing_user_email], required=False

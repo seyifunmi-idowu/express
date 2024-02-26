@@ -99,7 +99,9 @@ class CustomerOrderViewset(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"], url_path="history")
     def get_history_order(self, request):
-        orders = OrderService.get_order_qs(customer__user=request.user)
+        orders = OrderService.get_order_qs(customer__user=request.user).order_by(
+            "-created_at"
+        )
         return paginate_response(
             queryset=orders, serializer_=OrderHistorySerializer, request=request
         )
@@ -111,7 +113,9 @@ class CustomerOrderViewset(viewsets.ViewSet):
         responses=schema_doc.GET_ALL_ORDER_RESPONSE,
     )
     def list(self, request):
-        orders = OrderService.get_order_qs(customer__user=request.user)
+        orders = OrderService.get_order_qs(customer__user=request.user).order_by(
+            "-created_at"
+        )
         return paginate_response(
             queryset=orders, serializer_=GetCustomerOrderSerializer, request=request
         )
