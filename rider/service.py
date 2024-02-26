@@ -189,6 +189,9 @@ class RiderService:
         period = request.GET.get("period", "today")
         end_date = timezone.now()
         if period.lower() == "yesterday":
+            end_date = timezone.make_aware(
+                timezone.datetime(end_date.year, end_date.month, end_date.day, 0, 0, 0)
+            )
             start_date = end_date - timezone.timedelta(days=1)
         elif period.lower() == "week":
             start_date = end_date - timezone.timedelta(weeks=1)
