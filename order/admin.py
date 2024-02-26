@@ -105,6 +105,7 @@ class OrderAdmin(admin.ModelAdmin):
         "delivery_contact_name",
         "delivery_location",
         "delivery_time",
+        "order_timeline",
         "created_at",
         "updated_by",
         "updated_at",

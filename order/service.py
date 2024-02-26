@@ -780,6 +780,7 @@ class OrderService:
         order.paid = True
         order.status = "ORDER_COMPLETED"
         order.fele_amount = order.total_amount * Decimal(settings.FELE_CHARGE / 100)
+        order.paid_fele = True
         order.save()
         rider_user = order.rider.user
         rider_user_wallet = rider_user.get_user_wallet()

@@ -38,7 +38,7 @@ class Wallet(BaseAbstractModel):
             NotificationService.send_push_notification(self.user, title, message)
             if self.balance < 0:
                 title = "Low balance"
-                message = f"Your wallet has hit rock bottom with N {round(float(amount), 2)}. Kindly fund wallet."
+                message = f"Your wallet has hit rock bottom with N -{round(float(self.balance), 2)}. Kindly fund wallet."
                 NotificationService.send_push_notification(self.user, title, message)
 
         else:
