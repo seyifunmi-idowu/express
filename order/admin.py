@@ -20,6 +20,7 @@ class VehiclesAdmin(admin.ModelAdmin):
         "base_fare",
         "km_5_below_fare",
         "km_5_above_fare",
+        "price_per_minute",
         "file_url_link",
         "vehicle_image",
         "created_at",

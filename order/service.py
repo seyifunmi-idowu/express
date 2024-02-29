@@ -29,7 +29,7 @@ class VehicleService:
             status=Vehicle.STATUS[0][0],  # "ACTIVE"
             start_date__lte=current_datetime,
             end_date__gte=current_datetime,
-        )
+        ).order_by("created_at")
 
     @classmethod
     def get_vehicle(cls, vehicle_id, raise_404=True):
@@ -423,8 +423,7 @@ class OrderService:
         base_fare = vehicle.base_fare
         price_per_km_0_5 = vehicle.km_5_below_fare
         price_per_km_5_above = vehicle.km_5_above_fare
-        # price_per_minute = vehicle.price_per_minute
-        price_per_minute = 80
+        price_per_minute = vehicle.price_per_minute
 
         # Convert distance from meters to kilometers
         distance_km = distance / 1000
