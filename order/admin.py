@@ -1,8 +1,9 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.html import format_html
 
 from order.forms import VehicleAdminForm
 from order.models import Order, Vehicle
+from order.service import OrderService
 
 
 class VehiclesAdmin(admin.ModelAdmin):
@@ -22,10 +23,13 @@ class VehiclesAdmin(admin.ModelAdmin):
         "km_5_above_fare",
         "price_per_minute",
         "file_url_link",
-        "vehicle_image",
         "created_at",
         "updated_at",
         "updated_by",
+        "action",
+        "start_address",
+        "end_address",
+        "vehicle_image",
     )
 
     def file_url_link(self, instance):
@@ -41,23 +45,39 @@ class VehiclesAdmin(admin.ModelAdmin):
     file_url_link.short_description = "vehicle image url"  # type: ignore
 
     def save_model(self, request, obj, form, change):
-        vehicle_image = form.cleaned_data.get("vehicle_image", None)
-        super().save_model(request, obj, form, change)
-        if vehicle_image:
-            from helpers.s3_uploader import SuggestedImageUploader
+        action = form.cleaned_data.get("action", "")
+        if action == "CHANGE_VEHICLE_IMAGE":
+            vehicle_image = form.cleaned_data.get("vehicle_image", None)
+            super().save_model(request, obj, form, change)
+            if vehicle_image:
+                from helpers.s3_uploader import SuggestedImageUploader
 
-            previous_file_url = obj.file_url
-            if previous_file_url:
-                SuggestedImageUploader().hard_delete_object(previous_file_url)
-            s3_uploader = SuggestedImageUploader(append_folder="/available-vehicles")
-            file_url = s3_uploader.upload_file_object(
-                file_object=vehicle_image.file,
-                file_name=vehicle_image.name,
-                use_random_key=True,
+                previous_file_url = obj.file_url
+                if previous_file_url:
+                    SuggestedImageUploader().hard_delete_object(previous_file_url)
+                s3_uploader = SuggestedImageUploader(
+                    append_folder="/available-vehicles"
+                )
+                file_url = s3_uploader.upload_file_object(
+                    file_object=vehicle_image.file,
+                    file_name=vehicle_image.name,
+                    use_random_key=True,
+                )
+                obj.file_url = file_url
+                obj.updated_by = request.user
+                messages.info(
+                    request,
+                    "The Available Vehicle image was changed successfully. You may edit it again below.",
+                )
+        elif action == "CHECK_PRICE":
+            start_address = form.cleaned_data.get("start_address")
+            end_address = form.cleaned_data.get("end_address")
+            price = OrderService.admin_get_location_price(
+                obj.id, start_address, end_address
             )
-            obj.file_url = file_url
-        obj.updated_by = request.user
-        obj.save()
+            messages.info(request, f"Total Price for selected vehicles: {price}")
+        else:
+            super().save_model(request, obj, form, change)
 
 
 class OrderAdmin(admin.ModelAdmin):

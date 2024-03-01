@@ -47,14 +47,22 @@ class MapService:
         if len(results) < 1:
             raise CustomAPIException("Cannot locate address", status.HTTP_404_NOT_FOUND)
 
-        results_list = [
-            {
-                "latitude": result.get("geometry", {}).get("location", {}).get("lat"),
-                "longitude": result.get("geometry", {}).get("location", {}).get("lng"),
-                "formatted_address": result.get("formatted_address"),
-            }
-            for result in results
-        ]
+        results_list = sorted(
+            [
+                {
+                    "latitude": result.get("geometry", {})
+                    .get("location", {})
+                    .get("lat"),
+                    "longitude": result.get("geometry", {})
+                    .get("location", {})
+                    .get("lng"),
+                    "formatted_address": result.get("formatted_address"),
+                }
+                for result in results
+            ],
+            key=lambda x: "street_address" in x.get("types", []),
+            reverse=True,
+        )
         return results_list
 
     @classmethod
@@ -919,3 +927,31 @@ class OrderService:
             # TODO: check if rider has outstanding and deduct it
 
         return made_payment
+
+    @classmethod
+    def admin_get_location_price(cls, vehicle_id, start_address, end_address):
+        start_location = MapService.get_info_from_address(start_address)
+        end_location = MapService.get_info_from_address(end_address)
+
+        start_lat_lng = (
+            f"{start_location[0].get('latitude')},{start_location[0].get('longitude')}"
+        )
+        end_lat_lng = (
+            f"{end_location[0].get('latitude')},{end_location[0].get('longitude')}"
+        )
+        distance_and_duration = MapService.get_distance_between_locations(
+            start_lat_lng, end_lat_lng
+        )
+
+        if distance_and_duration.get("distance") is None:
+            raise CustomAPIException(
+                "Unable to process, please check that the address is correct",
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        total_price = cls.calculate_distance_price(
+            distance_and_duration["distance"],
+            distance_and_duration["duration"],
+            vehicle_id,
+        )
+        return total_price
