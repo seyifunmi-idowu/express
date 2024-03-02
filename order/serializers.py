@@ -173,6 +173,7 @@ class GetCurrentOrder(GetOrderSerializer):
 
 
 class CustomerOrderSerializer(serializers.ModelSerializer):
+    rider = serializers.SerializerMethodField()
     rider_contact = serializers.SerializerMethodField()
     pickup = serializers.SerializerMethodField()
     delivery = serializers.SerializerMethodField()
@@ -191,6 +192,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
             "status",
             "payment_method",
             "payment_by",
+            "rider",
             "rider_contact",
             "pickup",
             "delivery",
@@ -273,6 +275,22 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
             }
         else:
             return {"rating": None, "created_at": None}
+
+    def get_rider(self, obj):
+        if obj.rider:
+            return {
+                "name": obj.rider.display_name,
+                "contact": obj.rider.user.phone_number,
+                "avatar_url": obj.rider.photo_url(),
+                "rating": obj.rider.rating,
+                "vehicle": obj.rider.vehicle.name,
+                "vehicle_type": obj.rider.vehicle_type,
+                "vehicle_make": obj.rider.vehicle_make,
+                "vehicle_model": obj.rider.vehicle_model,
+                "vehicle_plate_number": obj.rider.vehicle_plate_number,
+                "vehicle_color": obj.rider.vehicle_color,
+            }
+        return None
 
 
 class RiderOrderSerializer(serializers.ModelSerializer):

@@ -15,7 +15,7 @@ from helpers.googlemaps_service import GoogleMapsService
 from helpers.paystack_service import PaystackService
 from helpers.s3_uploader import S3Uploader
 from notification.service import NotificationService
-from order.models import Address, Order, Vehicle
+from order.models import Address, Order, OrderTimeline, Vehicle
 from rider.models import FavoriteRider, RiderRating
 from rider.service import RiderService
 from wallet.service import CardService, TransactionService
@@ -50,6 +50,7 @@ class MapService:
         results_list = sorted(
             [
                 {
+                    "name": result.get("name"),
                     "latitude": result.get("geometry", {})
                     .get("location", {})
                     .get("lat"),
@@ -543,16 +544,13 @@ class OrderService:
 
     @classmethod
     def add_order_timeline_entry(cls, order, order_status, **kwargs):
-        order_timeline = order.order_timeline or []
-        order_timeline.append(
-            {
-                "status": order_status,
-                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                **kwargs,
-            }
+        OrderTimeline.objects.create(
+            order=order,
+            status=order_status,
+            proof_url=kwargs.pop("proof_url", None),
+            reason=kwargs.pop("reason", None),
+            meta_data=dict(**kwargs),
         )
-        order.order_timeline = order_timeline
-        order.save()
 
     @classmethod
     def assign_rider_to_order(cls, user, order_id, rider_id, session_id):
@@ -719,7 +717,7 @@ class OrderService:
             file, file_name
         )
         cls.add_order_timeline_entry(
-            order, "RIDER_PICKED_UP_ORDER", **{"proof_of_pickup_url": file_url}
+            order, "RIDER_PICKED_UP_ORDER", **{"proof_url": file_url}
         )
         order.status = "RIDER_PICKED_UP_ORDER"
         order.save()
@@ -727,7 +725,7 @@ class OrderService:
         message = "Your goods are on the way to drop off"
         NotificationService.send_push_notification(order.customer.user, title, message)
         track_user_activity(
-            context=dict({"order_id": order_id, "proof_of_pickup_url": file_url}),
+            context=dict({"order_id": order_id, "proof_url": file_url}),
             category="ORDER",
             action="RIDER_PICKED_UP_ORDER",
             email=user.email if user.email else None,
@@ -786,13 +784,13 @@ class OrderService:
             file, file_name
         )
         cls.add_order_timeline_entry(
-            order, "ORDER_DELIVERED", **{"proof_of_delivery_url": file_url}
+            order, "ORDER_DELIVERED", **{"proof_url": file_url}
         )
         order.delivery_time = timezone.now()
         order.status = "ORDER_DELIVERED"
         order.save()
         track_user_activity(
-            context=dict({"order_id": order_id, "proof_of_delivery_url": file_url}),
+            context=dict({"order_id": order_id, "proof_url": file_url}),
             category="ORDER",
             action="RIDER_MADE_DELIVERY",
             email=user.email if user.email else None,

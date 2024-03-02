@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 from django.utils.html import format_html
 
 from order.forms import VehicleAdminForm
-from order.models import Order, Vehicle
+from order.models import Order, OrderTimeline, Vehicle
 from order.service import OrderService
 
 
@@ -80,7 +80,44 @@ class VehiclesAdmin(admin.ModelAdmin):
             super().save_model(request, obj, form, change)
 
 
+class OrderTimelineInline(admin.TabularInline):
+    model = OrderTimeline
+    readonly_fields = ("status", "date", "proof_link", "reason")
+    ordering = ("created_at",)
+    fields = ("status", "date", "proof_link", "reason")
+    extra = 0
+
+    def formfield_for_dbfield(self, *args, **kwargs):
+        formfield = super().formfield_for_dbfield(*args, **kwargs)
+
+        formfield.widget.can_delete_related = False
+        formfield.widget.can_change_related = False
+        formfield.widget.can_add_related = False
+
+        return formfield
+
+    def date(self, instance):
+        return instance.get_created_at()
+
+    def proof_link(self, instance):
+        if instance.proof_url:
+            return format_html(
+                '<a href="{}" target="_blank" download="">{}</a>',
+                instance.proof_url,
+                instance.proof_url,
+            )
+        else:
+            return ""
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 class OrderAdmin(admin.ModelAdmin):
+    inlines = [OrderTimelineInline]
     search_fields = ("order_id", "status")
     list_display = ("order_id", "customer", "rider", "status", "distance", "created_at")
     ordering = ["created_at"]
@@ -126,7 +163,6 @@ class OrderAdmin(admin.ModelAdmin):
         "delivery_contact_name",
         "delivery_location",
         "delivery_time",
-        "order_timeline",
         "created_at",
         "updated_by",
         "updated_at",

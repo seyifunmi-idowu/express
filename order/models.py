@@ -166,3 +166,28 @@ class Order(BaseAbstractModel):
             ),
             None,
         )
+
+
+class OrderTimeline(BaseAbstractModel):
+    order = models.ForeignKey(
+        "order.Order",
+        on_delete=models.CASCADE,
+        verbose_name="customer",
+        related_name="customer_order",
+    )
+    status = models.CharField(max_length=100)
+    proof_url = models.CharField(max_length=550, null=True, blank=True)
+    reason = models.CharField(max_length=100, null=True, blank=True)
+    meta_data = models.JSONField(default=dict, null=True, blank=True)
+
+    def __str__(self):
+        return self.status
+
+    class Meta:
+        db_table = "order_timeline"
+        verbose_name = "Order Timeline"
+        verbose_name_plural = "Order Timelines"
+
+    def get_created_at(self):
+        date = self.meta_data.get("date", None)
+        return date if date else self.created_at

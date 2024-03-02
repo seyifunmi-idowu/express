@@ -101,6 +101,18 @@ GET_CUSTOMER_ORDER_SUCCESS = {
             "status": "ORDER_DELIVERED",
             "payment_method": "WALLET",
             "payment_by": "SENDER",
+            "rider": {
+                "name": "Messi Messi",
+                "contact": "+2348105474514",
+                "avatar_url": "https://feleexpress.s3.amazonaws.com/backend-dev/rider_document/passport_photo/7d09c97c6752f14c2.pdf",
+                "rating": 2.0,
+                "vehicle": "car",
+                "vehicle_type": None,
+                "vehicle_make": None,
+                "vehicle_model": None,
+                "vehicle_plate_number": "eky24sky",
+                "vehicle_color": "red",
+            },
             "rider_contact": "+2348105474514",
             "pickup": {
                 "latitude": "6.5358762",
@@ -292,14 +304,22 @@ ADDRESS_INFO_SUCCESS_RESPONSE = {
     "application/json": {
         "data": [
             {
-                "latitude": 6.6428131,
-                "longitude": 3.2779737,
-                "formatted_address": "2 Church St, Abule Egba, Lagos 102213, Lagos, Nigeria",
+                "name": "Smile View Hotel Extension",
+                "latitude": 7.707562899999999,
+                "longitude": 8.5194119,
+                "formatted_address": "PG59+2QR, Father Hunter Street, High Level, Asuir 970101, Benue, Nigeria",
             },
             {
-                "latitude": 6.458513,
-                "longitude": 3.212847,
-                "formatted_address": "2 Church St, Volkswagen, Lagos 102113, Lagos, Nigeria",
+                "name": "Smile View Hotel Anex",
+                "latitude": 7.714796199999999,
+                "longitude": 8.513863599999999,
+                "formatted_address": "PG77+WGG, Township, Makurdi 970101, Benue, Nigeria",
+            },
+            {
+                "name": "Benue Hotels & Resort",
+                "latitude": 7.7350222,
+                "longitude": 8.534413899999999,
+                "formatted_address": "Benue Hotels and Resort, 57 Ahmadu Bello Way, Old GRA, Makurdi 970101, Benue, Nigeria",
             },
         ],
         "message": "Address information",
