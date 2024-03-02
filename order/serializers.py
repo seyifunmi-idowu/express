@@ -380,6 +380,10 @@ class RiderOrderSerializer(serializers.ModelSerializer):
         return {"contact": contact, "destination": destination}
 
 
+class SearchAddressSerializer(serializers.Serializer):
+    address = serializers.CharField(required=True)
+
+
 class GetAddressInfoSerializer(serializers.Serializer):
     address = serializers.CharField(required=False)
     latitude = serializers.CharField(max_length=50, required=False)

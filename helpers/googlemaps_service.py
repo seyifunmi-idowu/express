@@ -296,3 +296,92 @@ class GoogleMapsService:
         url = f"{cls.BASE_URL}/distancematrix/json?origins={origin_latlng}&destinations={destination_latlng}&mode={mode}&key={cls.SECRET_KEY}"
         response = requests.get(url)
         return response.json()
+
+    @classmethod
+    def search_address(cls, address):
+        """ sample_response = {
+            "html_attributions": [],
+            "next_page_token": "ATplDJagFuVPNguTxS6tYg",
+            "results": [
+                {
+                    "business_status": "OPERATIONAL",
+                    "formatted_address": "PG59+2QR, Father Hunter Street, High Level, Asuir 970101, Benue, Nigeria",
+                    "geometry": {
+                        "location": {"lat": 7.707562899999999, "lng": 8.5194119},
+                        "viewport": {
+                            "northeast": {
+                                "lat": 7.708916729892721,
+                                "lng": 8.520754729892721,
+                            },
+                            "southwest": {
+                                "lat": 7.706217070107277,
+                                "lng": 8.518055070107277,
+                            },
+                        },
+                    },
+                    "icon": "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/lodging-71.png",
+                    "icon_background_color": "#909CE1",
+                    "icon_mask_base_uri": "https://maps.gstatic.com/mapfiles/place_api/icons/v2/hotel_pinlet",
+                    "name": "Smile View Hotel Extension",
+                    "photos": [
+                        {
+                            "height": 2016,
+                            "html_attributions": [
+                                '<a href="https://maps.google.com/maps/contrib/106747107223341631050">Desmond Medix</a>'
+                            ],
+                            "photo_reference": "ATplDJY7PkxXPt7fOtHk4yh1fIDmK22Q",
+                            "width": 4032,
+                        }
+                    ],
+                    "place_id": "ChIJu-U-bS-AUBARmZruJiiCoE4",
+                    "rating": 3.7,
+                    "reference": "ChIJu-U-bS-AUBARmZruJiiCoE4",
+                    "types": ["lodging", "point_of_interest", "establishment"],
+                    "user_ratings_total": 431,
+                },
+                {
+                    "business_status": "OPERATIONAL",
+                    "formatted_address": "PG77+WGG, Township, Makurdi 970101, Benue, Nigeria",
+                    "geometry": {
+                        "location": {
+                            "lat": 7.714796199999999,
+                            "lng": 8.513863599999999,
+                        },
+                        "viewport": {
+                            "northeast": {
+                                "lat": 7.716119679892721,
+                                "lng": 8.515257579892722,
+                            },
+                            "southwest": {
+                                "lat": 7.713420020107277,
+                                "lng": 8.512557920107279,
+                            },
+                        },
+                    },
+                    "icon": "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/lodging-71.png",
+                    "icon_background_color": "#909CE1",
+                    "icon_mask_base_uri": "https://maps.gstatic.com/mapfiles/place_api/icons/v2/hotel_pinlet",
+                    "name": "Smile View Hotel Anex",
+                    "photos": [
+                        {
+                            "height": 2560,
+                            "html_attributions": [
+                                '<a href="https://maps.google.com/maps/contrib/107663795223921656289">Abaver Justine</a>'
+                            ],
+                            "photo_reference": "ATplDJUxLxFG7uda1r1GfDF",
+                            "width": 1920,
+                        }
+                    ],
+                    "place_id": "ChIJ3yw7dDuAUBARDe4S1lKB660",
+                    "rating": 3.5,
+                    "reference": "ChIJ3yw7dDuAUBARDe4S1lKB660",
+                    "types": ["lodging", "point_of_interest", "establishment"],
+                    "user_ratings_total": 330,
+                },
+            ],
+            "status": "OK",
+        } """
+        encoded_address = quote(address)
+        url = f"{cls.BASE_URL}/place/textsearch/json?query={encoded_address}&key={cls.SECRET_KEY}"
+        response = requests.get(url)
+        return response.json()

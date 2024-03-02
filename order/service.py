@@ -41,6 +41,31 @@ class VehicleService:
 
 class MapService:
     @classmethod
+    def search_address(cls, address):
+        response = GoogleMapsService.search_address(address)
+        results = response["results"]
+        if len(results) < 1:
+            raise CustomAPIException("Cannot locate address", status.HTTP_404_NOT_FOUND)
+
+        results_list = sorted(
+            [
+                {
+                    "latitude": result.get("geometry", {})
+                    .get("location", {})
+                    .get("lat"),
+                    "longitude": result.get("geometry", {})
+                    .get("location", {})
+                    .get("lng"),
+                    "formatted_address": result.get("formatted_address"),
+                }
+                for result in results
+            ],
+            key=lambda x: x.get("business_status", "") == "OPERATIONAL",
+            reverse=True,
+        )
+        return results_list
+
+    @classmethod
     def get_info_from_address(cls, address):
         response = GoogleMapsService.get_address_details(address)
         results = response["results"]
