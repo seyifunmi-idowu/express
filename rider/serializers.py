@@ -90,6 +90,36 @@ class VerifyOtpSerializer(serializers.Serializer):
         return data
 
 
+class ChangeEmailSerializer(serializers.Serializer):
+    old_email = serializers.EmailField(
+        validators=[FieldValidators.validate_existing_user_email], required=True
+    )
+    new_email = serializers.EmailField(
+        validators=[FieldValidators.validate_non_existing_user_email], required=True
+    )
+
+
+class ChangePhoneNumberSerializer(serializers.Serializer):
+    old_phone_number = serializers.CharField(
+        min_length=10,
+        max_length=15,
+        validators=[
+            FieldValidators.validate_phone_number,
+            FieldValidators.validate_existing_user_phone,
+        ],
+        required=True,
+    )
+    new_phone_number = serializers.CharField(
+        min_length=10,
+        max_length=15,
+        validators=[
+            FieldValidators.validate_phone_number,
+            FieldValidators.validate_non_existing_user_phone,
+        ],
+        required=True,
+    )
+
+
 class RiderLoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False)
     phone_number = serializers.CharField(required=False)

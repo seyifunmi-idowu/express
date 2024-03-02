@@ -34,7 +34,8 @@ class ResponseManager:
                     message = " ".join(formatted_error)
                 else:
                     first_error_message = errors[first_error_key][0]
-                    message = f"{first_error_key}: {first_error_message}"
+                    # message = f"{first_error_key}: {first_error_message}"
+                    message = f"{first_error_message}"
             return Response({"errors": errors, "message": message}, status=status)
         return Response({"data": data, "message": message}, status=status)
 

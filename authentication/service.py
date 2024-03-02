@@ -406,6 +406,60 @@ class AuthService:
             session_id=session_id,
         )
 
+    @classmethod
+    def change_user_incorrect_email(cls, session_id, old_email, new_email):
+        user = UserService.get_user_instance(email=old_email)
+        if not user:
+            raise CustomAPIException("User not found", status.HTTP_404_NOT_FOUND)
+
+        if user.email_verified:
+            raise CustomAPIException(
+                "User email already verified", status.HTTP_400_BAD_REQUEST
+            )
+
+        user.email = new_email
+        user.save()
+        AuthService.initiate_email_verification(email=new_email, name=user.display_name)
+        track_user_activity(
+            context={"old_email": old_email, "new_email": new_email},
+            category="USER_AUTH",
+            action="USER_CHANGED_EMAIL",
+            email=new_email,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+
+    @classmethod
+    def change_user_incorrect_phone_number(
+        cls, session_id, old_phone_number, new_phone_number
+    ):
+        user = UserService.get_user_instance(phone_number=old_phone_number)
+        if not user:
+            raise CustomAPIException("User not found", status.HTTP_404_NOT_FOUND)
+
+        if user.phone_verified:
+            raise CustomAPIException(
+                "User phone already verified", status.HTTP_400_BAD_REQUEST
+            )
+        context = (
+            {
+                "old_phone_number": old_phone_number,
+                "new_phone_number": new_phone_number,
+            },
+        )
+        user.phone_number = new_phone_number
+        user.save()
+        AuthService.initiate_phone_verification(new_phone_number)
+
+        track_user_activity(
+            context=context,
+            category="USER_AUTH",
+            action="USER_CHANGED_PHONE_NUMBER",
+            phone_number=new_phone_number,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+
 
 class UserActivityService:
     @classmethod

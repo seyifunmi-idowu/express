@@ -25,6 +25,8 @@ from feleexpress.middlewares.permissions.is_authenticated import (
 from helpers.db_helpers import generate_session_id
 from helpers.utils import ResponseManager
 from rider.serializers import (
+    ChangeEmailSerializer,
+    ChangePhoneNumberSerializer,
     FavouriteRiderSerializer,
     RiderLoginSerializer,
     VerifyOtpSerializer,
@@ -78,6 +80,50 @@ class CustomerAuthViewset(viewsets.ViewSet):
         )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Customer sign up successful"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=ChangePhoneNumberSerializer,
+        operation_description="Change incorrect phone number to complete registration",
+        operation_summary="Change incorrect phone number to complete registration",
+        tags=["Customer-Auth"],
+        responses=schema_doc.CUSTOMER_RESEND_OTP_RESPONSES,
+    )
+    @action(detail=False, methods=["post"], url_path="register/change/phone-number")
+    def change_phone_number(self, request):
+        serialized_data = ChangePhoneNumberSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        AuthService.change_user_incorrect_phone_number(
+            session_id, **serialized_data.data
+        )
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Otp sent"
+        )
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=ChangeEmailSerializer,
+        operation_description="Change incorrect email to complete registration",
+        operation_summary="Change incorrect email to complete registration",
+        tags=["Customer-Auth"],
+        responses=schema_doc.CUSTOMER_RESEND_OTP_RESPONSES,
+    )
+    @action(detail=False, methods=["post"], url_path="register/change/email")
+    def change_email(self, request):
+        serialized_data = ChangeEmailSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        session_id = generate_session_id()
+        AuthService.change_user_incorrect_email(session_id, **serialized_data.data)
+        return ResponseManager.handle_response(
+            data={}, status=status.HTTP_200_OK, message="Otp sent"
         )
 
     @swagger_auto_schema(

@@ -194,6 +194,48 @@ class CustomerService:
         return True
 
     @classmethod
+    def change_email_or_phone_number(cls, session_id, **kwargs):
+        email = kwargs.get("email", None)
+        phone_number = kwargs.get("phone_number", None)
+        user = UserService.get_user_instance(email=email, phone_number=phone_number)
+        if not user:
+            raise CustomAPIException("User not found", status.HTTP_404_NOT_FOUND)
+
+        if email:
+            if user.email_verified:
+                raise CustomAPIException(
+                    "User email already verified", status.HTTP_400_BAD_REQUEST
+                )
+            context = ({"old_email": user.email, "new_email": phone_number},)
+            user.email = email
+            AuthService.initiate_email_verification(email=email, name=user.display_name)
+        if phone_number:
+            if user.phone_verified:
+                raise CustomAPIException(
+                    "User phone already verified", status.HTTP_400_BAD_REQUEST
+                )
+            context = (
+                {
+                    "old_phone_number": user.phone_number,
+                    "new_phone_number": phone_number,
+                },
+            )
+            user.phone_number = phone_number
+            AuthService.initiate_phone_verification(phone_number)
+
+        track_user_activity(
+            context=context,
+            category="CUSTOMER_AUTH",
+            action="CUSTOMER_CHANGED_PHONE_NUMBER"
+            if phone_number
+            else "CUSTOMER_CHANGED_EMAIL",
+            email=email if email else None,
+            phone_number=phone_number if phone_number else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+
+    @classmethod
     def resend_verification_code(cls, session_id, **kwargs):
         email = kwargs.get("email", None)
         phone_number = kwargs.get("phone_number", None)
