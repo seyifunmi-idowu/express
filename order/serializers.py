@@ -26,8 +26,16 @@ class GetCustomerOrderSerializer(serializers.ModelSerializer):
             return {
                 "name": obj.rider.display_name,
                 "contact": obj.rider.user.phone_number,
+                "avatar_url": obj.rider.photo_url(),
+                "rating": obj.rider.rating,
+                "vehicle": obj.rider.vehicle.name,
+                "vehicle_type": obj.rider.vehicle_type,
+                "vehicle_make": obj.rider.vehicle_make,
+                "vehicle_model": obj.rider.vehicle_model,
+                "vehicle_plate_number": obj.rider.vehicle_plate_number,
+                "vehicle_color": obj.rider.vehicle_color,
             }
-        return {"name": None, "contact": None}
+        return None
 
     def get_delivery(self, obj):
         return {"address": obj.delivery_location, "time": obj.get_delivery_time()}
