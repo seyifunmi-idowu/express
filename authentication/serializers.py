@@ -9,6 +9,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     is_rider = serializers.SerializerMethodField("get_is_rider")
     is_customer = serializers.SerializerMethodField("get_is_customer")
     wallet_balance = serializers.SerializerMethodField()
+    avatar_url = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -42,6 +43,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_wallet_balance(self, obj):
         return obj.get_user_wallet().balance
+
+    def get_avatar_url(self, obj):
+        if obj.user_type == "RIDER":
+            from rider.service import RiderService
+
+            return RiderService.get_rider(user=obj).photo_url()
+        return obj.avatar_url
 
 
 class ForgotPasswordSerializer(serializers.Serializer):
