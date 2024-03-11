@@ -199,6 +199,16 @@ class AuthService:
             )
         user.phone_verified = True
         user.save()
+        user_activity = UserActivityService.retrieve_user_activity_qs(
+            user=user, action__in=["PHONE_VERIFICATION_OTP", "EMAIL_VERIFICATION_OTP"]
+        )
+        if len(user_activity) == 0 and user.email:
+            email_manager = EmailManager(
+                "Welcome to Fele Express",
+                context={"display_name": user.display_name},
+                template="customer_welcome.html",
+            )
+            email_manager.send([user.email])
 
         CacheManager.delete_key(key_builder)
         track_user_activity(
@@ -316,6 +326,16 @@ class AuthService:
             )
         user.email_verified = True
         user.save()
+        user_activity = UserActivityService.retrieve_user_activity_qs(
+            user=user, action__in=["PHONE_VERIFICATION_OTP", "EMAIL_VERIFICATION_OTP"]
+        )
+        if len(user_activity) == 0:
+            email_manager = EmailManager(
+                "Welcome to Fele Express",
+                context={"display_name": user.display_name},
+                template="customer_welcome.html",
+            )
+            email_manager.send([email])
 
         CacheManager.delete_key(key_builder)
         track_user_activity(
