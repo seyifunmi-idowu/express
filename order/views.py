@@ -127,6 +127,21 @@ class CustomerOrderViewset(viewsets.ViewSet):
         )
 
     @swagger_auto_schema(
+        operation_description="Get all ongoing orders",
+        operation_summary="Get all ongoing orders",
+        tags=["Customer-Order"],
+        responses=schema_doc.GET_ALL_ORDER_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="ongoing")
+    def get_ongoing_orders(self, request):
+        orders = OrderService.get_order_qs(customer__user=request.user).exclude(
+            status__in=["ORDER_COMPLETED", "ORDER_CANCELLED"]
+        )
+        return paginate_response(
+            queryset=orders, serializer_=GetCustomerOrderSerializer, request=request
+        )
+
+    @swagger_auto_schema(
         operation_description="Get all user orders",
         operation_summary="Get all user orders",
         tags=["Customer-Order"],
