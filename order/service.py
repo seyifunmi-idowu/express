@@ -184,7 +184,7 @@ class OrderService:
                 "RIDER_PICKED_UP_ORDER",
                 "ORDER_ARRIVED",
             ],
-        )
+        ).order_by("-created_at")
 
     @classmethod
     def get_failed_order(cls, user):
@@ -241,11 +241,13 @@ class OrderService:
             pickup_number=pickup.get("contact_phone_number", None),
             pickup_contact_name=pickup.get("contact_name", None),
             pickup_location=pickup.get("address"),
+            pickup_name=pickup.get("name"),
             pickup_location_longitude=pickup.get("longitude"),
             pickup_location_latitude=pickup.get("latitude"),
             delivery_number=delivery.get("contact_phone_number", None),
             delivery_contact_name=delivery.get("contact_name", None),
             delivery_location=delivery.get("address"),
+            delivery_name=delivery.get("name"),
             delivery_location_longitude=delivery.get("longitude"),
             delivery_location_latitude=delivery.get("latitude"),
             order_stop_overs_meta_data=stop_overs,
@@ -295,37 +297,52 @@ class OrderService:
         timeline = []
         index = 1
 
-        pickup_address_info = MapService.get_info_from_latitude_and_longitude(
-            pickup_latitude, pickup_longitude
+        pickup_address_info = MapService.search_address(
+            f"{pickup_latitude},{pickup_longitude}"
         )
         if len(pickup_address_info) < 1:
             raise CustomAPIException(
                 "Unable to locate pickup address", status.HTTP_404_NOT_FOUND
             )
-        pickup.update({"address": pickup_address_info[0].get("formatted_address")})
-        delivery_address_info = MapService.get_info_from_latitude_and_longitude(
-            delivery_latitude, delivery_longitude
+        pickup.update(
+            {
+                "address": pickup_address_info[0].get("formatted_address"),
+                "name": pickup_address_info[0].get("name"),
+            }
+        )
+        delivery_address_info = MapService.search_address(
+            f"{delivery_latitude},{delivery_longitude}"
         )
         if len(delivery_address_info) < 1:
             raise CustomAPIException(
                 "Unable to locate delivery address", status.HTTP_404_NOT_FOUND
             )
-        delivery.update({"address": delivery_address_info[0].get("formatted_address")})
+        delivery.update(
+            {
+                "address": delivery_address_info[0].get("formatted_address"),
+                "name": delivery_address_info[0].get("name"),
+            }
+        )
 
         if stop_overs:
+            # cross-check this when it becomes useful
             current_location = pickup
+
             for stop_over in stop_overs:
                 stop_over_latitude = stop_over.get("latitude")
                 stop_over_longitude = stop_over.get("longitude")
-                stop_over_address_info = MapService.get_info_from_latitude_and_longitude(
-                    stop_over_latitude, stop_over_longitude
+                stop_over_address_info = MapService.search_address(
+                    f"{stop_over_latitude},{stop_over_longitude}"
                 )
-                if len(pickup_address_info) < 1:
+                if len(stop_over_address_info) < 1:
                     raise CustomAPIException(
                         "Unable to locate stop over address", status.HTTP_404_NOT_FOUND
                     )
                 stop_over.update(
-                    {"address": stop_over_address_info[0].get("formatted_address")}
+                    {
+                        "address": stop_over_address_info[0].get("formatted_address"),
+                        "name": stop_over_address_info[0].get("name"),
+                    }
                 )
 
                 distance_and_duration = MapService.get_distance_between_locations(
@@ -346,10 +363,12 @@ class OrderService:
                         "from": {
                             "latitude": current_location.get("latitude"),
                             "longitude": current_location.get("longitude"),
+                            "name": current_location.get("name"),
                         },
                         "to": {
-                            "latitude": stop_over_latitude,
-                            "longitude": stop_over_longitude,
+                            "latitude": stop_over_address_info[0].get("latitude"),
+                            "longitude": stop_over_address_info[0].get("longitude"),
+                            "name": stop_over_address_info[0].get("name"),
                         },
                         "price": price,
                         "total_price": total_price + price,
@@ -357,7 +376,7 @@ class OrderService:
                     }
                 )
                 total_price += price
-                current_location = stop_over
+                current_location = stop_over_address_info
                 index += 1
 
             distance_and_duration = MapService.get_distance_between_locations(
@@ -378,10 +397,12 @@ class OrderService:
                     "from": {
                         "latitude": current_location.get("latitude"),
                         "longitude": current_location.get("longitude"),
+                        "name": current_location.get("name"),
                     },
                     "to": {
                         "latitude": delivery.get("latitude"),
                         "longitude": delivery.get("longitude"),
+                        "name": delivery.get("name"),
                     },
                     "price": price,
                     "total_price": total_price + price,
@@ -412,12 +433,14 @@ class OrderService:
                 {
                     "index": index,
                     "from": {
-                        "latitude": pickup_latitude,
-                        "longitude": pickup_longitude,
+                        "latitude": pickup_address_info[0].get("latitude"),
+                        "longitude": pickup_address_info[0].get("longitude"),
+                        "name": pickup_address_info[0].get("name"),
                     },
                     "to": {
-                        "latitude": delivery_latitude,
-                        "longitude": delivery_longitude,
+                        "latitude": delivery_address_info[0].get("latitude"),
+                        "longitude": delivery_address_info[0].get("longitude"),
+                        "name": delivery_address_info[0].get("name"),
                     },
                     "vehicle_id": vehicle_id,
                     "price": total_price,
@@ -661,14 +684,19 @@ class OrderService:
         pass_rider = False
         if order.rider is None and order.status == "PENDING":
             pass_rider = True
+
         if (
             order.rider
             and order.rider.user == user
             and order.status == "PENDING_RIDER_CONFIRMATION"
         ):
             pass_rider = True
+
         if not pass_rider:
-            raise CustomAPIException("Cannot accept order.", status.HTTP_404_NOT_FOUND)
+            raise CustomAPIException(
+                "Cannot accept order.", status.HTTP_400_BAD_REQUEST
+            )
+
         rider = RiderService.get_rider(user=user)
         cls.add_order_timeline_entry(order, "RIDER_ACCEPTED_ORDER")
 

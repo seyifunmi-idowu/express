@@ -146,7 +146,7 @@ class GetCurrentOrder(GetOrderSerializer):
             "address": obj.pickup_location,
             "longitude": obj.pickup_location_longitude,
             "latitude": obj.pickup_location_latitude,
-            "short_address": split_address[0],
+            "short_address": obj.pickup_name if obj.pickup_name else split_address[0],
             "complete_address": split_address[1] if len(split_address) > 1 else "",
             "contact": obj.pickup_number,
             "contact_name": obj.pickup_contact_name,
@@ -159,7 +159,9 @@ class GetCurrentOrder(GetOrderSerializer):
             "address": obj.delivery_location,
             "longitude": obj.delivery_location_longitude,
             "latitude": obj.delivery_location_latitude,
-            "short_address": split_address[0],
+            "short_address": obj.delivery_name
+            if obj.delivery_name
+            else split_address[0],
             "complete_address": split_address[1] if len(split_address) > 1 else "",
             "contact": obj.delivery_number,
             "contact_name": obj.delivery_contact_name,

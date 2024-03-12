@@ -6,6 +6,8 @@ from django.conf import settings
 
 class GoogleMapsService:
     SECRET_KEY = settings.GOOGLE_API_KEY
+    GOOGLE_SEARCH_LOCATION = settings.GOOGLE_SEARCH_LOCATION
+    GOOGLE_SEARCH_RADIUS = settings.GOOGLE_SEARCH_RADIUS
     BASE_URL = "https://maps.googleapis.com/maps/api"
 
     @classmethod
@@ -298,7 +300,7 @@ class GoogleMapsService:
         return response.json()
 
     @classmethod
-    def search_address(cls, address):
+    def search_address(cls, query):
         """ sample_response = {
             "html_attributions": [],
             "next_page_token": "ATplDJagFuVPNguTxS6tYg",
@@ -381,7 +383,7 @@ class GoogleMapsService:
             ],
             "status": "OK",
         } """
-        encoded_address = quote(address)
-        url = f"{cls.BASE_URL}/place/textsearch/json?query={encoded_address}&key={cls.SECRET_KEY}"
+        encoded_address = quote(query)
+        url = f"{cls.BASE_URL}/place/textsearch/json?query={encoded_address}&key={cls.SECRET_KEY}&location={cls.GOOGLE_SEARCH_LOCATION}&radius={cls.GOOGLE_SEARCH_RADIUS}"
         response = requests.get(url)
         return response.json()

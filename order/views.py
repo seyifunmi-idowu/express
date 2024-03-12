@@ -342,7 +342,9 @@ class RiderOrderViewset(viewsets.ViewSet):
         responses=schema_doc.GET_ALL_ORDER_RESPONSE,
     )
     def list(self, request):
-        orders = OrderService.get_order_qs(rider__user=request.user)
+        orders = OrderService.get_order_qs(rider__user=request.user).order_by(
+            "-created_at"
+        )
         return ResponseManager.handle_response(
             data=GetOrderSerializer(orders, many=True).data,
             status=status.HTTP_200_OK,
@@ -420,15 +422,13 @@ class RiderOrderViewset(viewsets.ViewSet):
         )
 
     @swagger_auto_schema(
-        methods=["get"],
         operation_description="Get order information",
         operation_summary="Get order information",
         tags=["Rider-Order"],
         responses=schema_doc.ACCEPT_CUSTOMER_ORDER_RESPONSE,
     )
-    @action(detail=False, methods=["get"], url_path="(?P<order_id>[a-z,A-Z,0-9]+)")
-    def get_order(self, request, order_id):
-        order = OrderService.get_order(order_id, rider__user=request.user)
+    def retrieve(self, request, pk):
+        order = OrderService.get_order(pk, rider__user=request.user)
         return ResponseManager.handle_response(
             data=RiderOrderSerializer(order).data,
             status=status.HTTP_200_OK,

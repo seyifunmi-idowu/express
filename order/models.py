@@ -110,11 +110,13 @@ class Order(BaseAbstractModel):
     pickup_number = models.CharField(max_length=50, null=True, blank=True)
     pickup_contact_name = models.CharField(max_length=100, null=True, blank=True)
     pickup_location = models.CharField(max_length=255, null=True, blank=True)
+    pickup_name = models.CharField(max_length=255, null=True, blank=True)
     pickup_location_longitude = models.CharField(max_length=255, null=True, blank=True)
     pickup_location_latitude = models.CharField(max_length=255, null=True, blank=True)
     delivery_number = models.CharField(max_length=50, null=True, blank=True)
     delivery_contact_name = models.CharField(max_length=100, null=True, blank=True)
     delivery_location = models.CharField(max_length=255, null=True, blank=True)
+    delivery_name = models.CharField(max_length=255, null=True, blank=True)
     delivery_location_longitude = models.CharField(
         max_length=255, null=True, blank=True
     )
