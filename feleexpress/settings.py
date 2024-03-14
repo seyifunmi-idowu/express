@@ -238,7 +238,9 @@ if not TEST_OTP_STRING:
 else:
     TEST_OTP = TEST_OTP_STRING.split(",")
 
-BASE_URL = config("BASE_URL", "http://127.0.0.1:8000/", cast=str)
+BASE_URL = config("BASE_URL", cast=str)
+ADMIN_EMAILS = config("ADMIN_EMAILS", default="").split(",")
+
 PAYSTACK_SECRET_KEY = config("PAYSTACK_SECRET_KEY", "")
 PAYSTACK_WHITELISTED_IP = config("PAYSTACK_WHITELISTED_IP", default="").split(",")
 

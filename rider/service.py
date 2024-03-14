@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import transaction
 from django.db.models import ExpressionWrapper, F, Func, IntegerField, Sum
 from django.utils import timezone
@@ -20,8 +21,7 @@ from rider.serializers import (
 class RiderService:
     @classmethod
     def create_rider(cls, user, **kwargs):
-        rider = Rider.objects.create(user=user, **kwargs)
-        return rider
+        return Rider.objects.create(user=user, **kwargs)
 
     @classmethod
     def get_rider(cls, **kwargs) -> Rider:
@@ -80,7 +80,7 @@ class RiderService:
                 referral_code=referral_code,
                 city=city,
             )
-            cls.create_rider(user=instance_user, city=city)
+            rider = cls.create_rider(user=instance_user, city=city)
 
             # AuthService.initiate_email_verification(email=email, name=fullname)
             AuthService.initiate_phone_verification(phone_number)
@@ -94,12 +94,23 @@ class RiderService:
                 level="SUCCESS",
                 session_id=session_id,
             )
-            email_manager = EmailManager(
+            EmailManager(
                 "Welcome",
                 context={"display_name": instance_user.display_name},
                 template="rider_signup.html",
+            ).send([instance_user.email])
+
+            redirect_url = (
+                f"{settings.BASE_URL}admin/rider/unapprovedrider/{rider.id}/change"
             )
-            email_manager.send([instance_user.email])
+            EmailManager(
+                "New rider signup",
+                context={
+                    "display_name": instance_user.display_name,
+                    "redirect_url": redirect_url,
+                },
+                template="admin_reminder_rider_signup.html",
+            ).send(settings.ADMIN_EMAILS)
 
         return True
 

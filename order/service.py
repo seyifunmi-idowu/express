@@ -144,9 +144,10 @@ class OrderService:
 
     @classmethod
     def get_new_order(cls, user):
+        rider = RiderService.get_rider(user=user)
         orders = Order.objects.filter(
-            Q(rider__user=user, status="PENDING_RIDER_CONFIRMATION")
-            | Q(rider__isnull=True, status="PENDING")
+            Q(rider=rider, status="PENDING_RIDER_CONFIRMATION")
+            | Q(rider__isnull=True, status="PENDING", vehicle=rider.vehicle)
         )
         return orders
 
@@ -537,7 +538,9 @@ class OrderService:
     def notify_riders_around_location(cls, order):
         from authentication.service import UserService
 
-        on_duty_users = UserService.get_user_qs(rider__on_duty=True)
+        on_duty_users = UserService.get_user_qs(
+            rider__on_duty=True, rider__vehicle=order.vehicle
+        )
 
         title = f"New order request #{order.order_id}"
         message = f"New customer order. Pick up: {order.pickup_location}."

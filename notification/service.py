@@ -18,11 +18,14 @@ class EmailManager:
     sender_name = settings.SENDER_NAME
     general_template = "templated_email/general.email"
     api_key = settings.SENDGRID_API_KEY
+    env = settings.ENVIRONMENT
 
     def __init__(self, subject, context: Dict, template=None):
         self.template = template
         self.context = context
-        self.subject = subject
+        self.subject = (
+            subject if self.env == "production" else f"{subject} - {self.env.upper()}"
+        )
         self.from_email = Email(self.sender_email, self.sender_name)
         self.html_content = get_template(self.template).render(self.context)
         self.email_content = Content("text/html", self.html_content)

@@ -170,6 +170,12 @@ class Order(BaseAbstractModel):
         )
 
 
+class PendingOrder(Order):
+    class Meta:
+        proxy = True
+        verbose_name = "Orders (Awaiting rider)"
+
+
 class OrderTimeline(BaseAbstractModel):
     order = models.ForeignKey(
         "order.Order",

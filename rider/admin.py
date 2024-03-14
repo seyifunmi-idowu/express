@@ -133,18 +133,23 @@ class RiderAdmin(admin.ModelAdmin):
     def has_add_permission(self, request, obj=None):
         return False
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     def get_queryset(self, request):
         return self.model.objects.filter(user__state="ACTIVE")
 
 
 class ApprovedRiderAdmin(RiderAdmin):
     def get_queryset(self, request):
-        return self.model.objects.filter(status="APPROVED")
+        return self.model.objects.filter(status="APPROVED", user__state="ACTIVE")
 
 
 class UnApprovedRiderAdmin(RiderAdmin):
     def get_queryset(self, request):
-        return self.model.objects.filter(status__in=["UNAPPROVED", "DISAPPROVED"])
+        return self.model.objects.filter(
+            status__in=["UNAPPROVED", "DISAPPROVED"], user__state="ACTIVE"
+        ).order_by("-created_at")
 
 
 admin.site.register(ApprovedRider, ApprovedRiderAdmin)

@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 from django.utils.html import format_html
 
 from order.forms import VehicleAdminForm
-from order.models import Order, OrderTimeline, Vehicle
+from order.models import Order, OrderTimeline, PendingOrder, Vehicle
 from order.service import OrderService
 
 
@@ -177,5 +177,13 @@ class OrderAdmin(admin.ModelAdmin):
         )
 
 
+class PendingOrderAdmin(OrderAdmin):
+    def get_queryset(self, request):
+        return self.model.objects.filter(
+            status__in=["PENDING", "PROCESSING_ORDER", "PENDING_RIDER_CONFIRMATION"]
+        )
+
+
 admin.site.register(Vehicle, VehiclesAdmin)
 admin.site.register(Order, OrderAdmin)
+admin.site.register(PendingOrder, PendingOrderAdmin)
