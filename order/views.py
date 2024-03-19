@@ -40,14 +40,14 @@ class VehicleViewset(viewsets.ViewSet):
 
     @swagger_auto_schema(
         methods=["get"],
-        operation_description="Get available vehicles",
-        operation_summary="Get available vehicles",
+        operation_description="Get all vehicles",
+        operation_summary="Get all vehicles",
         tags=["Vehicle"],
         responses=schema_doc.RIDER_INFO_RESPONSE,
     )
     @action(detail=False, methods=["get"], url_path="available")
-    def get_available_vehicles(self, request):
-        vehicles = VehicleService.get_available_vehicles()
+    def get_all_vehicles(self, request):
+        vehicles = VehicleService.get_all_vehicles()
         return ResponseManager.handle_response(
             data=RetrieveVehicleSerializer(vehicles, many=True).data,
             status=status.HTTP_200_OK,
@@ -139,6 +139,22 @@ class CustomerOrderViewset(viewsets.ViewSet):
         )
         return paginate_response(
             queryset=orders, serializer_=GetCustomerOrderSerializer, request=request
+        )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="Get customer available vehicles",
+        operation_summary="Get customer available vehicles",
+        tags=["Customer-Order"],
+        responses=schema_doc.RIDER_INFO_RESPONSE,
+    )
+    @action(detail=False, methods=["get"], url_path="available-vehicles")
+    def get_available_vehicles(self, request):
+        vehicles = VehicleService.get_available_vehicles()
+        return ResponseManager.handle_response(
+            data=RetrieveVehicleSerializer(vehicles, many=True).data,
+            status=status.HTTP_200_OK,
+            message="Available vehicles",
         )
 
     @swagger_auto_schema(

@@ -32,6 +32,10 @@ class VehicleService:
         ).order_by("created_at")
 
     @classmethod
+    def get_all_vehicles(cls):
+        return Vehicle.objects.all().order_by("created_at")
+
+    @classmethod
     def get_vehicle(cls, vehicle_id, raise_404=True):
         vehicle = Vehicle.objects.filter(id=vehicle_id).first()
         if not vehicle and raise_404:

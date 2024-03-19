@@ -1,6 +1,6 @@
 from django import forms
 
-from order.models import Vehicle
+from order.models import Order, Vehicle
 
 
 class VehicleAdminForm(forms.ModelForm):
@@ -37,4 +37,17 @@ class VehicleAdminForm(forms.ModelForm):
 
     class Meta:
         model = Vehicle
+        fields = "__all__"
+
+
+class OrderAdminForm(forms.ModelForm):
+    ACTION_CHOICES = (("", "Select action"), ("CANCEL_ORDER", "Cancel order"))
+    action = forms.ChoiceField(choices=ACTION_CHOICES, required=False)
+    reason = forms.CharField(
+        required=False,
+        help_text="Reason for action selected e.g reason for cancelling order",
+    )
+
+    class Meta:
+        model = Order
         fields = "__all__"

@@ -198,4 +198,4 @@ class OrderTimeline(BaseAbstractModel):
 
     def get_created_at(self):
         date = self.meta_data.get("date", None)
-        return date if date else self.created_at
+        return date if date else self.created_at.strftime("%Y-%m-%d %H:%M:%S")

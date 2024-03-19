@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.utils.html import format_html
 
-from order.forms import VehicleAdminForm
+from order.forms import OrderAdminForm, VehicleAdminForm
 from order.models import Order, OrderTimeline, PendingOrder, Vehicle
 from order.service import OrderService
 
@@ -117,6 +117,7 @@ class OrderTimelineInline(admin.TabularInline):
 
 
 class OrderAdmin(admin.ModelAdmin):
+    form = OrderAdminForm
     inlines = [OrderTimelineInline]
     search_fields = ("order_id", "status")
     list_display = ("order_id", "customer", "rider", "status", "distance", "created_at")
@@ -145,6 +146,8 @@ class OrderAdmin(admin.ModelAdmin):
         "updated_at",
     )
     fields = (
+        "action",
+        "reason",
         "customer",
         "rider",
         "vehicle",
@@ -176,8 +179,24 @@ class OrderAdmin(admin.ModelAdmin):
             rider__user__state="ACTIVE", customer__user__state="ACTIVE"
         )
 
+    def save_model(self, request, obj, form, change):
+        from order.service import OrderService
+
+        action = form.cleaned_data.get("action", "")
+        if action == "CANCEL_ORDER":
+            reason = form.cleaned_data.get("reason", "")
+            OrderService.add_order_timeline_entry(
+                obj, "ORDER_CANCELLED", **{"cancelled_by": "admin", "reason": reason}
+            )
+            obj.status = "ORDER_CANCELLED"
+            obj.save()
+        else:
+            super().save_model(request, obj, form, change)
+
 
 class PendingOrderAdmin(OrderAdmin):
+    form = None  # type:ignore
+
     def get_queryset(self, request):
         return self.model.objects.filter(
             status__in=["PENDING", "PROCESSING_ORDER", "PENDING_RIDER_CONFIRMATION"]
