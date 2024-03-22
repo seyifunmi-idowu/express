@@ -991,21 +991,13 @@ class OrderService:
         start_location = MapService.get_info_from_address(start_address)
         end_location = MapService.get_info_from_address(end_address)
 
-        start_lat_lng = (
-            f"{start_location[0].get('latitude')},{start_location[0].get('longitude')}"
-        )
-        end_lat_lng = (
-            f"{end_location[0].get('latitude')},{end_location[0].get('longitude')}"
-        )
         distance_and_duration = MapService.get_distance_between_locations(
-            start_lat_lng, end_lat_lng
+            f"{start_location[0].get('latitude')},{start_location[0].get('longitude')}",
+            f"{end_location[0].get('latitude')},{end_location[0].get('longitude')}",
         )
 
         if distance_and_duration.get("distance") is None:
-            raise CustomAPIException(
-                "Unable to process, please check that the address is correct",
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return None
 
         total_price = cls.calculate_distance_price(
             distance_and_duration["distance"],

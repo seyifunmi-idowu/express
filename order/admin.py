@@ -75,7 +75,14 @@ class VehiclesAdmin(admin.ModelAdmin):
             price = OrderService.admin_get_location_price(
                 obj.id, start_address, end_address
             )
-            messages.info(request, f"Total Price for selected vehicles: {price}")
+            if price is None:
+                messages.info(
+                    request,
+                    "Unable to process, please check that the address is correct",
+                )
+            else:
+                messages.info(request, f"Total Price for selected vehicles: {price}")
+
         else:
             super().save_model(request, obj, form, change)
 
@@ -195,8 +202,6 @@ class OrderAdmin(admin.ModelAdmin):
 
 
 class PendingOrderAdmin(OrderAdmin):
-    form = None  # type:ignore
-
     def get_queryset(self, request):
         return self.model.objects.filter(
             status__in=["PENDING", "PROCESSING_ORDER", "PENDING_RIDER_CONFIRMATION"]
