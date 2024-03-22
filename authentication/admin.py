@@ -4,6 +4,44 @@ from django.contrib.auth.admin import UserAdmin
 from authentication.forms import CreateUserForm
 from authentication.models import User, UserActivity
 from helpers.admin_helpers import BaseModelAdmin
+from wallet.models import Transaction
+
+
+class TransactionInline(admin.TabularInline):  # or admin.StackedInline
+    model = Transaction
+    fk_name = "user"
+
+    ordering = ["-created_at"]
+    readonly_fields = (
+        "created_at",
+        "transaction_type",
+        "transaction_status",
+        "amount",
+        "reference",
+        "payment_category",
+    )
+    exclude = (
+        "user",
+        "currency",
+        "pssp",
+        "payment_channel",
+        "description",
+        "pssp_meta_data",
+        "state",
+        "created_by",
+        "deleted_by",
+        "updated_by",
+        "deleted_at",
+        "wallet_id",
+        "object_id",
+        "object_class",
+    )
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class CustomUserAdmin(BaseModelAdmin, UserAdmin):
@@ -65,6 +103,7 @@ class CustomUserAdmin(BaseModelAdmin, UserAdmin):
     )
     ordering = ("first_name", "last_name", "email")
     add_form = CreateUserForm
+    inlines = [TransactionInline]
 
     def get_queryset(self, request):
         return self.model.objects.filter(state="ACTIVE")
