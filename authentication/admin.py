@@ -10,6 +10,7 @@ from wallet.models import Transaction
 class TransactionInline(admin.TabularInline):  # or admin.StackedInline
     model = Transaction
     fk_name = "user"
+    extra = 0
 
     ordering = ["-created_at"]
     readonly_fields = (
@@ -37,7 +38,16 @@ class TransactionInline(admin.TabularInline):  # or admin.StackedInline
         "object_class",
     )
 
-    def has_change_permission(self, request, obj=None):
+    def formfield_for_dbfield(self, *args, **kwargs):
+        formfield = super().formfield_for_dbfield(*args, **kwargs)
+
+        formfield.widget.can_delete_related = False
+        formfield.widget.can_change_related = False
+        formfield.widget.can_add_related = False
+
+        return formfield
+
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
