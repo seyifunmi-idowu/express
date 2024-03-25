@@ -42,7 +42,7 @@ GET_USER_DATA = {
 }
 NO_DATA = {"application/json": {"data": {}, "message": ""}}
 LOGOUT_RESPONSE = {
-    200: openapi.Response(description="logout successfully", examples=NO_DATA),
+    204: openapi.Response(description="logout successfully", examples=NO_DATA),
     403: openapi.Response(description="Unauthorized", examples=UNAUTHENTICATED),
 }
 FORGOT_PASSWORD_WRONG_EMAIL = {
