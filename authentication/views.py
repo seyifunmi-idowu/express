@@ -57,9 +57,7 @@ class UserViewset(viewsets.ViewSet):
 
         access_token = request.auth.token
         TokenManager.logout(access_token)
-        return ResponseManager.handle_response(
-            data={}, status=status.HTTP_204_NO_CONTENT
-        )
+        return ResponseManager.handle_response(data={}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         methods=["post"],
