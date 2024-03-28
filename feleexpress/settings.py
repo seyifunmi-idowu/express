@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import datetime
+import os
 from pathlib import Path
 
 import dj_database_url
@@ -61,6 +62,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "storages",
     "authentication.apps.AuthenticationConfig",
+    "business.apps.BusinessConfig",
     "customer.apps.CustomerConfig",
     "notification.apps.NotificationConfig",
     "order.apps.OrderConfig",
@@ -141,7 +143,6 @@ AWS_ACCESS_KEY = config("AWS_ACCESS_KEY", "")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", "")
 
 USE_S3 = config("USE_S3", cast=bool, default=True)
-USE_S3 = True
 if USE_S3:
     # aws settings
     AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY")
@@ -156,8 +157,8 @@ if USE_S3:
     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 else:
     STATIC_URL = "/static/"
-    # STATIC_ROOT = os.path.join(BASE_DIR, "static")
-    STATICFILES_DIRS = [BASE_DIR / "static"]
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, "business", "static", "assets")]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -260,4 +261,8 @@ GOOGLE_SEARCH_RADIUS = config("GOOGLE_SEARCH_RADIUS", cast=int)
 
 DEACTIVATION_PREPEND_VALUE = config(
     "DEACTIVATION_PREPEND_VALUE", default="fele_deactivated_user"
+)
+ENCRYPTION_KEY = bytes(
+    config("ENCRYPTION_KEY", default="A80ViqPXCsDl_koGp6JSEeYSeGD5wt9iObp0mJigh90="),
+    "utf-8",
 )

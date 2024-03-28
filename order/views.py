@@ -7,6 +7,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from feleexpress.middlewares.permissions.is_authenticated import (
     IsApprovedRider,
     IsAuthenticated,
+    IsBusiness,
     IsCustomer,
     IsRider,
 )
@@ -17,6 +18,7 @@ from order.docs import schema_doc
 from order.serializers import (
     AddDriverTipSerializer,
     AssignRiderSerializer,
+    BusinessOrderSerializer,
     CustomerCancelOrder,
     CustomerOrderSerializer,
     GetCurrentOrder,
@@ -24,6 +26,7 @@ from order.serializers import (
     GetOrderSerializer,
     InitiateOrderSerializer,
     OrderHistorySerializer,
+    PlaceBusinessOrderSerializer,
     PlaceOrderSerializer,
     RateRiderSerializer,
     RetrieveVehicleSerializer,
@@ -616,6 +619,91 @@ class RiderOrderViewset(viewsets.ViewSet):
             status=status.HTTP_200_OK,
             message="Order Updated",
         )
+
+
+class BusinessOrderViewset(viewsets.ViewSet):
+    permission_classes = (IsAuthenticated, IsBusiness)
+
+    @action(detail=False, methods=["get"], url_path="available-vehicles")
+    def get_available_vehicles(self, request):
+        vehicles = VehicleService.get_available_vehicles()
+        return ResponseManager.handle_response(
+            data=RetrieveVehicleSerializer(vehicles, many=True).data,
+            status=status.HTTP_200_OK,
+            message="Available vehicles",
+        )
+
+    def list(self, request):
+        orders = OrderService.get_order_qs(business__user=request.user).order_by(
+            "-created_at"
+        )
+        return paginate_response(
+            queryset=orders, serializer_=GetCustomerOrderSerializer, request=request
+        )
+
+    def retrieve(self, request, pk):
+        order = OrderService.get_order(pk, business__user=request.user)
+        return ResponseManager.handle_response(
+            data=BusinessOrderSerializer(order).data,
+            status=status.HTTP_200_OK,
+            message="Order Information",
+        )
+
+    @parser_classes([MultiPartParser, FormParser])
+    def create(self, request):
+        serialized_data = InitiateOrderSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        response = OrderService.initiate_order(
+            request.user, serialized_data.validated_data
+        )
+        return ResponseManager.handle_response(
+            data=response, status=status.HTTP_200_OK, message="Order Initiated"
+        )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="(?P<order_id>[a-z,A-Z,0-9]+)/place-order",
+    )
+    def place_order(self, request, order_id):
+        serialized_data = PlaceBusinessOrderSerializer(data=request.data)
+        if not serialized_data.is_valid():
+            return ResponseManager.handle_response(
+                errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        order = OrderService.place_business_order(
+            request.user, order_id, serialized_data.data, generate_session_id()
+        )
+
+        return ResponseManager.handle_response(
+            data=BusinessOrderSerializer(order).data,
+            status=status.HTTP_200_OK,
+            message="Finding nearby rider",
+        )
+
+    # @action(
+    #     detail=False,
+    #     methods=["post"],
+    #     url_path="(?P<order_id>[a-z,A-Z,0-9]+)/cancel-order",
+    # )
+    # def business_cancel_order(self, request, order_id):
+    #     serialized_data = CustomerCancelOrder(data=request.data)
+    #     if not serialized_data.is_valid():
+    #         return ResponseManager.handle_response(
+    #             errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+    #         )
+    #     OrderService.business_cancel_order(
+    #         request.user,
+    #         order_id,
+    #         generate_session_id(),
+    #         serialized_data.validated_data.get("reason"),
+    #     )
+    #     return ResponseManager.handle_response(
+    #         data={}, status=status.HTTP_200_OK, message="Order successfully cancelled"
+    #     )
 
 
 def view_map(request):

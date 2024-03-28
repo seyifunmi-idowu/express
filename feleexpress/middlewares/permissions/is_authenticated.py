@@ -3,6 +3,7 @@ from rest_framework import permissions
 from helpers.validate_user import (
     validate_admin,
     validate_approved_rider,
+    validate_business,
     validate_customer,
     validate_deactivated_user,
     validate_rider,
@@ -72,3 +73,12 @@ class IsApprovedRider(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return validate_approved_rider(request.user)
+
+
+class IsBusiness(permissions.BasePermission):
+    """
+    Custom permission to allow only business make this request
+    """
+
+    def has_permission(self, request, view):
+        return validate_business(request.user)

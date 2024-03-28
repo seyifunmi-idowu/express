@@ -22,7 +22,6 @@ class TransactionInline(admin.TabularInline):  # or admin.StackedInline
         "payment_category",
     )
     exclude = (
-        "user",
         "currency",
         "pssp",
         "payment_channel",

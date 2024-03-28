@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from order.models import Order, Vehicle
+from order.models import Order, OrderTimeline, Vehicle
 
 
 class RetrieveVehicleSerializer(serializers.ModelSerializer):
@@ -437,7 +437,7 @@ class GetAddressInfoSerializer(serializers.Serializer):
 class LocationSerializer(serializers.Serializer):
     latitude = serializers.CharField(max_length=50)
     longitude = serializers.CharField(max_length=50)
-    address_details = serializers.CharField(max_length=200, required=False)
+    # address_details = serializers.CharField(max_length=200, required=False)
     contact_phone_number = serializers.CharField(max_length=50, required=False)
     contact_name = serializers.CharField(max_length=100, required=False)
     save_address = serializers.BooleanField(default=False)
@@ -459,6 +459,10 @@ class PlaceOrderSerializer(serializers.Serializer):
     payment_by = serializers.ChoiceField(choices=PAYMENT_BY_CHOICES, default="SENDER")
     favorite_rider = serializers.BooleanField(default=False)
     promo_code = serializers.CharField(max_length=20, required=False)
+
+
+class PlaceBusinessOrderSerializer(serializers.Serializer):
+    note_to_driver = serializers.CharField(max_length=500, required=False)
 
 
 class AddDriverTipSerializer(serializers.Serializer):
@@ -485,3 +489,98 @@ class RateRiderSerializer(serializers.Serializer):
 
 class CustomerCancelOrder(RiderFailedPickupSerializer):
     pass
+
+
+class OrderTimelineSerializer(serializers.ModelSerializer):
+    date = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderTimeline
+        fields = ("status", "proof_url", "reason", "date")
+
+    def get_date(self, obj):
+        return obj.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
+
+class BusinessOrderSerializer(serializers.ModelSerializer):
+    rider = serializers.SerializerMethodField()
+    pickup = serializers.SerializerMethodField()
+    delivery = serializers.SerializerMethodField()
+    note_to_driver = serializers.SerializerMethodField()
+    distance = serializers.SerializerMethodField()
+    duration = serializers.SerializerMethodField()
+    timeline = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = (
+            "order_id",
+            "status",
+            "rider",
+            "pickup",
+            "delivery",
+            "total_amount",
+            "tip_amount",
+            "note_to_driver",
+            "distance",
+            "duration",
+            "timeline",
+            "created_at",
+        )
+
+    def get_pickup(self, obj):
+        return {
+            "latitude": obj.pickup_location_latitude,
+            "longitude": obj.pickup_location_longitude,
+            "address": obj.pickup_location,
+            "contact_name": obj.pickup_contact_name,
+            "contact_phone_number": obj.pickup_number,
+        }
+
+    def get_delivery(self, obj):
+        return {
+            "latitude": obj.delivery_location_latitude,
+            "longitude": obj.delivery_location_longitude,
+            "address": obj.delivery_location,
+            "contact_name": obj.delivery_contact_name,
+            "contact_phone_number": obj.delivery_number,
+        }
+
+    def get_created_at(self, obj):
+        return obj.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
+    def get_note_to_driver(self, obj):
+        return obj.order_meta_data.get("note_to_driver", "")
+
+    def get_timeline(self, obj):
+        from order.service import OrderService
+
+        order_timeline = OrderService.get_order_timeline(obj)
+        return OrderTimelineSerializer(order_timeline, many=True).data
+
+    def get_distance(self, obj):
+        from order.service import OrderService
+
+        return OrderService.get_km_in_word(obj.distance)
+
+    def get_duration(self, obj):
+        from order.service import OrderService
+
+        return OrderService.get_time_in_word(obj.duration)
+
+    def get_rider(self, obj):
+        if obj.rider:
+            return {
+                "name": obj.rider.display_name,
+                "contact": obj.rider.user.phone_number,
+                "avatar_url": obj.rider.photo_url(),
+                "rating": obj.rider.rating,
+                "vehicle": obj.rider.vehicle.name,
+                "vehicle_type": obj.rider.vehicle_type,
+                "vehicle_make": obj.rider.vehicle_make,
+                "vehicle_model": obj.rider.vehicle_model,
+                "vehicle_plate_number": obj.rider.vehicle_plate_number,
+                "vehicle_color": obj.rider.vehicle_color,
+            }
+        return None

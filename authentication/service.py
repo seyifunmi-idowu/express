@@ -25,7 +25,7 @@ class UserService:
         if referral_code == "":
             referral_code = None
         referred_by = None
-        if referral_code is not None:
+        if referral_code is not None or referral_code != "":
             referred_by = User.objects.filter(referral_code=referral_code).first()
             if referred_by is None:
                 raise CustomAPIException(
@@ -36,9 +36,11 @@ class UserService:
         user = User.objects.create_user(
             referral_code=generate_referral_code(), **kwargs
         )
-
-        one_signal_id and NotificationService.add_user_one_signal(user, one_signal_id)
         WalletService.create_user_wallet(user)
+
+        if one_signal_id:
+            NotificationService.add_user_one_signal(user, one_signal_id)
+
         if referred_by:
             ReferralUser.objects.create(
                 referred_by=referred_by, referred_user=user, referral_code=referral_code
@@ -278,7 +280,7 @@ class AuthService:
                 session_id=session_id,
             )
             raise CustomAPIException(
-                "Oops seems the link has expired.", status.HTTP_400_BAD_REQUEST
+                "Oops seems the otp has expired.", status.HTTP_400_BAD_REQUEST
             )
 
         tokens = verification_data.get("tokens")
@@ -329,7 +331,7 @@ class AuthService:
         user_activity = UserActivityService.retrieve_user_activity_qs(
             user=user, action__in=["PHONE_VERIFICATION_OTP", "EMAIL_VERIFICATION_OTP"]
         )
-        if len(user_activity) == 0:
+        if len(user_activity) == 0 and user.user_type == "CUSTOMER":
             email_manager = EmailManager(
                 "Welcome to Fele Express",
                 context={"display_name": user.display_name},

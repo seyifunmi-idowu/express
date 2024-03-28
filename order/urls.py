@@ -10,6 +10,9 @@ router.register(
     r"order/customer", views.CustomerOrderViewset, basename="customer-order-views"
 )
 router.register(r"order/rider", views.RiderOrderViewset, basename="rider-order-views")
+router.register(
+    r"order/business", views.BusinessOrderViewset, basename="business-order-views"
+)
 router.register(r"vehicles", views.VehicleViewset, basename="vehicle-views")
 
 
