@@ -30,6 +30,7 @@ class BusinessAuth:
                 phone_number=phone_number,
                 user_type="BUSINESS",
                 password=password,
+                referral_code=None,
             )
             BusinessService.create_business(
                 user=instance_user, business_name=business_name

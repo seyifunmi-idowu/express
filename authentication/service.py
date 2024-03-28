@@ -25,7 +25,7 @@ class UserService:
         if referral_code == "":
             referral_code = None
         referred_by = None
-        if referral_code is not None or referral_code != "":
+        if referral_code is not None and referral_code != "":
             referred_by = User.objects.filter(referral_code=referral_code).first()
             if referred_by is None:
                 raise CustomAPIException(
