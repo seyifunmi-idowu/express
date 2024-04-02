@@ -74,12 +74,15 @@ class Order(BaseAbstractModel):
     ]
     PAYMENT_METHOD_CHOICES = [("CASH", "Cash"), ("WALLET", "Wallet")]
     PAYMENT_BY_CHOICES = [("RECEIVER", "Receiver"), ("SENDER", "Sender")]
+    ORDER_BY_CHOICES = [("CUSTOMER", "Customer"), ("BUSINESS", "Business")]
 
     customer = models.ForeignKey(
         "customer.Customer",
         on_delete=models.CASCADE,
         verbose_name="customer",
         related_name="customer_order",
+        null=True,
+        blank=True,
     )
     rider = models.ForeignKey(
         "rider.Rider",
@@ -88,6 +91,14 @@ class Order(BaseAbstractModel):
         blank=True,
         verbose_name="rider",
         related_name="rider_order",
+    )
+    business = models.ForeignKey(
+        "business.Business",
+        on_delete=models.CASCADE,
+        verbose_name="business",
+        related_name="business_order",
+        null=True,
+        blank=True,
     )
     vehicle = models.ForeignKey(
         Vehicle,
@@ -105,6 +116,9 @@ class Order(BaseAbstractModel):
     )
     payment_by = models.CharField(
         max_length=50, choices=PAYMENT_BY_CHOICES, null=True, blank=True
+    )
+    order_by = models.CharField(
+        max_length=50, choices=ORDER_BY_CHOICES, default="CUSTOMER"
     )
     paid = models.BooleanField(default=False)
     pickup_number = models.CharField(max_length=50, null=True, blank=True)
@@ -131,9 +145,6 @@ class Order(BaseAbstractModel):
     tip_amount = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-    order_timeline = models.JSONField(
-        default=list, help_text="Ordered timeline tracking"
-    )
     # ["note_to_driver", "timeline", "promo_code", ]
     order_meta_data = models.JSONField(
         default=dict, help_text="Other order information"
@@ -142,7 +153,9 @@ class Order(BaseAbstractModel):
     duration = models.CharField(max_length=20, help_text="represented in seconds")
 
     def __str__(self):
-        return f"{self.customer.display_name}  #{self.order_id}"
+        if self.is_customer_order():
+            return f"{self.customer.display_name}  #{self.order_id}"
+        return f"{self.business.business_name}  #{self.order_id}"
 
     class Meta:
         db_table = "order"
@@ -150,24 +163,24 @@ class Order(BaseAbstractModel):
         verbose_name_plural = "orders"
 
     def get_pick_up_time(self):
-        return next(
-            (
-                x["date"]
-                for x in self.order_timeline
-                if x["status"] == "RIDER_PICKED_UP_ORDER"
-            ),
-            None,
-        )
+        order_timeline = self.order_timeline.filter(
+            status="RIDER_PICKED_UP_ORDER"
+        ).first()
+        if order_timeline:
+            return order_timeline.created_at.strftime("%Y-%B-%d %H:%M:%S")
+        return None
 
     def get_delivery_time(self):
-        return next(
-            (
-                x["date"]
-                for x in self.order_timeline
-                if x["status"] == "ORDER_DELIVERED"
-            ),
-            None,
-        )
+        order_timeline = self.order_timeline.filter(status="ORDER_DELIVERED").first()
+        if order_timeline:
+            return order_timeline.created_at.strftime("%Y-%B-%d %H:%M:%S")
+        return None
+
+    def is_business_order(self):
+        return self.order_by == "BUSINESS"
+
+    def is_customer_order(self):
+        return self.order_by == "CUSTOMER"
 
 
 class PendingOrder(Order):
@@ -180,8 +193,8 @@ class OrderTimeline(BaseAbstractModel):
     order = models.ForeignKey(
         "order.Order",
         on_delete=models.CASCADE,
-        verbose_name="customer",
-        related_name="customer_order",
+        verbose_name="order_timeline",
+        related_name="order_timeline",
     )
     status = models.CharField(max_length=100)
     proof_url = models.CharField(max_length=550, null=True, blank=True)

@@ -7,11 +7,13 @@ from django.utils import timezone
 from rest_framework import status
 
 from authentication.tasks import track_user_activity
+from business.service import BusinessService
 from customer.service import CustomerService
 from helpers.cache_manager import CacheManager, KeyBuilder
 from helpers.db_helpers import generate_id, generate_orderid
 from helpers.exceptions import CustomAPIException
 from helpers.googlemaps_service import GoogleMapsService
+from helpers.logger import CustomLogging
 from helpers.paystack_service import PaystackService
 from helpers.s3_uploader import S3Uploader
 from notification.service import NotificationService
@@ -145,6 +147,10 @@ class OrderService:
     @classmethod
     def get_order_qs(cls, **kwargs):
         return Order.objects.filter(**kwargs)
+
+    @classmethod
+    def get_order_timeline(cls, order):
+        return OrderTimeline.objects.filter(order=order)
 
     @classmethod
     def get_new_order(cls, user):
@@ -574,7 +580,7 @@ class OrderService:
 
     @classmethod
     def add_order_timeline_entry(cls, order, order_status, **kwargs):
-        OrderTimeline.objects.create(
+        return OrderTimeline.objects.create(
             order=order,
             status=order_status,
             proof_url=kwargs.pop("proof_url", None),
@@ -705,14 +711,20 @@ class OrderService:
             )
 
         rider = RiderService.get_rider(user=user)
-        cls.add_order_timeline_entry(order, "RIDER_ACCEPTED_ORDER")
+        order_timeline = cls.add_order_timeline_entry(order, "RIDER_ACCEPTED_ORDER")
 
         order.rider = rider
         order.status = "RIDER_ACCEPTED_ORDER"
         order.save()
         title = f"Rider accept order #{order_id}"
-        message = f"You order has been accepted by {rider.display_name}. Vehicle type: {rider.vehicle_type} \n Plate number: {rider.vehicle_plate_number}"
-        NotificationService.send_push_notification(order.customer.user, title, message)
+        if order.is_customer_order():
+            message = f"You order has been accepted by {rider.display_name}. Vehicle type: {rider.vehicle_type} \n Plate number: {rider.vehicle_plate_number}"
+            NotificationService.send_push_notification(
+                order.customer.user, title, message
+            )
+        else:
+            cls.send_status_to_webhook(order_timeline)
+
         track_user_activity(
             context=dict({"order_id": order_id}),
             category="ORDER",
@@ -727,12 +739,18 @@ class OrderService:
     @classmethod
     def rider_at_pickup(cls, order_id, user, session_id):
         order = cls.get_order(order_id, rider__user=user)
-        cls.add_order_timeline_entry(order, "RIDER_AT_PICK_UP")
+        order_timeline = cls.add_order_timeline_entry(order, "RIDER_AT_PICK_UP")
         order.status = "RIDER_AT_PICK_UP"
         order.save()
-        title = f"Rider arrived at pickup: #{order_id}"
-        message = f"Your rider {order.rider.display_name}, is at pickup location: {order.pickup_location}"
-        NotificationService.send_push_notification(order.customer.user, title, message)
+        if order.is_customer_order():
+            title = f"Rider arrived at pickup: #{order_id}"
+            message = f"Your rider {order.rider.display_name}, is at pickup location: {order.pickup_location}"
+            NotificationService.send_push_notification(
+                order.customer.user, title, message
+            )
+        else:
+            cls.send_status_to_webhook(order_timeline)
+
         track_user_activity(
             context=dict({"order_id": order_id}),
             category="ORDER",
@@ -751,14 +769,20 @@ class OrderService:
         file_url = S3Uploader(append_folder=f"/order/{order_id}").upload_file_object(
             file, file_name
         )
-        cls.add_order_timeline_entry(
+        order_timeline = cls.add_order_timeline_entry(
             order, "RIDER_PICKED_UP_ORDER", **{"proof_url": file_url}
         )
         order.status = "RIDER_PICKED_UP_ORDER"
         order.save()
-        title = f"Rider on the way to deliver: #{order_id}"
-        message = "Your goods are on the way to drop off"
-        NotificationService.send_push_notification(order.customer.user, title, message)
+        if order.is_customer_order():
+            title = f"Rider on the way to deliver: #{order_id}"
+            message = "Your goods are on the way to drop off"
+            NotificationService.send_push_notification(
+                order.customer.user, title, message
+            )
+        else:
+            cls.send_status_to_webhook(order_timeline)
+
         track_user_activity(
             context=dict({"order_id": order_id, "proof_url": file_url}),
             category="ORDER",
@@ -774,12 +798,17 @@ class OrderService:
         order = cls.get_order(order_id, rider__user=user)
 
         cls.add_order_timeline_entry(order, "FAILED_PICKUP", **{"reason": reason})
-        cls.add_order_timeline_entry(order, "ORDER_CANCELLED")
+        order_timeline = cls.add_order_timeline_entry(order, "ORDER_CANCELLED")
         order.status = "ORDER_CANCELLED"
         order.save()
-        title = f"Rider failed to pick order: #{order_id}"
-        message = f"Your rider {order.rider.display_name}, failed to pick up because: {reason}"
-        NotificationService.send_push_notification(order.customer.user, title, message)
+        if order.is_customer_order():
+            title = f"Rider failed to pick order: #{order_id}"
+            message = f"Your rider {order.rider.display_name}, failed to pick up because: {reason}"
+            NotificationService.send_push_notification(
+                order.customer.user, title, message
+            )
+        else:
+            cls.send_status_to_webhook(order_timeline)
 
         track_user_activity(
             context=dict({"order_id": order_id, "reason": reason}),
@@ -794,12 +823,18 @@ class OrderService:
     @classmethod
     def rider_at_destination(cls, order_id, user, session_id):
         order = cls.get_order(order_id, rider__user=user)
-        cls.add_order_timeline_entry(order, "ORDER_ARRIVED")
+        order_timeline = cls.add_order_timeline_entry(order, "ORDER_ARRIVED")
         order.status = "ORDER_ARRIVED"
         order.save()
-        title = f"Rider at drop off: #{order_id}"
-        message = f"Your rider {order.rider.display_name}, is at drop off point: {order.delivery_location}"
-        NotificationService.send_push_notification(order.customer.user, title, message)
+        if order.is_customer_order():
+            title = f"Rider at drop off: #{order_id}"
+            message = f"Your rider {order.rider.display_name}, is at drop off point: {order.delivery_location}"
+            NotificationService.send_push_notification(
+                order.customer.user, title, message
+            )
+        else:
+            cls.send_status_to_webhook(order_timeline)
+
         track_user_activity(
             context=dict({"order_id": order_id}),
             category="ORDER",
@@ -818,12 +853,15 @@ class OrderService:
         file_url = S3Uploader(append_folder=f"/order/{order_id}").upload_file_object(
             file, file_name
         )
-        cls.add_order_timeline_entry(
+        order_timeline = cls.add_order_timeline_entry(
             order, "ORDER_DELIVERED", **{"proof_url": file_url}
         )
         order.delivery_time = timezone.now()
         order.status = "ORDER_DELIVERED"
         order.save()
+        if order.is_business_order():
+            cls.send_status_to_webhook(order_timeline)
+
         track_user_activity(
             context=dict({"order_id": order_id, "proof_url": file_url}),
             category="ORDER",
@@ -1005,3 +1043,122 @@ class OrderService:
             vehicle_id,
         )
         return total_price
+
+    @classmethod
+    def place_business_order(cls, user, order_id, data, session_id):
+        key_builder = KeyBuilder.initiate_order(order_id)
+        order_data = CacheManager.retrieve_key(key_builder)
+        if not order_data or order_data.get("user_id") != user.id:
+            raise CustomAPIException("Order not found.", status.HTTP_404_NOT_FOUND)
+
+        user_wallet = user.get_user_wallet()
+        if user_wallet.balance < order_data["total_price"]:
+            raise CustomAPIException(
+                "You don't have sufficient in you wallet to place order. Kindly fund you wallet.",
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        order_data.update(data)
+        business = BusinessService.get_business(user=user)
+
+        pickup = order_data["pickup"]
+        delivery = order_data["delivery"]
+        total_duration = order_data.get("total_duration")
+        total_distance = order_data.get("total_distance")
+        vehicle_id = order_data.get("vehicle_id")
+        timeline = order_data.get("timeline")
+
+        order_meta_data = {
+            "note_to_driver": order_data.get("note_to_driver"),
+            "timeline": timeline,
+        }
+        order = Order.objects.create(
+            business=business,
+            vehicle=VehicleService.get_vehicle(vehicle_id),
+            order_id=order_id,
+            status="PENDING",
+            order_by="BUSINESS",
+            pickup_number=pickup.get("contact_phone_number", None),
+            pickup_contact_name=pickup.get("contact_name", None),
+            pickup_location=pickup.get("address"),
+            pickup_name=pickup.get("name"),
+            pickup_location_longitude=pickup.get("longitude"),
+            pickup_location_latitude=pickup.get("latitude"),
+            delivery_number=delivery.get("contact_phone_number", None),
+            delivery_contact_name=delivery.get("contact_name", None),
+            delivery_location=delivery.get("address"),
+            delivery_name=delivery.get("name"),
+            delivery_location_longitude=delivery.get("longitude"),
+            delivery_location_latitude=delivery.get("latitude"),
+            total_amount=order_data.get("total_price"),
+            distance=total_distance,
+            duration=total_duration,
+            order_meta_data=order_meta_data,
+            payment_method="WALLET",
+        )
+        cls.notify_riders_around_location(order)
+        CacheManager.delete_key(key_builder)
+        track_user_activity(
+            context=dict({"order_id": order_id}),
+            category="ORDER",
+            action="BUSINESS_PLACE_ORDER",
+            email=user.email,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+        return order
+
+    @classmethod
+    def send_status_to_webhook(cls, order_time):
+        import requests
+
+        url = order_time.order.business.webhook_url
+        secret_key = BusinessService.get_business_user_secret_key(
+            order_time.order.business.user
+        )
+        headers = {
+            "Authorization": f"Bearer {secret_key}",
+            "Content-Type": "application/json",
+        }
+        data = {
+            "id": order_time.order.order_id,
+            "status": order_time.order.status,
+            "proof_url": order_time.proof_url,
+            "date": order_time.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        try:
+            response = requests.post(url, headers=headers, json=data)
+            return response.json()
+
+        except Exception as e:
+            CustomLogging.error(
+                f"Unable to connect to webhook url {url}: {str(e)}", data
+            )
+            pass
+
+    @classmethod
+    def business_cancel_order(cls, user, order_id, session_id, reason):
+        order = cls.get_order(order_id, business__user=user)
+        if order.status in [
+            "RIDER_PICKED_UP_ORDER",
+            "ORDER_ARRIVED",
+            "ORDER_DELIVERED",
+            "ORDER_COMPLETED",
+        ]:
+            raise CustomAPIException(
+                "Cannot cancel an on going order.", status.HTTP_400_BAD_REQUEST
+            )
+        cls.add_order_timeline_entry(
+            order, "ORDER_CANCELLED", **{"cancelled_by": "customer", "reason": reason}
+        )
+        order.status = "ORDER_CANCELLED"
+        order.save()
+        track_user_activity(
+            context=dict({"order_id": order_id, "reason": reason}),
+            category="ORDER",
+            action="BUSINESS_CANCELLED_ORDER",
+            email=user.email,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+        return True

@@ -16,6 +16,7 @@ class User(BaseAbstractModel, AbstractBaseUser, PermissionsMixin):
     USER_TYPE_CHOICES = [
         ("RIDER", "RIDER"),
         ("CUSTOMER", "CUSTOMER"),
+        ("BUSINESS", "BUSINESS"),
         ("ADMIN", "ADMIN"),
     ]
 

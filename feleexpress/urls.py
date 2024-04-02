@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.urls import include, path
@@ -24,6 +26,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path("", fele_express_api, name="fele_express_api"),
     path("admin/", admin.site.urls),
+    path("business/", include("business.urls")),
     path(
         "api/docs",
         login_required(schema_view.with_ui("swagger", cache_timeout=0)),
@@ -35,7 +38,7 @@ urlpatterns = [
     path("api/v1/", include("order.urls")),
     path("api/v1/", include("rider.urls")),
     path("api/v1/", include("wallet.urls")),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 admin.site.site_header = "Fele Express Admin"
 admin.site.site_title = "Fele Express Admin | Deliver your package faster"

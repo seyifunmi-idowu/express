@@ -35,6 +35,10 @@ def validate_admin(user) -> bool:
     return user.user_type == "ADMIN"
 
 
+def validate_business(user) -> bool:
+    return user.user_type == "BUSINESS"
+
+
 def validate_approved_rider(user) -> bool:
     from helpers.exceptions import CustomAPIException
     from rider.models import Rider

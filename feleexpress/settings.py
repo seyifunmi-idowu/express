@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import datetime
+import os
 from pathlib import Path
+from typing import List
 
 import dj_database_url
 from decouple import config
@@ -61,6 +63,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "storages",
     "authentication.apps.AuthenticationConfig",
+    "business.apps.BusinessConfig",
     "customer.apps.CustomerConfig",
     "notification.apps.NotificationConfig",
     "order.apps.OrderConfig",
@@ -141,7 +144,6 @@ AWS_ACCESS_KEY = config("AWS_ACCESS_KEY", "")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", "")
 
 USE_S3 = config("USE_S3", cast=bool, default=True)
-USE_S3 = True
 if USE_S3:
     # aws settings
     AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY")
@@ -156,8 +158,8 @@ if USE_S3:
     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 else:
     STATIC_URL = "/static/"
-    # STATIC_ROOT = os.path.join(BASE_DIR, "static")
-    STATICFILES_DIRS = [BASE_DIR / "static"]
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, "business", "static", "assets")]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -218,6 +220,34 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_TOKEN_CLASSES": ("helpers.token_manager.CustomAccessToken",),
 }
+API_LOGGING_ENABLED = config("API_LOGGING_ENABLED", cast=bool, default=False)
+
+if API_LOGGING_ENABLED:
+    INSTALLED_APPS.append("drf_api_logger")
+    MIDDLEWARE.append(
+        "drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware"
+    )
+    DRF_API_LOGGER_DATABASE = True
+    DRF_API_LOGGER_EXCLUDE_KEYS = [
+        "password",
+        "token",
+        "access",
+        "access_key",
+        "secret_key",
+        "refresh",
+        "pin",
+        "otp",
+        "AUTHORIZATION",
+    ]
+    DRF_API_LOGGER_SLOW_API_ABOVE = (
+        200
+    )  # in milliseconds, this will add a filter to display apis with response time above 200ms
+    DRF_API_LOGGER_METHOD: List[str] = []  # empyty list means log all http methods
+    DRF_API_LOGGER_SKIP_URL_NAME: List[str] = []  # skip any url we don't want to log
+    DRF_API_LOGGER_SKIP_NAMESPACE: List[str] = []  # skip any app we don't want to log
+    DRF_API_LOG_SERVER_ERROR = config(
+        "DRF_API_LOG_SERVER_ERROR", cast=bool, default=False
+    )
 
 LOGIN_URL = "/admin/login"
 
@@ -260,4 +290,8 @@ GOOGLE_SEARCH_RADIUS = config("GOOGLE_SEARCH_RADIUS", cast=int)
 
 DEACTIVATION_PREPEND_VALUE = config(
     "DEACTIVATION_PREPEND_VALUE", default="fele_deactivated_user"
+)
+ENCRYPTION_KEY = bytes(
+    config("ENCRYPTION_KEY", default="A80ViqPXCsDl_koGp6JSEeYSeGD5wt9iObp0mJigh90="),
+    "utf-8",
 )

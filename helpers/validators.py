@@ -2,6 +2,7 @@ import os
 from typing import List
 
 import phonenumbers
+from django import forms
 from django.conf import settings
 from rest_framework import serializers, status
 
@@ -15,10 +16,11 @@ class FieldValidators:
     """Field validator class for serializer fields"""
 
     PASSWORD_REGEX_RULE = "^(?=.*([A-Z]){1,})(?=.*[0-9]{1,})(?=.*[a-z]{1,})(?=.*[a-z]{1,})(?=.*[!\"#$%&'()*+,-./:;<=>?@^_`{|}~]{0,}).{8,32}$"
+    HTTPS_URL_REGEX_RULE = r"^https:\/\/[^\s\/$.?#].[^\s]*$"
 
     @staticmethod
     def validate_non_existing_user_email(email_address: str) -> None:
-        user = User.objects.filter(email=email_address.lower()).first()
+        user = User.objects.filter(email__iexact=email_address.lower()).first()
         if user:
             raise serializers.ValidationError(
                 "A user has already registered with this email address"
@@ -34,7 +36,7 @@ class FieldValidators:
 
     @staticmethod
     def validate_existing_user_email(email_address: str) -> None:
-        user = User.objects.filter(email=email_address.lower()).first()
+        user = User.objects.filter(email__iexact=email_address.lower()).first()
         if not user:
             raise serializers.ValidationError("User with email address not found")
 
@@ -180,3 +182,87 @@ class Validators:
             detail="The end date should be greater than or equal to the start date.",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+
+
+class FormValidator:
+    """Form validator class for form fields"""
+
+    @staticmethod
+    def validate_non_existing_user_email(email_address: str) -> None:
+        user = User.objects.filter(email__iexact=email_address.lower()).first()
+        if user:
+            raise forms.ValidationError(
+                "A user has already registered with this email address"
+            )
+
+    @staticmethod
+    def validate_non_existing_user_phone(phone_number: str) -> None:
+        user = User.objects.filter(phone_number=phone_number).first()
+        if user:
+            raise forms.ValidationError(
+                "A user has already registered with this phone number"
+            )
+
+    @staticmethod
+    def validate_existing_user_email(email_address: str) -> None:
+        user = User.objects.filter(email__iexact=email_address.lower()).first()
+        if not user:
+            raise forms.ValidationError("User with email address not found")
+
+    @staticmethod
+    def validate_existing_user_phone(phone_number: str) -> None:
+        user = User.objects.filter(phone_number=phone_number).first()
+        if not user:
+            raise forms.ValidationError("User with phone number not found")
+
+    @staticmethod
+    def validate_phone_number(phone_number: str) -> None:
+        try:
+            # This will validate all international numbers
+            validated_no = phonenumbers.parse(phone_number)
+            if str(validated_no.country_code) == "234":
+                phone = NigerianPhone(phone_number)
+                if not phone.is_valid():
+                    raise forms.ValidationError("Phone number is not valid")
+            else:
+                if phonenumbers.is_valid_number(validated_no) is False:
+                    raise forms.ValidationError("Phone number is not valid")
+        except phonenumbers.phonenumberutil.NumberParseException:
+            raise forms.ValidationError("Phone number is not valid")
+
+    @staticmethod
+    def validate_password(password: str) -> None:
+        """Runs a validation check on user-provided password"""
+        import re
+
+        reg_ex_rule = re.compile(FieldValidators.PASSWORD_REGEX_RULE)
+
+        if not reg_ex_rule.search(password):
+            raise forms.ValidationError(
+                "Password should be at least 8-32 characters and should contain upper, lower case letters, numbers and special characters"
+            )
+
+    @staticmethod
+    def validate_email_or_phone_number(data):
+        email = data.get("email")
+        phone_number = data.get("phone_number")
+
+        if not email and not phone_number:
+            raise forms.ValidationError("Either email or phone number is required")
+
+        if email and phone_number:
+            raise forms.ValidationError(
+                "Only one of email or phone number can be submitted at a time"
+            )
+
+    @staticmethod
+    def validate_url(url: str) -> None:
+        import re
+
+        """Runs a validation check on user-provided URL"""
+        reg_ex_rule = re.compile(FieldValidators.HTTPS_URL_REGEX_RULE)
+
+        if not reg_ex_rule.match(url):
+            raise forms.ValidationError(
+                "Invalid URL. Please provide a valid URL starting with 'http://' or 'https://'."
+            )
