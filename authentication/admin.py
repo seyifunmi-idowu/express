@@ -7,7 +7,7 @@ from helpers.admin_helpers import BaseModelAdmin
 from wallet.models import Transaction
 
 
-class TransactionInline(admin.TabularInline):  # or admin.StackedInline
+class TransactionInline(admin.TabularInline):
     model = Transaction
     fk_name = "user"
     extra = 0

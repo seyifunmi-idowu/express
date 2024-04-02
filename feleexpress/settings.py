@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import datetime
 import os
 from pathlib import Path
+from typing import List
 
 import dj_database_url
 from decouple import config
@@ -219,6 +220,34 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_TOKEN_CLASSES": ("helpers.token_manager.CustomAccessToken",),
 }
+API_LOGGING_ENABLED = config("API_LOGGING_ENABLED", cast=bool, default=False)
+
+if API_LOGGING_ENABLED:
+    INSTALLED_APPS.append("drf_api_logger")
+    MIDDLEWARE.append(
+        "drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware"
+    )
+    DRF_API_LOGGER_DATABASE = True
+    DRF_API_LOGGER_EXCLUDE_KEYS = [
+        "password",
+        "token",
+        "access",
+        "access_key",
+        "secret_key",
+        "refresh",
+        "pin",
+        "otp",
+        "AUTHORIZATION",
+    ]
+    DRF_API_LOGGER_SLOW_API_ABOVE = (
+        200
+    )  # in milliseconds, this will add a filter to display apis with response time above 200ms
+    DRF_API_LOGGER_METHOD: List[str] = []  # empyty list means log all http methods
+    DRF_API_LOGGER_SKIP_URL_NAME: List[str] = []  # skip any url we don't want to log
+    DRF_API_LOGGER_SKIP_NAMESPACE: List[str] = []  # skip any app we don't want to log
+    DRF_API_LOG_SERVER_ERROR = config(
+        "DRF_API_LOG_SERVER_ERROR", cast=bool, default=False
+    )
 
 LOGIN_URL = "/admin/login"
 

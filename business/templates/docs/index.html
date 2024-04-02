@@ -51,7 +51,7 @@
             <div class="container">
                 <div id="doc-header" class="doc-header text-center">
                     <h1 class="doc-title"><i class="icon fa fa-paper-plane"></i> Quick Start</h1>
-                    <div class="meta"><i class="far fa-clock"></i> Last updated: March 27th</div>
+                    <div class="meta"><i class="far fa-clock"></i> Last updated: April 2nd 2024</div>
                 </div><!--//doc-header-->
                 <div class="doc-body row">
                     <div class="doc-content col-md-9 col-12 order-1">
@@ -591,6 +591,111 @@
                                 </div>
 
                             </section><!--//doc-section-->
+                            <section id="webhook" class="doc-section">
+                                <h2 class="section-title">Webhook</h2>
+                                <div class="section-block">
+                                    <p>
+                                        Webhook request.
+                                    </p>
+                                    <div class="code-block">
+                                        <h6>Endpoint:</h6>
+                                        <p><code>POST `https://your-webhook-url.org/api/v1/` </code></p>
+                                    </div><!--//code-block-->
+                                    <div id="webhook-request" class="section-block">
+                                    <div class="code-block">
+                                        <h6>Request Sample</h6>
+                                        <pre><code class="language-python">{
+    "id": "glfut9cv8s",
+    "status": "RIDER_AT_PICK_UP",
+    "proof_url": "https://feleexpress.s3.amazonaws.com/backend-dev/order/glfut9cv8s/7d09c97e3rd3c6752f14c2.pdf",
+    "date": "2024-02-05 09:47:45",
+}</code></pre>
+                                    </div><!--//code-block-->
+                                </div>
+
+                                </div><!--//section-block-->
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <tbody>
+                                            <tr>
+                                                <th scope="row">id</th>
+                                                <td>string</td>
+                                                <td>required</td>
+                                                <td>Unique identifier for the order</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">status</th>
+                                                <td>string</td>
+                                                <td>required</td>
+                                                <td>The current status of the order. See <a href="#status">status</a> for possible values.</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">proof_url</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>URL of the document providing proof related to the order status change. This field is optional and may be included in webhook responses when the order status transitions to `RIDER_PICKED_UP_ORDER` or `ORDER_DELIVERED`</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">date</th>
+                                                <td>string</td>
+                                                <td>required</td>
+                                                <td>Date and time of the webhook request in ISO 8601 format (YYYY-MM-DD HH:MM:SS).</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div><!--//table-responsive-->
+
+                            </section><!--//doc-section-->
+                            <section id="status" class="doc-section">
+                                <h2 class="section-title">Status</h2>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <tbody>
+                                            <tr>
+                                                <th scope="row">PENDING</th>
+                                                <td>The order is pending and has not yet been processed</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">PROCESSING_ORDER</th>
+                                                <td>The order is currently being processed</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">PENDING_RIDER_CONFIRMATION</th>
+                                                <td>The order is awaiting confirmation from the assigned rider</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">RIDER_ACCEPTED_ORDER</th>
+                                                <td>The rider has accepted the order</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">RIDER_AT_PICK_UP</th>
+                                                <td>The rider is currently at the pick-up location to collect the order</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">RIDER_PICKED_UP_ORDER</th>
+                                                <td>The rider has picked up the order from the pick-up location</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">ORDER_ARRIVED</th>
+                                                <td>The order has arrived at the delivery location</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">ORDER_DELIVERED</th>
+                                                <td>The order has been successfully delivered to the recipient</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">ORDER_COMPLETED</th>
+                                                <td>The order process is completed</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">ORDER_CANCELLED</th>
+                                                <td>The order has been cancelled</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div><!--//table-responsive-->
+
+                            </section><!--//doc-section-->
                         </div><!--//content-inner-->
                     </div><!--//doc-content-->
                     <div class="doc-sidebar col-md-3 col-12 order-0 d-none d-md-flex">
@@ -677,21 +782,17 @@
                                             <a class="nav-link scrollto" href="#available-vehicles-success-response">Response</a>
 	                                    </li>
                                     </nav><!--//nav-->
-<!--                                    <li class="nav-item">-->
-<!--	                                     <a class="nav-link scrollto" href="#callouts-section">Callouts</a>-->
-<!--                                    </li>-->
-<!--                                    <li class="nav-item">-->
-<!--	                                    <a class="nav-link scrollto" href="#tables-section">Tables</a>-->
-<!--                                    </li>-->
-<!--                                    <li class="nav-item">-->
-<!--	                                     <a class="nav-link scrollto" href="#buttons-section">Buttons</a>-->
-<!--                                    </li>-->
-<!--                                    <li class="nav-item">-->
-<!--	                                     <a class="nav-link scrollto" href="#video-section">Video</a>-->
-<!--                                    </li>-->
-<!--                                    <li class="nav-item">-->
-<!--	                                      <a class="nav-link scrollto" href="#icons-section">Icons</a>-->
-<!--                                    </li>-->
+                                    <li class="nav-item">
+	                                    <a class="nav-link scrollto" href="#webhook">Webhook</a>
+                                    </li>
+                                    <nav class="nav doc-sub-menu nav flex-column">
+	                                    <li class="nav-item">
+                                            <a class="nav-link scrollto" href="#webhook-request">Request</a>
+	                                    </li>
+                                    </nav><!--//nav-->
+                                    <li class="nav-item">
+	                                    <a class="nav-link scrollto" href="#status">Status</a>
+                                    </li>
 	                            </nav><!--//doc-menu-->
 
                         </div>

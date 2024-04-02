@@ -71,7 +71,7 @@
                         {% endfor %}
                     </div>
                     <div class="mb-3">
-                        <input type="tel" class="form-control" placeholder="Phone Number" aria-label="Phone Number" aria-describedby="phone_number-addon" name="phone_number" {% if form.phone_number.value %} value="{{ form.phone_number.value }}" {% endif %}>
+                        <input type="tel" class="form-control" placeholder="Phone Number (+234)" aria-label="Phone Number" aria-describedby="phone_number-addon" name="phone_number" {% if form.phone_number.value %} value="{{ form.phone_number.value }}" {% endif %}>
                         {% for error in form.phone_number.errors %}
                             <span class="text-danger error-message">{{ error }}</span>
                         {% endfor %}
