@@ -6,7 +6,7 @@ FROM python:3.8-bullseye as builder
 # "allow-releaseinfo-change" update local with new release
 # install "wget" and "gnupg" and answer "-y" yes to the command line question
 RUN apt-get --allow-releaseinfo-change update \
-    && apt-get install wget gnupg -y
+    && apt-get install wget gnupg git -y
 
 # get postgres repo and save
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list
