@@ -605,69 +605,66 @@
                                     <div class="code-block">
                                         <h6>Request Sample</h6>
                                         <pre><code class="language-python">{
-    "data": {
-        "order_id": "76v8ll12rn",
-        "status": "ORDER_ARRIVED",
-        "rider": {
-            "name": "Messi Messi",
-            "contact": "+2348105474514",
-            "avatar_url": "https://feleexpress.s3.amazonaws.com/backend-dev/rider_document/passport_photo/7d09c9a2e6774d0f9ba727c6752f14c2.pdf",
-            "rating": 2.0,
-            "vehicle": "car",
-            "vehicle_type": null,
-            "vehicle_make": null,
-            "vehicle_model": null,
-            "vehicle_plate_number": "eky24sky",
-            "vehicle_color": "red"
-        },
-        "pickup": {
-            "latitude": "6.4426897",
-            "longitude": "3.4652487",
-            "address": "7 Fola Osibo Rd, Lekki Phase 1, Lagos 106104, Lagos, Nigeria",
-            "contact_name": "Ramoni",
-            "contact_phone_number": "+234123456789"
-        },
-        "delivery": {
-            "latitude": "6.518989899999999",
-            "longitude": "3.3691391",
-            "address": "8 Jibowu St, Jibowu, Lagos 101245, Lagos, Nigeria",
-            "contact_name": "Drake",
-            "contact_phone_number": "+23498765432"
-        },
-        "total_amount": "3924.49",
-        "tip_amount": null,
-        "note_to_driver": "please be fast yeah?",
-        "distance": "18.8 km",
-        "duration": "28 mins",
-        "timeline": [
-            {
-                "status": "RIDER_ACCEPTED_ORDER",
-                "proof_url": null,
-                "reason": null,
-                "date": "2024-03-25 16:59:41"
-            },
-            {
-                "status": "RIDER_AT_PICK_UP",
-                "proof_url": null,
-                "reason": null,
-                "date": "2024-03-25 17:09:29"
-            },
-            {
-                "status": "RIDER_PICKED_UP_ORDER",
-                "proof_url": "https://feleexpress.s3.amazonaws.com/backend-dev/order/76v8ll12rn/18c15093b10b47d9a3f8776bc8a3aaaa.pdf",
-                "reason": null,
-                "date": "2024-03-25 19:06:18"
-            },
-            {
-                "status": "ORDER_ARRIVED",
-                "proof_url": null,
-                "reason": null,
-                "date": "2024-04-04 12:43:25"
-            }
-        ],
-        "created_at": "2024-03-25 15:26:25"
+    "order_id": "76v8ll12rn",
+    "status": "ORDER_ARRIVED",
+    "rider": {
+        "name": "Messi Messi",
+        "contact": "+2348105474514",
+        "avatar_url": "https://feleexpress.s3.amazonaws.com/backend-dev/rider_document/passport_photo/7d09c9a2e6774d0f9ba727c6752f14c2.pdf",
+        "rating": 2.0,
+        "vehicle": "car",
+        "vehicle_type": null,
+        "vehicle_make": null,
+        "vehicle_model": null,
+        "vehicle_plate_number": "eky24sky",
+        "vehicle_color": "red"
     },
-    "message": "Order Information"
+    "pickup": {
+        "latitude": "6.4426897",
+        "longitude": "3.4652487",
+        "address": "7 Fola Osibo Rd, Lekki Phase 1, Lagos 106104, Lagos, Nigeria",
+        "contact_name": "Ramoni",
+        "contact_phone_number": "+234123456789"
+    },
+    "delivery": {
+        "latitude": "6.518989899999999",
+        "longitude": "3.3691391",
+        "address": "8 Jibowu St, Jibowu, Lagos 101245, Lagos, Nigeria",
+        "contact_name": "Drake",
+        "contact_phone_number": "+23498765432"
+    },
+    "total_amount": "3924.49",
+    "tip_amount": null,
+    "note_to_driver": "please be fast yeah?",
+    "distance": "18.8 km",
+    "duration": "28 mins",
+    "timeline": [
+        {
+            "status": "RIDER_ACCEPTED_ORDER",
+            "proof_url": null,
+            "reason": null,
+            "date": "2024-03-25 16:59:41"
+        },
+        {
+            "status": "RIDER_AT_PICK_UP",
+            "proof_url": null,
+            "reason": null,
+            "date": "2024-03-25 17:09:29"
+        },
+        {
+            "status": "RIDER_PICKED_UP_ORDER",
+            "proof_url": "https://feleexpress.s3.amazonaws.com/backend-dev/order/76v8ll12rn/18c15093b10b47d9a3f8776bc8a3aaaa.pdf",
+            "reason": null,
+            "date": "2024-03-25 19:06:18"
+        },
+        {
+            "status": "ORDER_ARRIVED",
+            "proof_url": null,
+            "reason": null,
+            "date": "2024-04-04 12:43:25"
+        }
+    ],
+    "created_at": "2024-03-25 15:26:25"
 }</code></pre>
                                     </div><!--//code-block-->
                                 </div>
@@ -677,7 +674,7 @@
                                     <table class="table table-striped">
                                         <tbody>
                                             <tr>
-                                                <th scope="row">id</th>
+                                                <th scope="row">order_id</th>
                                                 <td>string</td>
                                                 <td>required</td>
                                                 <td>Unique identifier for the order</td>
@@ -689,16 +686,220 @@
                                                 <td>The current status of the order. See <a href="#status">status</a> for possible values.</td>
                                             </tr>
                                             <tr>
-                                                <th scope="row">proof_url</th>
+                                                <th scope="row">rider</th>
+                                                <td>object</td>
+                                                <td>optional</td>
+                                                <td>Full name of the rider</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">rider[name]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Full name of the rider</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">rider[contact]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Phone number of the rider</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">rider[avatar_url]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>URL to the rider's profile picture</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">rider[rating]</th>
+                                                <td>int</td>
+                                                <td>optional</td>
+                                                <td>Rating of the rider</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">rider[vehicle]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Type of vehicle used by the rider (e.g., car, bike)</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">rider[vehicle_type]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Rating of the rider</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">rider[vehicle_make]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Type of the rider's vehicle</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">rider[vehicle_model]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Model of the rider's vehicle</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">rider[vehicle_plate_number]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>License plate number of the rider's vehicle</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">rider[vehicle_color]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Color of the rider's vehicle</td>
+                                            </tr>
+                                                                                        <tr>
+                                                <th scope="row">pickup</th>
+                                                <td>object</td>
+                                                <td>required</td>
+                                                <td>Pick up details</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">pickup[latitude]</th>
+                                                <td>string</td>
+                                                <td>required</td>
+                                                <td>Latitude of pick up address</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">pickup[longitude]</th>
+                                                <td>string</td>
+                                                <td>required</td>
+                                                <td>Longitude of pick up address</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">pickup[address]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Address of the pickup location</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">pickup[contact_phone_number]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Pick up person (restaurant, vendor etc) phone number</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">pickup[contact_name]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Pick up person (restaurant, vendor etc) name</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">delivery</th>
+                                                <td>object</td>
+                                                <td>required</td>
+                                                <td>delivery</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">delivery[latitude]</th>
+                                                <td>string</td>
+                                                <td>required</td>
+                                                <td>Latitude of delivery address</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">delivery[longitude]</th>
+                                                <td>string</td>
+                                                <td>required</td>
+                                                <td>Longitude of delivery address</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">delivery[longitude]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Address of the delivery location</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">delivery[contact_phone_number]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Phone number of person to be delivered to</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">delivery[contact_name]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Name of person to deliver to</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">delivery[contact_name]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Name of person to deliver to</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">total_amount</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Total amount associated with the order</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">tip_amount</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Optional tip amount for the order</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">note_to_driver</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Additional instructions or notes for the rider/driver</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">distance</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Estimated distance for the delivery</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">duration</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Estimated duration for the delivery</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">timeline</th>
+                                                <td>list</td>
+                                                <td>optional</td>
+                                                <td>List of events or status updates related to the order</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">timeline[status]</th>
+                                                <td>string</td>
+                                                <td>required</td>
+                                                <td>Status of the order at a specific point in time</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">timeline[proof_url]</th>
                                                 <td>string</td>
                                                 <td>optional</td>
                                                 <td>URL of the document providing proof related to the order status change. This field is optional and may be included in webhook responses when the order status transitions to `RIDER_PICKED_UP_ORDER` or `ORDER_DELIVERED`</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">timeline[reason]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Reason or explanation for the status update</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">timeline[date]</th>
+                                                <td>string</td>
+                                                <td>optional</td>
+                                                <td>Date and time when the status update occurred</td>
                                             </tr>
                                             <tr>
                                                 <th scope="row">date</th>
                                                 <td>string</td>
                                                 <td>required</td>
                                                 <td>Date and time of the webhook request in ISO 8601 format (YYYY-MM-DD HH:MM:SS).</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">created_at</th>
+                                                <td>string</td>
+                                                <td>required</td>
+                                                <td>Date and time when the order was created</td>
                                             </tr>
                                         </tbody>
                                     </table>
