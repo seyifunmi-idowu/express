@@ -34,7 +34,6 @@ django-storages==1.14.2
 django-timezone-field==6.1.0
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.0
-git+https://github.com/aspire-engineering/DRF-API-Logger.git@sunfi-master#399713e6dd605e3498e8c14e3628f82ea2f90cd9
 drf-yasg==1.21.7
 drf_api_logger==1.1.15
 filelock==3.12.4

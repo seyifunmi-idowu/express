@@ -13,9 +13,9 @@ from helpers.cache_manager import CacheManager, KeyBuilder
 from helpers.db_helpers import generate_id, generate_orderid
 from helpers.exceptions import CustomAPIException
 from helpers.googlemaps_service import GoogleMapsService
-from helpers.logger import CustomLogging
 from helpers.paystack_service import PaystackService
 from helpers.s3_uploader import S3Uploader
+from helpers.webhook import FeleWebhook
 from notification.service import NotificationService
 from order.models import Address, Order, OrderTimeline, Vehicle
 from rider.models import FavoriteRider, RiderRating
@@ -711,7 +711,7 @@ class OrderService:
             )
 
         rider = RiderService.get_rider(user=user)
-        order_timeline = cls.add_order_timeline_entry(order, "RIDER_ACCEPTED_ORDER")
+        cls.add_order_timeline_entry(order, "RIDER_ACCEPTED_ORDER")
 
         order.rider = rider
         order.status = "RIDER_ACCEPTED_ORDER"
@@ -723,7 +723,7 @@ class OrderService:
                 order.customer.user, title, message
             )
         else:
-            cls.send_status_to_webhook(order_timeline)
+            FeleWebhook.send_order_to_webhook(order)
 
         track_user_activity(
             context=dict({"order_id": order_id}),
@@ -739,7 +739,7 @@ class OrderService:
     @classmethod
     def rider_at_pickup(cls, order_id, user, session_id):
         order = cls.get_order(order_id, rider__user=user)
-        order_timeline = cls.add_order_timeline_entry(order, "RIDER_AT_PICK_UP")
+        cls.add_order_timeline_entry(order, "RIDER_AT_PICK_UP")
         order.status = "RIDER_AT_PICK_UP"
         order.save()
         if order.is_customer_order():
@@ -749,7 +749,7 @@ class OrderService:
                 order.customer.user, title, message
             )
         else:
-            cls.send_status_to_webhook(order_timeline)
+            FeleWebhook.send_order_to_webhook(order)
 
         track_user_activity(
             context=dict({"order_id": order_id}),
@@ -769,7 +769,7 @@ class OrderService:
         file_url = S3Uploader(append_folder=f"/order/{order_id}").upload_file_object(
             file, file_name
         )
-        order_timeline = cls.add_order_timeline_entry(
+        cls.add_order_timeline_entry(
             order, "RIDER_PICKED_UP_ORDER", **{"proof_url": file_url}
         )
         order.status = "RIDER_PICKED_UP_ORDER"
@@ -781,7 +781,7 @@ class OrderService:
                 order.customer.user, title, message
             )
         else:
-            cls.send_status_to_webhook(order_timeline)
+            FeleWebhook.send_order_to_webhook(order)
 
         track_user_activity(
             context=dict({"order_id": order_id, "proof_url": file_url}),
@@ -798,7 +798,7 @@ class OrderService:
         order = cls.get_order(order_id, rider__user=user)
 
         cls.add_order_timeline_entry(order, "FAILED_PICKUP", **{"reason": reason})
-        order_timeline = cls.add_order_timeline_entry(order, "ORDER_CANCELLED")
+        cls.add_order_timeline_entry(order, "ORDER_CANCELLED")
         order.status = "ORDER_CANCELLED"
         order.save()
         if order.is_customer_order():
@@ -808,7 +808,7 @@ class OrderService:
                 order.customer.user, title, message
             )
         else:
-            cls.send_status_to_webhook(order_timeline)
+            FeleWebhook.send_order_to_webhook(order)
 
         track_user_activity(
             context=dict({"order_id": order_id, "reason": reason}),
@@ -823,7 +823,7 @@ class OrderService:
     @classmethod
     def rider_at_destination(cls, order_id, user, session_id):
         order = cls.get_order(order_id, rider__user=user)
-        order_timeline = cls.add_order_timeline_entry(order, "ORDER_ARRIVED")
+        cls.add_order_timeline_entry(order, "ORDER_ARRIVED")
         order.status = "ORDER_ARRIVED"
         order.save()
         if order.is_customer_order():
@@ -833,7 +833,7 @@ class OrderService:
                 order.customer.user, title, message
             )
         else:
-            cls.send_status_to_webhook(order_timeline)
+            FeleWebhook.send_order_to_webhook(order)
 
         track_user_activity(
             context=dict({"order_id": order_id}),
@@ -853,14 +853,14 @@ class OrderService:
         file_url = S3Uploader(append_folder=f"/order/{order_id}").upload_file_object(
             file, file_name
         )
-        order_timeline = cls.add_order_timeline_entry(
+        cls.add_order_timeline_entry(
             order, "ORDER_DELIVERED", **{"proof_url": file_url}
         )
         order.delivery_time = timezone.now()
         order.status = "ORDER_DELIVERED"
         order.save()
         if order.is_business_order():
-            cls.send_status_to_webhook(order_timeline)
+            FeleWebhook.send_order_to_webhook(order)
 
         track_user_activity(
             context=dict({"order_id": order_id, "proof_url": file_url}),
@@ -1107,34 +1107,6 @@ class OrderService:
             session_id=session_id,
         )
         return order
-
-    @classmethod
-    def send_status_to_webhook(cls, order_time):
-        import requests
-
-        url = order_time.order.business.webhook_url
-        secret_key = BusinessService.get_business_user_secret_key(
-            order_time.order.business.user
-        )
-        headers = {
-            "Authorization": f"Bearer {secret_key}",
-            "Content-Type": "application/json",
-        }
-        data = {
-            "id": order_time.order.order_id,
-            "status": order_time.order.status,
-            "proof_url": order_time.proof_url,
-            "date": order_time.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-        }
-        try:
-            response = requests.post(url, headers=headers, json=data)
-            return response.json()
-
-        except Exception as e:
-            CustomLogging.error(
-                f"Unable to connect to webhook url {url}: {str(e)}", data
-            )
-            pass
 
     @classmethod
     def business_cancel_order(cls, user, order_id, session_id, reason):
