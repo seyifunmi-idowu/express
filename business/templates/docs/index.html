@@ -605,10 +605,69 @@
                                     <div class="code-block">
                                         <h6>Request Sample</h6>
                                         <pre><code class="language-python">{
-    "id": "glfut9cv8s",
-    "status": "RIDER_AT_PICK_UP",
-    "proof_url": "https://feleexpress.s3.amazonaws.com/backend-dev/order/glfut9cv8s/7d09c97e3rd3c6752f14c2.pdf",
-    "date": "2024-02-05 09:47:45",
+    "data": {
+        "order_id": "76v8ll12rn",
+        "status": "ORDER_ARRIVED",
+        "rider": {
+            "name": "Messi Messi",
+            "contact": "+2348105474514",
+            "avatar_url": "https://feleexpress.s3.amazonaws.com/backend-dev/rider_document/passport_photo/7d09c9a2e6774d0f9ba727c6752f14c2.pdf",
+            "rating": 2.0,
+            "vehicle": "car",
+            "vehicle_type": null,
+            "vehicle_make": null,
+            "vehicle_model": null,
+            "vehicle_plate_number": "eky24sky",
+            "vehicle_color": "red"
+        },
+        "pickup": {
+            "latitude": "6.4426897",
+            "longitude": "3.4652487",
+            "address": "7 Fola Osibo Rd, Lekki Phase 1, Lagos 106104, Lagos, Nigeria",
+            "contact_name": "Ramoni",
+            "contact_phone_number": "+234123456789"
+        },
+        "delivery": {
+            "latitude": "6.518989899999999",
+            "longitude": "3.3691391",
+            "address": "8 Jibowu St, Jibowu, Lagos 101245, Lagos, Nigeria",
+            "contact_name": "Drake",
+            "contact_phone_number": "+23498765432"
+        },
+        "total_amount": "3924.49",
+        "tip_amount": null,
+        "note_to_driver": "please be fast yeah?",
+        "distance": "18.8 km",
+        "duration": "28 mins",
+        "timeline": [
+            {
+                "status": "RIDER_ACCEPTED_ORDER",
+                "proof_url": null,
+                "reason": null,
+                "date": "2024-03-25 16:59:41"
+            },
+            {
+                "status": "RIDER_AT_PICK_UP",
+                "proof_url": null,
+                "reason": null,
+                "date": "2024-03-25 17:09:29"
+            },
+            {
+                "status": "RIDER_PICKED_UP_ORDER",
+                "proof_url": "https://feleexpress.s3.amazonaws.com/backend-dev/order/76v8ll12rn/18c15093b10b47d9a3f8776bc8a3aaaa.pdf",
+                "reason": null,
+                "date": "2024-03-25 19:06:18"
+            },
+            {
+                "status": "ORDER_ARRIVED",
+                "proof_url": null,
+                "reason": null,
+                "date": "2024-04-04 12:43:25"
+            }
+        ],
+        "created_at": "2024-03-25 15:26:25"
+    },
+    "message": "Order Information"
 }</code></pre>
                                     </div><!--//code-block-->
                                 </div>
