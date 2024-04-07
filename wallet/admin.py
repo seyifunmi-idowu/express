@@ -13,7 +13,7 @@ class WalletAdmin(admin.ModelAdmin):
     exclude = ("state", "created_by", "deleted_by", "updated_by", "deleted_at")
 
     def get_queryset(self, request):
-        return self.model.objects.filter(user__state="ACTIVE")
+        return self.model.objects.exclude(user__state="DELETED")
 
     def has_add_permission(self, request):
         return False
@@ -65,7 +65,7 @@ class TransactionAdmin(admin.ModelAdmin):
         return False
 
     def get_queryset(self, request):
-        return self.model.objects.filter(user__state="ACTIVE")
+        return self.model.objects.exclude(user__state="DELETED")
 
 
 admin.site.register(Wallet, WalletAdmin)

@@ -98,6 +98,25 @@ def dashboard(request):
 
 
 @business_login_required
+def order(request):
+    response = BusinessAuth.get_business_order_view(request.user)
+    context = {"view": "Order", **response}
+    return render(request, "app/order.html", context)
+
+
+@business_login_required
+def view_order(request, order_id):
+    response = BusinessAuth.get_business_retrieve_order_view(request.user, order_id)
+    context = {"view": "Order", "order": order, **response}
+    return render(request, "app/view_order.html", context)
+
+
+@business_login_required
+def wallet(request):
+    pass
+
+
+@business_login_required
 def regenerate_secret_key(request):
     BusinessAuth.regenerate_secret_key(request.user, generate_session_id())
     return redirect(reverse("business-settings"))

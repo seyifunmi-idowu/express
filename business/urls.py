@@ -9,6 +9,8 @@ urlpatterns = [
     path("verify/email", views.verify_email, name="business-verify-email"),
     path("register/resend-otp", views.resend_otp, name="resend-otp"),
     path("dashboard", views.dashboard, name="business-dashboard"),
+    path("order", views.order, name="business-order"),
+    path("order/<str:order_id>", views.view_order, name="view_order"),
     path("settings", views.settings, name="business-settings"),
     path(
         "regenerate-secret-key",

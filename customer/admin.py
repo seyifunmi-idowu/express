@@ -24,7 +24,7 @@ class CustomerAdmin(admin.ModelAdmin):
         return False
 
     def get_queryset(self, request):
-        return self.model.objects.filter(user__state="ACTIVE")
+        return self.model.objects.exclude(user__state="DELETED")
 
 
 class IndividualCustomerAdmin(admin.ModelAdmin):
@@ -48,14 +48,16 @@ class IndividualCustomerAdmin(admin.ModelAdmin):
         return False
 
     def get_queryset(self, request):
-        return self.model.objects.filter(
-            customer_type="INDIVIDUAL", user__state="ACTIVE"
+        return self.model.objects.filter(customer_type="INDIVIDUAL").exclude(
+            user__state="DELETED"
         )
 
 
 class BusinessCustomerAdmin(CustomerAdmin):
     def get_queryset(self, request):
-        return self.model.objects.filter(customer_type="BUSINESS", user__state="ACTIVE")
+        return self.model.objects.filter(customer_type="BUSINESS").exclude(
+            user__state="DELETED"
+        )
 
 
 admin.site.register(Customer, CustomerAdmin)

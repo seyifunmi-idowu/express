@@ -26,6 +26,9 @@ class Business(BaseAbstractModel):
     webhook_url = models.URLField(null=True, blank=True)
     e_secret_key = models.CharField(max_length=700, null=True, blank=True)
 
+    def __str__(self):
+        return self.business_name
+
     class Meta:
         db_table = "business"
         verbose_name = "business"

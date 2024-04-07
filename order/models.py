@@ -182,6 +182,21 @@ class Order(BaseAbstractModel):
     def is_customer_order(self):
         return self.order_by == "CUSTOMER"
 
+    def get_order_progress(self):
+        status_mapper = {
+            "PENDING": 2,
+            "PROCESSING_ORDER": 4,
+            "PENDING_RIDER_CONFIRMATION": 6,
+            "RIDER_ACCEPTED_ORDER": 10,
+            "RIDER_AT_PICK_UP": 15,
+            "RIDER_PICKED_UP_ORDER": 20,
+            "ORDER_ARRIVED": 80,
+            "ORDER_DELIVERED": 95,
+            "ORDER_COMPLETED": 100,
+            "ORDER_CANCELLED": 0,
+        }
+        return status_mapper[self.status]
+
 
 class PendingOrder(Order):
     class Meta:
@@ -212,3 +227,36 @@ class OrderTimeline(BaseAbstractModel):
     def get_created_at(self):
         date = self.meta_data.get("date", None)
         return date if date else self.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
+    def get_status_display(self):
+        return " ".join(self.status.split("_")).capitalize()
+
+    def get_status_icon(self):
+        status_icon_mapper = {
+            "PENDING": "money-coins",
+            "PROCESSING_ORDER": "cart",
+            "PENDING_RIDER_CONFIRMATION": "bell-55",
+            "RIDER_ACCEPTED_ORDER": "check-bold",
+            "RIDER_AT_PICK_UP": "pin-3",
+            "RIDER_PICKED_UP_ORDER": "delivery-fast",
+            "ORDER_ARRIVED": "pin-3",
+            "ORDER_DELIVERED": "bag-17",
+            "ORDER_COMPLETED": "check-bold",
+            "ORDER_CANCELLED": "fat-remove",
+        }
+        return status_icon_mapper[self.status]
+
+    def get_status_colour(self):
+        status_colour_mapper = {
+            "PENDING": "info",
+            "PROCESSING_ORDER": "warning",
+            "PENDING_RIDER_CONFIRMATION": "dark",
+            "RIDER_ACCEPTED_ORDER": "success",
+            "RIDER_AT_PICK_UP": "warning",
+            "RIDER_PICKED_UP_ORDER": "info",
+            "ORDER_ARRIVED": "success",
+            "ORDER_DELIVERED": "dark",
+            "ORDER_COMPLETED": "primary",
+            "ORDER_CANCELLED": "danger",
+        }
+        return status_colour_mapper[self.status]

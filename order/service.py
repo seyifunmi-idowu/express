@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
@@ -150,7 +151,7 @@ class OrderService:
 
     @classmethod
     def get_order_timeline(cls, order):
-        return OrderTimeline.objects.filter(order=order)
+        return OrderTimeline.objects.filter(order=order).order_by("-created_at")
 
     @classmethod
     def get_new_order(cls, user):
@@ -872,7 +873,10 @@ class OrderService:
             session_id=session_id,
         )
         if order.payment_method == "WALLET":
-            cls.debit_customer(order, session_id)
+            if order.is_business_order():
+                cls.debit_business(order, session_id)
+            else:
+                cls.debit_customer(order, session_id)
 
         return True
 
@@ -915,114 +919,182 @@ class OrderService:
 
     @classmethod
     def debit_customer(cls, order, session_id):
-
-        amount = order.total_amount
-        customer_user = order.customer.user
-        rider_user = order.rider.user
-        customer_user_wallet = customer_user.get_user_wallet()
-        transaction_obj = None
         made_payment = False
-        if customer_user_wallet.balance > amount:
-            # debit wallet and mark as completed
-            reference = generate_id()
-            customer_user_wallet.withdraw(amount)
-            transaction_obj = TransactionService.create_transaction(
-                transaction_type="DEBIT",
-                transaction_status="SUCCESS",
-                amount=Decimal(amount),
-                user=customer_user,
-                reference=reference,
-                pssp="IN_HOUSE",
-                payment_category="CUSTOMER_PAY_RIDER",
-            )
-            track_user_activity(
-                context=dict({"order_id": order.order_id, "amount": float(amount)}),
-                category="ORDER",
-                action="CUSTOMER_PAY_RIDER_WITH_WALLET",
-                email=order.customer.user.email if order.customer.user.email else None,
-                phone_number=order.customer.user.phone_number
-                if order.customer.user.phone_number
-                else None,
-                level="SUCCESS",
-                session_id=session_id,
-            )
-            made_payment = True
-
-        else:
-            # debit card
-            user_card = CardService.get_user_cards(customer_user).first()
-            if user_card:
-                response = PaystackService.charge_card(
-                    customer_user.email, amount, user_card.card_auth
+        with transaction.atomic():
+            amount = order.total_amount
+            customer_user = order.customer.user
+            customer_user_wallet = customer_user.get_user_wallet()
+            transaction_obj = None
+            if customer_user_wallet.balance > amount:
+                # debit wallet and mark as completed
+                reference = generate_id()
+                customer_user_wallet.withdraw(amount)
+                transaction_obj = TransactionService.create_transaction(
+                    transaction_type="DEBIT",
+                    transaction_status="SUCCESS",
+                    amount=Decimal(amount),
+                    user=customer_user,
+                    reference=reference,
+                    pssp="IN_HOUSE",
+                    payment_category="CUSTOMER_PAY_RIDER",
                 )
-                if response["status"] and response["data"]["status"] == "success":
-                    reference = response["data"]["reference"]
-                    transaction_obj = TransactionService.create_transaction(
-                        transaction_type="DEBIT",
-                        transaction_status="SUCCESS",
-                        amount=Decimal(amount),
-                        user=customer_user,
-                        reference=reference,
-                        pssp="PAYSTACK",
-                        payment_category="CUSTOMER_PAY_RIDER",
+                track_user_activity(
+                    context=dict({"order_id": order.order_id, "amount": float(amount)}),
+                    category="ORDER",
+                    action="CUSTOMER_PAY_RIDER_WITH_WALLET",
+                    email=order.customer.user.email
+                    if order.customer.user.email
+                    else None,
+                    phone_number=order.customer.user.phone_number
+                    if order.customer.user.phone_number
+                    else None,
+                    level="SUCCESS",
+                    session_id=session_id,
+                )
+                made_payment = True
+
+            else:
+                # debit card
+                user_card = CardService.get_user_cards(customer_user).first()
+                if user_card:
+                    response = PaystackService.charge_card(
+                        customer_user.email, amount, user_card.card_auth
                     )
-                    track_user_activity(
-                        context=dict(
-                            {"order_id": order.order_id, "amount": float(amount)}
-                        ),
-                        category="ORDER",
-                        action="CUSTOMER_PAY_RIDER_WITH_CARD",
-                        email=order.customer.user.email
-                        if order.customer.user.email
-                        else None,
-                        phone_number=order.customer.user.phone_number
-                        if order.customer.user.phone_number
-                        else None,
-                        level="SUCCESS",
-                        session_id=session_id,
-                    )
-                    made_payment = True
+                    if response["status"] and response["data"]["status"] == "success":
+                        reference = response["data"]["reference"]
+                        transaction_obj = TransactionService.create_transaction(
+                            transaction_type="DEBIT",
+                            transaction_status="SUCCESS",
+                            amount=Decimal(amount),
+                            user=customer_user,
+                            reference=reference,
+                            pssp="PAYSTACK",
+                            payment_category="CUSTOMER_PAY_RIDER",
+                        )
+                        track_user_activity(
+                            context=dict(
+                                {"order_id": order.order_id, "amount": float(amount)}
+                            ),
+                            category="ORDER",
+                            action="CUSTOMER_PAY_RIDER_WITH_CARD",
+                            email=order.customer.user.email
+                            if order.customer.user.email
+                            else None,
+                            phone_number=order.customer.user.phone_number
+                            if order.customer.user.phone_number
+                            else None,
+                            level="SUCCESS",
+                            session_id=session_id,
+                        )
+                        made_payment = True
 
-        if made_payment:
-            cls.add_order_timeline_entry(order, "ORDER_COMPLETED")
-            order.paid = True
-            order.status = "ORDER_COMPLETED"
-            order.fele_amount = amount * Decimal(settings.FELE_CHARGE / 100)
-            order.paid_fele = True
-            order.save()
-
-            rider_user_wallet = rider_user.get_user_wallet()
-            TransactionService.create_transaction(
-                transaction_type="CREDIT",
-                transaction_status="SUCCESS",
-                amount=Decimal(amount),
-                user=rider_user,
-                reference=transaction_obj.reference,
-                pssp=transaction_obj.pssp,
-                payment_category="CUSTOMER_PAY_RIDER",
-                wallet_id=rider_user_wallet.id,
-            )
-            rider_user_wallet.deposit(order.total_amount - order.fele_amount)
-            title = f"Order Completed: #{order.order_id}"
-            message = "Order completed, don't forget to rate rider."
-            NotificationService.send_push_notification(
-                order.customer.user, title, message
-            )
-            track_user_activity(
-                context=dict({"order_id": order.order_id, "amount": float(amount)}),
-                category="ORDER",
-                action="RIDER_RECEIVE_PAYMENT",
-                email=order.rider.user.email if order.rider.user.email else None,
-                phone_number=order.rider.user.phone_number
-                if order.rider.user.phone_number
-                else None,
-                level="SUCCESS",
-                session_id=session_id,
-            )
-
-            # TODO: check if rider has outstanding and deduct it
+            if made_payment:
+                cls.credit_rider(order, transaction_obj, session_id)
 
         return made_payment
+
+    @classmethod
+    def debit_business(cls, order, session_id):
+        made_payment = False
+        with transaction.atomic():
+            amount = order.total_amount
+            business_user = order.business.user
+            business_user_wallet = business_user.get_user_wallet()
+            transaction_obj = None
+            if business_user_wallet.balance > amount:
+                # debit wallet and mark as completed
+                reference = generate_id()
+                business_user_wallet.withdraw(amount)
+                transaction_obj = TransactionService.create_transaction(
+                    transaction_type="DEBIT",
+                    transaction_status="SUCCESS",
+                    amount=Decimal(amount),
+                    user=business_user,
+                    reference=reference,
+                    pssp="IN_HOUSE",
+                    payment_category="CUSTOMER_PAY_RIDER",
+                )
+                track_user_activity(
+                    context=dict({"order_id": order.order_id, "amount": float(amount)}),
+                    category="ORDER",
+                    action="BUSINESS_PAY_RIDER_WITH_WALLET",
+                    email=order.business.user.email,
+                    level="SUCCESS",
+                    session_id=session_id,
+                )
+                made_payment = True
+
+            else:
+                # debit card
+                user_card = CardService.get_user_cards(business_user).first()
+                if user_card:
+                    response = PaystackService.charge_card(
+                        business_user.email, amount, user_card.card_auth
+                    )
+                    if response["status"] and response["data"]["status"] == "success":
+                        reference = response["data"]["reference"]
+                        transaction_obj = TransactionService.create_transaction(
+                            transaction_type="DEBIT",
+                            transaction_status="SUCCESS",
+                            amount=Decimal(amount),
+                            user=business_user,
+                            reference=reference,
+                            pssp="PAYSTACK",
+                            payment_category="CUSTOMER_PAY_RIDER",
+                        )
+                        track_user_activity(
+                            context=dict(
+                                {"order_id": order.order_id, "amount": float(amount)}
+                            ),
+                            category="ORDER",
+                            action="BUSINESS_PAY_RIDER_WITH_CARD",
+                            email=order.business.user.email,
+                            level="SUCCESS",
+                            session_id=session_id,
+                        )
+                        made_payment = True
+
+            if made_payment:
+                cls.credit_rider(order, transaction_obj, session_id)
+
+        return made_payment
+
+    @classmethod
+    def credit_rider(cls, order, transaction_obj, session_id):
+        amount = transaction_obj.amount
+
+        cls.add_order_timeline_entry(order, "ORDER_COMPLETED")
+        order.paid = True
+        order.status = "ORDER_COMPLETED"
+        order.fele_amount = amount * Decimal(settings.FELE_CHARGE / 100)
+        order.paid_fele = True
+        order.save()
+
+        rider_user = order.rider.user
+        rider_user_wallet = rider_user.get_user_wallet()
+        TransactionService.create_transaction(
+            transaction_type="CREDIT",
+            transaction_status="SUCCESS",
+            amount=Decimal(amount),
+            user=rider_user,
+            reference=transaction_obj.reference,
+            pssp=transaction_obj.pssp,
+            payment_category="CUSTOMER_PAY_RIDER",
+            wallet_id=rider_user_wallet.id,
+        )
+        rider_user_wallet.deposit(order.total_amount - order.fele_amount)
+        track_user_activity(
+            context=dict({"order_id": order.order_id, "amount": float(amount)}),
+            category="ORDER",
+            action="RIDER_RECEIVE_PAYMENT",
+            email=order.rider.user.email if order.rider.user.email else None,
+            phone_number=order.rider.user.phone_number
+            if order.rider.user.phone_number
+            else None,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+        # TODO: check if rider has outstanding and deduct it
 
     @classmethod
     def admin_get_location_price(cls, vehicle_id, start_address, end_address):

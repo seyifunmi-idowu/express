@@ -112,6 +112,31 @@ class BusinessAuth:
                 )
 
     @classmethod
+    def get_business_order_view(cls, user):
+        from order.service import OrderService
+
+        orders = OrderService.get_order_qs(business__user=user)
+        return {"orders": orders}
+
+    @classmethod
+    def get_business_retrieve_order_view(cls, user, order_id):
+        from order.service import OrderService
+
+        order = OrderService.get_order_qs(id=order_id, business__user=user).first()
+        if order is None:
+            pass
+
+        distance = OrderService.get_km_in_word(order.distance)
+        duration = OrderService.get_time_in_word(order.duration)
+        order_timeline = OrderService.get_order_timeline(order)
+        return {
+            "order": order,
+            "distance": distance,
+            "duration": duration,
+            "order_timeline": order_timeline,
+        }
+
+    @classmethod
     def regenerate_secret_key(cls, user, session_id):
         access_token = BusinessService.get_business_user_secret_key(user=user)
         if access_token is not None:

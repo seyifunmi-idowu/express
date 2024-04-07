@@ -123,12 +123,39 @@ class OrderTimelineInline(admin.TabularInline):
         return False
 
 
+# class OrderForFilter(admin.SimpleListFilter):
+#     title = _('Order for')
+#     parameter_name = 'order_for'
+#
+#     def lookups(self, request, model_admin):
+#         from django.utils.translation import gettext_lazy as _
+#         return (
+#             ('customer', _('Customer order')),
+#             ('business', _('Business order')),
+#         )
+#
+#     def queryset(self, request, queryset):
+#         if self.value() == 'customer':
+#             return queryset.filter(customer__isnull=False)
+#         elif self.value() == 'business':
+#             return queryset.filter(business__isnull=False)
+
+
 class OrderAdmin(admin.ModelAdmin):
     form = OrderAdminForm
     inlines = [OrderTimelineInline]
     search_fields = ("order_id", "status")
-    list_display = ("order_id", "customer", "rider", "status", "distance", "created_at")
+    list_display = (
+        "order_id",
+        "customer",
+        "business",
+        "rider",
+        "status",
+        "distance",
+        "created_at",
+    )
     ordering = ["created_at"]
+    list_filter = ("order_by", "status")
     readonly_fields = (
         "customer",
         "rider",
@@ -182,9 +209,10 @@ class OrderAdmin(admin.ModelAdmin):
         return False
 
     def get_queryset(self, request):
-        return self.model.objects.filter(
-            rider__user__state="ACTIVE", customer__user__state="ACTIVE"
-        )
+        order = self.model.objects.exclude(customer__user__state="DELETED")
+        order = order.exclude(rider__user__state="DELETED")
+        order = order.exclude(business__user__state="DELETED")
+        return order
 
     def save_model(self, request, obj, form, change):
         from order.service import OrderService
