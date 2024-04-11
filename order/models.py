@@ -167,13 +167,13 @@ class Order(BaseAbstractModel):
             status="RIDER_PICKED_UP_ORDER"
         ).first()
         if order_timeline:
-            return order_timeline.created_at.strftime("%Y-%B-%d %H:%M:%S")
+            return order_timeline.created_at.strftime("%Y-%m-%d %H:%M:%S")
         return None
 
     def get_delivery_time(self):
         order_timeline = self.order_timeline.filter(status="ORDER_DELIVERED").first()
         if order_timeline:
-            return order_timeline.created_at.strftime("%Y-%B-%d %H:%M:%S")
+            return order_timeline.created_at.strftime("%Y-%m-%d %H:%M:%S")
         return None
 
     def is_business_order(self):
