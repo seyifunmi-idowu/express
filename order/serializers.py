@@ -9,6 +9,17 @@ class RetrieveVehicleSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "note", "file_url")
 
 
+class OrderTimelineSerializer(serializers.ModelSerializer):
+    date = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderTimeline
+        fields = ("status", "proof_url", "reason", "date")
+
+    def get_date(self, obj):
+        return obj.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
+
 class GetCustomerOrderSerializer(serializers.ModelSerializer):
     pickup = serializers.SerializerMethodField()
     delivery = serializers.SerializerMethodField()
@@ -255,7 +266,10 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
         return obj.order_meta_data.get("note_to_driver", "")
 
     def get_timeline(self, obj):
-        return obj.order_timeline
+        from order.service import OrderService
+
+        order_timeline = OrderService.get_order_timeline(obj)
+        return OrderTimelineSerializer(order_timeline, many=True).data
 
     def get_distance(self, obj):
         from order.service import OrderService
@@ -281,7 +295,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
         if rating:
             return {
                 "rating": rating.rating,
-                "created_at": rating.created_at.strftime("%Y-%B-%d %H:%M:%S"),
+                "created_at": rating.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             }
         else:
             return {"rating": None, "created_at": None}
@@ -489,17 +503,6 @@ class RateRiderSerializer(serializers.Serializer):
 
 class CustomerCancelOrder(RiderFailedPickupSerializer):
     pass
-
-
-class OrderTimelineSerializer(serializers.ModelSerializer):
-    date = serializers.SerializerMethodField()
-
-    class Meta:
-        model = OrderTimeline
-        fields = ("status", "proof_url", "reason", "date")
-
-    def get_date(self, obj):
-        return obj.created_at.strftime("%Y-%m-%d %H:%M:%S")
 
 
 class BusinessOrderSerializer(serializers.ModelSerializer):
