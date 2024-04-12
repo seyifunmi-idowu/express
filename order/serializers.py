@@ -281,7 +281,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
         if rating:
             return {
                 "rating": rating.rating,
-                "created_at": rating.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "created_at": rating.created_at.strftime("%Y-%B-%d %H:%M:%S"),
             }
         else:
             return {"rating": None, "created_at": None}
