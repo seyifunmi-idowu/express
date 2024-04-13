@@ -97,7 +97,8 @@ def sign_out(request):
 
 @business_login_required
 def dashboard(request):
-    context = {"view": "Dashboard"}
+    response = BusinessAuth.get_business_dashboard_view(request.user)
+    context = {"view": "Dashboard", **response}
     return render(request, "app/dashboard.html", context)
 
 
@@ -129,7 +130,7 @@ def wallet(request):
     except EmptyPage:
         transactions = paginator.page(paginator.num_pages)
 
-    context = {"view": "Order", "transactions": transactions, **response}
+    context = {"view": "Wallet", "transactions": transactions, **response}
     return render(request, "app/wallet.html", context)
 
 

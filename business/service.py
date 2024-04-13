@@ -1,4 +1,5 @@
 import base64
+from datetime import date
 from decimal import Decimal
 
 from django.contrib import messages
@@ -113,11 +114,41 @@ class BusinessAuth:
                     request, messages.ERROR, e.detail["errors"]["code"][0]
                 )
 
+    #  TODO: From this part below should not be in this class. Move it to BusinessService and test very well.
+    @classmethod
+    def get_business_dashboard_view(cls, user):
+        from order.service import OrderService
+        from wallet.service import TransactionService
+
+        today = date.today()
+        orders = OrderService.get_order_qs(business__user=user).order_by("-created_at")[
+            :10
+        ]
+        total_orders = OrderService.get_order_qs(business__user=user).count()
+        today_orders = (
+            OrderService.get_order_qs(business__user=user)
+            .filter(created_at__date=today)
+            .count()
+        )
+        wallet_balance = user.get_user_wallet().balance
+        transactions = TransactionService.get_user_transaction(user).order_by(
+            "-created_at"
+        )[:10]
+
+        data = {
+            "orders": orders,
+            "total_orders": total_orders,
+            "today_orders": today_orders,
+            "wallet_balance": wallet_balance,
+            "transactions": transactions,
+        }
+        return data
+
     @classmethod
     def get_business_order_view(cls, user):
         from order.service import OrderService
 
-        orders = OrderService.get_order_qs(business__user=user)
+        orders = OrderService.get_order_qs(business__user=user).order_by("-created_at")
         return {"orders": orders}
 
     @classmethod
