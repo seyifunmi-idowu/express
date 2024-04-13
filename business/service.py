@@ -1,4 +1,5 @@
 import base64
+from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth import login
@@ -11,6 +12,7 @@ from authentication.tasks import track_user_activity
 from business.models import Business
 from helpers.encryption import EncryptionClass
 from helpers.exceptions import CustomAPIException, CustomFieldValidationException
+from helpers.paystack_service import PaystackService
 from helpers.token_manager import TokenManager
 
 
@@ -137,6 +139,21 @@ class BusinessAuth:
         }
 
     @classmethod
+    def get_business_wallet_view(cls, user):
+        from wallet.service import CardService, TransactionService, WalletService
+
+        bank_accounts = WalletService.get_user_banks(user)
+        cards = CardService.get_user_cards(user)
+        transactions = TransactionService.get_user_transaction(user)
+        data = {
+            "bank_accounts": bank_accounts,
+            "cards": cards,
+            "transactions": transactions,
+            "wallet_balance": user.get_user_wallet().balance,
+        }
+        return data
+
+    @classmethod
     def regenerate_secret_key(cls, user, session_id):
         access_token = BusinessService.get_business_user_secret_key(user=user)
         if access_token is not None:
@@ -187,6 +204,51 @@ class BusinessService:
             level="SUCCESS",
             session_id=session_id,
         )
+
+    @classmethod
+    def initiate_transaction(cls, user, amount, session_id, callback_url):
+        from wallet.service import TransactionService
+
+        transaction_obj = TransactionService.get_transaction(
+            user=user,
+            amount=Decimal(amount),
+            transaction_type="CREDIT",
+            transaction_status="PENDING",
+            pssp="PAYSTACK",
+        ).first()
+        if transaction_obj:
+            authorization_url = transaction_obj.pssp_meta_data["authorization_url"]
+            return authorization_url
+
+        paystack_response = PaystackService.initialize_payment(
+            user.email, amount, callback_url=callback_url
+        )
+        authorization_url = paystack_response["data"]["authorization_url"]
+        reference = paystack_response["data"]["reference"]
+        transaction_obj = TransactionService.create_transaction(
+            transaction_type="CREDIT",
+            transaction_status="PENDING",
+            amount=Decimal(amount),
+            user=user,
+            reference=reference,
+            pssp="PAYSTACK",
+            payment_category="FUND_WALLET",
+            pssp_meta_data=paystack_response["data"],
+        )
+        activity_data = {
+            "user": user.display_name,
+            "transaction_id": transaction_obj.id,
+            "paystack_response": paystack_response["data"],
+        }
+        track_user_activity(
+            context=activity_data,
+            category="USER_CARD",
+            action="BUSINESS_INITIATE_CARD_TRANSACTION",
+            email=user.email,
+            level="SUCCESS",
+            session_id=session_id,
+        )
+        return authorization_url
 
     @classmethod
     def get_business_user_secret_key(cls, user):

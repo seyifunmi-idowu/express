@@ -1,11 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from authentication.service import AuthService, UserService
 from business.forms import (
     BusinessRegistrationForm,
+    FundWalletForm,
     LoginForm,
     SubmitWebhookUrlForm,
     VerifyEmailForm,
@@ -13,6 +15,8 @@ from business.forms import (
 from business.service import BusinessAuth, BusinessService
 from helpers.db_helpers import generate_session_id
 from helpers.permission_decorator import business_login_required
+from helpers.validators import CustomAPIException
+from wallet.service import CardService
 
 
 def signin(request):
@@ -107,13 +111,26 @@ def order(request):
 @business_login_required
 def view_order(request, order_id):
     response = BusinessAuth.get_business_retrieve_order_view(request.user, order_id)
-    context = {"view": "Order", "order": order, **response}
+    context = {"view": "Order", **response}
     return render(request, "app/view_order.html", context)
 
 
 @business_login_required
 def wallet(request):
-    pass
+    response = BusinessAuth.get_business_wallet_view(request.user)
+    transactions = response.pop("transactions", [])
+
+    paginator = Paginator(transactions, 10)
+    page_number = request.GET.get("page")
+    try:
+        transactions = paginator.page(page_number)
+    except PageNotAnInteger:
+        transactions = paginator.page(1)
+    except EmptyPage:
+        transactions = paginator.page(paginator.num_pages)
+
+    context = {"view": "Order", "transactions": transactions, **response}
+    return render(request, "app/wallet.html", context)
 
 
 @business_login_required
@@ -142,6 +159,41 @@ def settings(request):
         "current_webhook_url": business.webhook_url,
     }
     return render(request, "app/settings.html", context)
+
+
+@business_login_required
+def fund_wallet(request):
+    if request.method == "POST":
+        form = FundWalletForm(request.POST)
+        if form.is_valid():
+            callback_url = request.build_absolute_uri(
+                reverse("business-verify-card-transaction")
+            )
+            response_url = BusinessService.initiate_transaction(
+                request.user,
+                form.cleaned_data.get("amount"),
+                generate_session_id(),
+                callback_url,
+            )
+            return redirect(response_url)
+
+    return redirect(reverse("business-wallet"))
+
+
+def verify_business_card_transaction(request):
+    try:
+        CardService.verify_card_transaction(request.GET)
+    except CustomAPIException as e:
+        messages.add_message(request, messages.ERROR, e)
+    return redirect(reverse("business-wallet"))
+
+
+@business_login_required
+def delete_card(request, card_id):
+    card = CardService.get_user_cards(id=card_id, user=request.user).first()
+    if card:
+        card.delete()
+    return redirect(reverse("business-wallet"))
 
 
 @business_login_required

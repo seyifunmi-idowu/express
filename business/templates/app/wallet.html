@@ -1,295 +1,211 @@
 {% extends 'app/base.html' %}
-
+{% load static %}
 {% block content %}
 
       <div class="row">
-        <div class="col-12">
-          <div class="card mb-4">
-            <div class="card-header pb-0">
-              <h6>Orders table</h6>
+        <div class="col-lg-4">
+          <div class="row">
+            <div class="col-xl-12">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-header mx-4 p-3 text-center">
+                      <div class="icon icon-shape icon-lg bg-gradient-primary shadow text-center border-radius-lg">
+                        <i class="fas fa-credit-card opacity-10"></i>
+                      </div>
+                    </div>
+                    <div class="card-body pt-0 p-3 text-center">
+                      <h6 class="text-center mb-0">Wallet</h6>
+                      <span class="text-xs">Wallet Balance</span>
+                      <hr class="horizontal dark my-3">
+                      <h5 class="mb-0">₦{{ wallet_balance }}</h5>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-header mx-4 p-3 text-center">
+                      <div class="icon icon-shape icon-lg bg-gradient-primary shadow text-center border-radius-lg">
+                        <i class="ni ni-money-coins opacity-10"></i>
+                      </div>
+                    </div>
+                    <div class="card-body pt-0 p-3 text-center">
+                      <form method="POST" action="{% url 'business-fund-wallet' %}">
+                         {% csrf_token %}
+                        <span class="text-xs">Enter amount to fund wallet</span>
+                        <input type="number" class="form-control" placeholder="2000" name="amount" required>
+                        <hr class="horizontal dark my-3">
+                        <button type="submit" class="btn bg-gradient-dark mb-0"><i class="fas fa-plus"></i>&nbsp;&nbsp;Fund card</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="card-body px-0 pt-0 pb-2">
-              <div class="table-responsive p-0">
-                <table class="table align-items-center mb-0">
-                  <thead>
-                    <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Order id</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Rider</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Amounts</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
-                      <th class="text-secondary opacity-7"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  {% for order in orders %}
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">{{ order.order_id }}</h6>
-                            <p class="text-xs text-secondary mb-0">idk yet</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-xs font-weight-bold mb-0">{{ order.rider }}</p>
-                        <p class="text-xs text-secondary mb-0">{{ order.rider.vehicle_plate_number }}</p>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                       <p class="text-sm font-weight-bold mb-0">${{ order.total_amount }}</p>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">{{ order.status }}</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td class="align-middle text-center">
-                        <span class="text-secondary text-xs font-weight-bold">{{ order.created_at }}</span>
-                      </td>
-                      <td class="align-middle">
-                        <a href="javascript:;" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="View order">
-                          View
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="card h-100">
+            <div class="col-md-12 mb-lg-0 mb-4">
+              <div class="card mt-4">
+                <div class="card-header pb-0 p-3">
+                  <div class="row">
+                    <div class="col-6 d-flex align-items-center">
+                      <h6 class="mb-0">Payment Method</h6>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body p-3">
+                  <div class="row">
+                    {% for card in cards %}
+                    <div class="col-md-6">
+                      <div class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row">
+                        {% if card.brand == "visa" %}
+                        <img class="w-10 me-3 mb-0" src="{% static 'assets/img/logos/visa.png' %}" alt="{{ card.brand }}">
+                        {% elif card.brand == "mastercard" %}
+                        <img class="w-10 me-3 mb-0" src="{% static 'assets/img/logos/mastercard.png' %}" alt="{{ card.brand }}">
+                        {% else %}
+                        <img class="w-10 me-3 mb-0" src="{% static 'assets/img/logos/mastercard.png' %}" alt="{{ card.brand }}">
+                        {% endif %}
+                        <h6 class="mb-0">****&nbsp;&nbsp;&nbsp;****&nbsp;&nbsp;&nbsp;****&nbsp;&nbsp;&nbsp;{{ card.last_4 }}</h6>
+                        <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'business-delete-card' card.id %}">
+                          <i class="far fa-trash-alt me-2"></i>Delete
                         </a>
-                      </td>
-                    </tr>
-                  {% endfor %}
-                  </tbody>
-                </table>
+
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
       <div class="row">
-        <div class="col-12">
-          <div class="card mb-4">
-            <div class="card-header pb-0">
-              <h6>Projects table</h6>
+        <div class="col-md-7 mt-4">
+          <div class="card h-100 mb-4">
+            <div class="card-header pb-0 px-3">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="mb-0">Your Transactions</h6>
+                </div>
+                <div class="card-header pb-0 p-3">
             </div>
-            <div class="card-body px-0 pt-0 pb-2">
-              <div class="table-responsive p-0">
-                <table class="table align-items-center justify-content-center mb-0">
-                  <thead>
-                    <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Project</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Budget</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder text-center opacity-7 ps-2">Completion</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="../assets/img/small-logos/logo-spotify.svg" class="avatar avatar-sm rounded-circle me-2" alt="spotify">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Spotify</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$2,500</p>
-                      </td>
-                      <td>
-                        <span class="badge badge-sm bg-gradient-success">Online</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">60%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="../assets/img/small-logos/logo-invision.svg" class="avatar avatar-sm rounded-circle me-2" alt="invision">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Invision</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$5,000</p>
-                      </td>
-                      <td>
-                        <span class="badge badge-sm bg-gradient-secondary">Offline</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">100%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="../assets/img/small-logos/logo-jira.svg" class="avatar avatar-sm rounded-circle me-2" alt="jira">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Jira</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$3,400</p>
-                      </td>
-                      <td>
-                        <span class="badge badge-sm bg-gradient-danger">Offline</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">30%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-danger" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="30" style="width: 30%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="../assets/img/small-logos/logo-slack.svg" class="avatar avatar-sm rounded-circle me-2" alt="slack">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Slack</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$1,000</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">canceled</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">0%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0" style="width: 0%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="../assets/img/small-logos/logo-webdev.svg" class="avatar avatar-sm rounded-circle me-2" alt="webdev">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Webdev</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$14,000</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">working</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">80%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="80" style="width: 80%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="../assets/img/small-logos/logo-xd.svg" class="avatar avatar-sm rounded-circle me-2" alt="xd">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Adobe XD</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$2,300</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">done</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">100%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
               </div>
+            </div>
+            <div class="card-body pt-4 p-3">
+              <h6 class="text-uppercase text-body text-xs font-weight-bolder mb-3">Newest</h6>
+              <ul class="list-group">
+
+                {% for transaction in transactions %}
+                <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+                  <div class="d-flex align-items-center">
+                     {% if transaction.transaction_status == "SUCCESS" %}
+                    <button class="btn btn-icon-only btn-rounded btn-outline-success mb-0 me-3 btn-sm d-flex align-items-center justify-content-center">
+                      {% if transaction.transaction_type == "CREDIT" %}
+                      <i class="fas fa-arrow-up"></i>
+                      {% else %}
+                      <i class="fas fa-arrow-down"></i>
+                      {% endif %}
+                    </button>
+                      {% elif transaction.transaction_status == "FAILED" %}
+                    <button class="btn btn-icon-only btn-rounded btn-outline-danger mb-0 me-3 btn-sm d-flex align-items-center justify-content-center">
+                      {% if transaction.transaction_type == "CREDIT" %}
+                      <i class="fas fa-arrow-up"></i>
+                      {% else %}
+                      <i class="fas fa-arrow-down"></i>
+                      {% endif %}
+                    </button>
+                    {% elif transaction.transaction_status == "PENDING" %}
+                    <button class="btn btn-icon-only btn-rounded btn-outline-dark mb-0 me-3 btn-sm d-flex align-items-center justify-content-center">
+                      {% if transaction.transaction_type == "CREDIT" %}
+                      <i class="fas fa-arrow-up"></i>
+                      {% else %}
+                      <i class="fas fa-arrow-down"></i>
+                      {% endif %}
+                    </button>
+                     {% endif %}
+                    <div class="d-flex flex-column">
+                      <h6 class="mb-1 text-dark text-sm">{{ transaction.reference }}</h6>
+                      <span class="text-xs">{{ transaction.created_at }}</span>
+                    </div>
+                  </div>
+
+                  {% if transaction.transaction_status == "SUCCESS" %}
+                    <div class="d-flex align-items-center text-success text-gradient text-sm font-weight-bold">
+                        {{ transaction.transaction_status }}
+                      <button class="btn btn-link text-dark text-sm mb-0 px-0 ms-4">{% if transaction.transaction_type == "CREDIT" %} + {% else %} - {% endif %}
+                        ₦{{ transaction.amount }}</button>
+                    </div>
+                  {% elif transaction.transaction_status == "PENDING" %}
+                    <div class="d-flex align-items-center text-dark text-gradient text-sm font-weight-bold">
+                        {{ transaction.transaction_status }}
+                      <button class="btn btn-link text-dark text-sm mb-0 px-0 ms-4"> {% if transaction.transaction_type == "CREDIT" %} + {% else %} - {% endif %}
+                        ₦{{ transaction.amount }}</button>
+                    </div>
+                  {% elif transaction.transaction_status == "FAILED" %}
+                    <div class="d-flex align-items-center text-danger text-gradient text-sm font-weight-bold">
+                        {{ transaction.transaction_status }}
+                      <button class="btn btn-link text-dark text-sm mb-0 px-0 ms-4"> {% if transaction.transaction_type == "CREDIT" %} + {% else %} - {% endif %}
+                        ₦{{ transaction.amount }}</button>
+                    </div>
+                  {% endif %}
+                </li>
+                {% endfor %}
+
+              </ul>
+                  <ul class="pagination justify-content-center mt-4">
+                    {% if transactions.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">Ft</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transactions.previous_page_number }}">Pr</a>
+                    </li>
+                    {% endif %}
+                    {% for num in transactions.paginator.page_range %}
+                    <li class="page-item {% if num == transactions.number %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if transactions.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transactions.next_page_number }}">Nx</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transactions.paginator.num_pages }}">Lt</a>
+                    </li>
+                    {% endif %}
+                </ul>
             </div>
           </div>
         </div>
+<!--        <div class="col-md-5 mt-4">-->
+<!--          <div class="card">-->
+<!--            <div class="card-header pb-0 px-3">-->
+<!--              <h6 class="mb-0">Bank Accounts</h6>-->
+<!--            </div>-->
+<!--            <div class="card-body pt-4 p-3">-->
+<!--              <ul class="list-group">-->
+<!--                {% for bank_account in bank_accounts %}-->
+<!--                <li class="list-group-item border-0 d-flex p-4 mb-2 bg-gray-100 border-radius-lg">-->
+<!--                  <div class="d-flex flex-column">-->
+<!--                    <h6 class="mb-3 text-sm">{{ bank_account.account_name }}</h6>-->
+<!--                    <span class="mb-2 text-xs">Bank Name: <span class="text-dark font-weight-bold ms-sm-2">{{ bank_account.bank_name }}</span></span>-->
+<!--                    <span class="text-xs">Account Number: <span class="text-dark ms-sm-2 font-weight-bold">{{ bank_account.account_number }}</span></span>-->
+<!--                  </div>-->
+<!--                  <div class="ms-auto text-end">-->
+<!--                    <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="javascript:;"><i class="far fa-trash-alt me-2"></i>Delete</a>-->
+<!--                    <a class="btn btn-link text-dark px-3 mb-0" href="javascript:;"><i class="fas fa-pencil-alt text-dark me-2" aria-hidden="true"></i>Edit</a>-->
+<!--                  </div>-->
+<!--                </li>-->
+<!--                {% endfor %}-->
+<!--              </ul>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
       </div>
+
 
 {% endblock %}

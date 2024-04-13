@@ -10,8 +10,16 @@ urlpatterns = [
     path("register/resend-otp", views.resend_otp, name="resend-otp"),
     path("dashboard", views.dashboard, name="business-dashboard"),
     path("order", views.order, name="business-order"),
-    path("order/<str:order_id>", views.view_order, name="view_order"),
+    path("order/<str:order_id>", views.view_order, name="business-view-order"),
+    path("wallet", views.wallet, name="business-wallet"),
+    path(
+        "paystack/callback",
+        views.verify_business_card_transaction,
+        name="business-verify-card-transaction",
+    ),
     path("settings", views.settings, name="business-settings"),
+    path("fund-wallet", views.fund_wallet, name="business-fund-wallet"),
+    path("delete/card/<str:card_id>", views.delete_card, name="business-delete-card"),
     path(
         "regenerate-secret-key",
         views.regenerate_secret_key,

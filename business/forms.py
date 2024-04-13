@@ -61,3 +61,7 @@ class LoginForm(forms.Form):
 
 class SubmitWebhookUrlForm(forms.Form):
     webhook_url = forms.URLField(required=True, validators=[FormValidator.validate_url])
+
+
+class FundWalletForm(forms.Form):
+    amount = forms.IntegerField(required=True)

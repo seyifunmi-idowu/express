@@ -301,6 +301,11 @@ class CardService:
                         last_name=data["customer"]["last_name"],
                         customer_code=data["customer"]["customer_code"],
                     )
+
+        elif response and response["data"]["status"] == "failed":
+            transaction.transaction_status = "FAILED"
+            transaction.save()
+
         return True
 
     @classmethod
