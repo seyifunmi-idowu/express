@@ -260,7 +260,12 @@ class PaystackViewset(viewsets.ViewSet):
         event = request_data.get("event")
         if event == "charge.success":
             data = {"trxref": request_data.get("data", {}).get("reference")}
-            CardService.verify_card_transaction(data)
+            try:
+                CardService.verify_card_transaction(data)
+            except CustomAPIException as e:
+                return ResponseManager.handle_response(
+                    data={}, status=status.HTTP_200_OK, message=str(e)
+                )
         return ResponseManager.handle_response(
             data={}, status=status.HTTP_200_OK, message="Webhook successful"
         )
