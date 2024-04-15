@@ -20,7 +20,7 @@ from wallet.service import CardService
 
 
 def signin(request):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and request.user.user_type == "BUSINESS":
         return redirect(reverse("business-dashboard"))
 
     if request.method == "POST":
@@ -39,9 +39,6 @@ def signin(request):
 
 
 def verify_email(request):
-    if request.user.is_authenticated:
-        return redirect(reverse("business-dashboard"))
-
     email = request.GET.get("email", "")
     if request.method == "POST":
         form = VerifyEmailForm(request.POST)
@@ -60,7 +57,7 @@ def verify_email(request):
 def register(request):
     """ Add a new user """
 
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and request.user.user_type == "BUSINESS":
         return redirect(reverse("business-dashboard"))
 
     if request.method == "POST":
