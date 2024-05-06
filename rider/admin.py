@@ -80,7 +80,7 @@ class RiderAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         action = form.data.get("action")
-        decline_reason = form.data.get("decline_reason", "")
+        action_reason = form.data.get("action_reason", "")
 
         if action == "APPROVE_RIDER":
             status_updates = obj.status_updates
@@ -101,7 +101,7 @@ class RiderAdmin(admin.ModelAdmin):
             status_updates.append(
                 {
                     "status": "DISAPPROVED",
-                    "decline_reason": decline_reason,
+                    "decline_reason": action_reason,
                     "date": str(timezone.now()),
                 }
             )
@@ -112,7 +112,7 @@ class RiderAdmin(admin.ModelAdmin):
                 "We Could Not Approve Your Documents",
                 context={
                     "display_name": obj.display_name,
-                    "decline_reason": decline_reason,
+                    "decline_reason": action_reason,
                 },
                 template="rider_declined.html",
             )
@@ -122,13 +122,22 @@ class RiderAdmin(admin.ModelAdmin):
             status_updates.append(
                 {
                     "status": "SUSPENDED",
-                    "decline_reason": decline_reason,
+                    "suspend_reason": action_reason,
                     "date": str(timezone.now()),
                 }
             )
             obj.status_updates = status_updates
             obj.status = "SUSPENDED"
             obj.save()
+            email_manager = EmailManager(
+                "Account Suspension",
+                context={
+                    "display_name": obj.display_name,
+                    "suspend_reason": action_reason,
+                },
+                template="rider_suspended.html",
+            )
+            email_manager.send([obj.user.email])
 
     def has_add_permission(self, request, obj=None):
         return False

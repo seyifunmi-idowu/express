@@ -17,7 +17,11 @@ class RiderActionForm(forms.ModelForm):
         ("OTUKPO", "OTUKPO"),
     )
     action = forms.ChoiceField(choices=ACTION_CHOICES, required=False)
-    decline_reason = forms.CharField(widget=forms.Textarea, required=False)
+    action_reason = forms.CharField(
+        widget=forms.Textarea,
+        required=False,
+        help_text="Please provide the reason for approving, disapproving, or suspending the rider. For example, explain why you are approving the rider's application, or specify the violation leading to suspension.",
+    )
     city = forms.ChoiceField(choices=CITY_CHOICES)
 
     class Meta:
