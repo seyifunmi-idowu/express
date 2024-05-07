@@ -4,7 +4,14 @@ from django.utils.html import format_html
 
 from notification.service import EmailManager
 from rider.forms import RiderActionForm
-from rider.models import ApprovedRider, Rider, RiderDocument, UnApprovedRider
+from rider.models import (
+    ApprovedRider,
+    Commission,
+    Rider,
+    RiderCommission,
+    RiderDocument,
+    UnApprovedRider,
+)
 from rider.service import RiderService
 
 
@@ -165,6 +172,31 @@ class UnApprovedRiderAdmin(RiderAdmin):
         )
 
 
+class RiderCommissionInline(admin.TabularInline):
+    model = RiderCommission
+    extra = 0
+    exclude = ("state", "created_by", "deleted_by", "updated_by", "deleted_at")
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "rider":  # Assuming 'rider' is the ForeignKey field
+            kwargs["queryset"] = Rider.objects.exclude(user__state="DELETED")
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        return self.model.objects.exclude(rider__user__state="DELETED").order_by(
+            "-created_at"
+        )
+
+
+class CommissionAdmin(admin.ModelAdmin):
+    search_fields = ("name", "note", "commission")
+    list_display = ("name", "commission")
+    ordering = ("-created_at",)
+    exclude = ("state", "created_by", "deleted_by", "updated_by", "deleted_at")
+    inlines = [RiderCommissionInline]
+
+
 admin.site.register(ApprovedRider, ApprovedRiderAdmin)
 admin.site.register(UnApprovedRider, UnApprovedRiderAdmin)
 admin.site.register(Rider, RiderAdmin)
+admin.site.register(Commission, CommissionAdmin)

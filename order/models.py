@@ -7,7 +7,7 @@ class Vehicle(BaseAbstractModel):
     STATUS = [("ACTIVE", "ACTIVE"), ("INACTIVE", "INACTIVE")]
     name = models.CharField(max_length=50, verbose_name="vehicle name")
     status = models.CharField(
-        max_length=30, choices=STATUS, default="UNAPPROVED", verbose_name="status"
+        max_length=30, choices=STATUS, default="INACTIVE", verbose_name="status"
     )
     note = models.CharField(
         max_length=550, verbose_name="vehicle note", null=True, blank=True

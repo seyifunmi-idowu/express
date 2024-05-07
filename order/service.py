@@ -19,7 +19,7 @@ from helpers.s3_uploader import S3Uploader
 from helpers.webhook import FeleWebhook
 from notification.service import NotificationService
 from order.models import Address, Order, OrderTimeline, Vehicle
-from rider.models import FavoriteRider, RiderRating
+from rider.models import FavoriteRider, RiderCommission, RiderRating
 from rider.service import RiderService
 from wallet.service import CardService, TransactionService
 
@@ -276,9 +276,10 @@ class OrderService:
     def save_address(cls, customer, data):
         Address.objects.create(
             customer=customer,
-            latitude=data.get("latitude"),
-            longitude=data.get("longitude"),
-            formatted_address=data.get("address"),
+            latitude=data.pop("latitude"),
+            longitude=data.pop("longitude"),
+            formatted_address=data.pop("address"),
+            meta_data=data,
         )
 
     @classmethod
@@ -1062,11 +1063,16 @@ class OrderService:
     @classmethod
     def credit_rider(cls, order, transaction_obj, session_id):
         amount = transaction_obj.amount
+        rider_commission = RiderCommission.objects.filter(rider=order.rider).latest()
+        if rider_commission:
+            charge = settings.FELE_CHARGE
+        else:
+            charge = settings.FELE_CHARGE
 
         cls.add_order_timeline_entry(order, "ORDER_COMPLETED")
         order.paid = True
         order.status = "ORDER_COMPLETED"
-        order.fele_amount = amount * Decimal(settings.FELE_CHARGE / 100)
+        order.fele_amount = amount * Decimal(charge / 100)
         order.paid_fele = True
         order.save()
 

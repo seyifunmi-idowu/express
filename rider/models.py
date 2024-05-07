@@ -148,32 +148,32 @@ class UnApprovedRider(Rider):
         verbose_name = "Rider (Unapproved)"
 
 
-class Guarantor(BaseAbstractModel):
-    """
-    Provider Guarantor Model
-    """
-
-    rider = models.ForeignKey(Rider, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=350, verbose_name="full name")
-    address = models.CharField(max_length=550, verbose_name="address")
-    email = models.CharField(max_length=100, verbose_name="Email")
-    phone_number = models.CharField(max_length=20, verbose_name="phone number")
-    relationship = models.CharField(
-        max_length=100, verbose_name="relationship with the provider"
-    )
-    contact_mode = models.CharField(
-        max_length=100, verbose_name="best mode to contact the reference"
-    )
-    guarantor_letter = models.CharField(max_length=550, verbose_name="address")
-    verified = models.BooleanField(default=False, verbose_name="Is reference verified?")
-
-    def __str__(self):
-        return f"{self.rider.display_name}"
-
-    class Meta:
-        db_table = "guarantor"
-        verbose_name = "guarantor"
-        verbose_name_plural = "guarantor"
+# class Guarantor(BaseAbstractModel):
+#     """
+#     Guarantor Model
+#     """
+#
+#     rider = models.ForeignKey(Rider, on_delete=models.CASCADE)
+#     full_name = models.CharField(max_length=350, verbose_name="full name")
+#     address = models.CharField(max_length=550, verbose_name="address")
+#     email = models.CharField(max_length=100, verbose_name="Email")
+#     phone_number = models.CharField(max_length=20, verbose_name="phone number")
+#     relationship = models.CharField(
+#         max_length=100, verbose_name="relationship with the provider"
+#     )
+#     contact_mode = models.CharField(
+#         max_length=100, verbose_name="best mode to contact the reference"
+#     )
+#     guarantor_letter = models.CharField(max_length=550, verbose_name="address")
+#     verified = models.BooleanField(default=False, verbose_name="Is reference verified?")
+#
+#     def __str__(self):
+#         return f"{self.rider.display_name}"
+#
+#     class Meta:
+#         db_table = "guarantor"
+#         verbose_name = "guarantor"
+#         verbose_name_plural = "guarantor"
 
 
 class RiderDocument(BaseAbstractModel):
@@ -278,3 +278,50 @@ class FavoriteRider(BaseAbstractModel):
         db_table = "favourite_rider"
         verbose_name = "Favorite Rider"
         verbose_name_plural = "Favorite Riders"
+
+
+class Commission(BaseAbstractModel):
+    name = models.CharField(max_length=50, verbose_name="Commission name")
+    note = models.CharField(
+        max_length=550, verbose_name="Commission note", null=True, blank=True
+    )
+    commission = models.IntegerField(
+        help_text="The rider's commission in percentage. e.g 30%"
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "commission"
+        verbose_name = "Commission"
+        verbose_name_plural = "Commissions"
+
+
+class RiderCommission(BaseAbstractModel):
+
+    rider = models.ForeignKey(
+        "rider.Rider",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="rider",
+        related_name="commission_rider",
+    )
+    commission = models.ForeignKey(
+        Commission,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="commission",
+        related_name="rider_commissions",
+    )
+
+    def __str__(self):
+        return self.commission
+
+    class Meta:
+        get_latest_by = "created_at"
+        db_table = "rider_commission"
+        verbose_name = "rider to commission"
+        verbose_name_plural = "Rider to Commissions"
