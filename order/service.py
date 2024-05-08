@@ -1065,10 +1065,13 @@ class OrderService:
         amount = transaction_obj.amount
         rider_commission = RiderCommission.objects.filter(rider=order.rider).latest()
         if rider_commission:
-            charge = settings.FELE_CHARGE
+            charge = 100 - int(rider_commission.commission.commission)
         else:
             charge = settings.FELE_CHARGE
 
+        print(charge)
+        print("charge =============")
+        raise ("fail safe")
         cls.add_order_timeline_entry(order, "ORDER_COMPLETED")
         order.paid = True
         order.status = "ORDER_COMPLETED"

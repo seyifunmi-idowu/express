@@ -184,6 +184,7 @@ class CustomerOrderViewset(viewsets.ViewSet):
     @action(detail=False, methods=["get"], url_path="(?P<order_id>[a-z,A-Z,0-9]+)")
     def get_order(self, request, order_id):
         order = OrderService.get_order(order_id, customer__user=request.user)
+
         return ResponseManager.handle_response(
             data=CustomerOrderSerializer(order).data,
             status=status.HTTP_200_OK,

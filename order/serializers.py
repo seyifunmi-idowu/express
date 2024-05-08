@@ -30,7 +30,11 @@ class GetCustomerOrderSerializer(serializers.ModelSerializer):
         fields = ("order_id", "status", "pickup", "delivery", "rider")
 
     def get_pickup(self, obj):
-        return {"address": obj.pickup_location, "time": obj.get_pick_up_time()}
+        return {
+            "address": obj.pickup_location,
+            "time": obj.get_pick_up_time(),
+            "name": obj.pickup_name,
+        }
 
     def get_rider(self, obj):
         if obj.rider:
@@ -49,7 +53,11 @@ class GetCustomerOrderSerializer(serializers.ModelSerializer):
         return None
 
     def get_delivery(self, obj):
-        return {"address": obj.delivery_location, "time": obj.get_delivery_time()}
+        return {
+            "address": obj.delivery_location,
+            "time": obj.get_delivery_time(),
+            "name": obj.delivery_name,
+        }
 
 
 class OrderHistorySerializer(serializers.ModelSerializer):
@@ -69,13 +77,13 @@ class OrderHistorySerializer(serializers.ModelSerializer):
         )
 
     def get_pickup(self, obj):
-        return {"address": obj.pickup_location}
+        return {"address": obj.pickup_location, "name": obj.pickup_name}
 
     def get_created_at(self, obj):
         return obj.created_at.strftime("%Y-%B-%d %H:%M:%S")
 
     def get_delivery(self, obj):
-        return {"address": obj.delivery_location}
+        return {"address": obj.delivery_location, "name": obj.delivery_name}
 
 
 class GetOrderSerializer(serializers.ModelSerializer):
@@ -98,13 +106,13 @@ class GetOrderSerializer(serializers.ModelSerializer):
         )
 
     def get_pickup(self, obj):
-        return {"address": obj.pickup_location}
+        return {"address": obj.pickup_location, "name": obj.pickup_name}
 
     def get_created_at(self, obj):
         return obj.created_at.strftime("%Y-%m-%d %H:%M:%S")
 
     def get_delivery(self, obj):
-        return {"address": obj.delivery_location}
+        return {"address": obj.delivery_location, "name": obj.delivery_name}
 
     def get_assigned_by_customer(self, obj):
         return obj.status == "PENDING_RIDER_CONFIRMATION"
@@ -162,6 +170,7 @@ class GetCurrentOrder(GetOrderSerializer):
             "contact": obj.pickup_number,
             "contact_name": obj.pickup_contact_name,
             "time": obj.get_pick_up_time(),
+            "name": obj.pickup_name,
         }
 
     def get_delivery(self, obj):
@@ -177,6 +186,7 @@ class GetCurrentOrder(GetOrderSerializer):
             "contact": obj.delivery_number,
             "contact_name": obj.delivery_contact_name,
             "time": obj.get_delivery_time(),
+            "name": obj.delivery_name,
         }
 
     def get_distance(self, obj):
@@ -235,6 +245,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
             "address": obj.pickup_location,
             "contact_name": obj.pickup_contact_name,
             "contact_phone_number": obj.pickup_number,
+            "name": obj.pickup_name,
         }
 
     def get_delivery(self, obj):
@@ -244,6 +255,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
             "address": obj.delivery_location,
             "contact_name": obj.delivery_contact_name,
             "contact_phone_number": obj.delivery_number,
+            "name": obj.delivery_name,
         }
 
     def get_stopover(self, obj):
@@ -358,6 +370,7 @@ class RiderOrderSerializer(serializers.ModelSerializer):
             "contact_phone_number": obj.pickup_number,
             "contact_name": obj.pickup_contact_name,
             "time": obj.get_pick_up_time(),
+            "name": obj.pickup_name,
         }
 
     def get_delivery(self, obj):
@@ -371,6 +384,7 @@ class RiderOrderSerializer(serializers.ModelSerializer):
             "contact_phone_number": obj.delivery_number,
             "contact_name": obj.delivery_contact_name,
             "time": obj.get_delivery_time(),
+            "name": obj.delivery_name,
         }
 
     def get_stopover(self, obj):

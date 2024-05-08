@@ -38,10 +38,12 @@ GET_ALL_ORDER = {
                 "pickup": {
                     "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
                     "time": "2024-02-05 09:48:12",
+                    "name": "King's Celia Hotels And Suites Jibowu Lagos",
                 },
                 "delivery": {
                     "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
                     "time": "2024-02-05 09:50:05",
+                    "name": "King's Celia Hotels And Suites Jibowu Lagos",
                 },
                 "rider": {"name": "Messi Messi", "contact": "+2348105474514"},
             },
@@ -51,10 +53,12 @@ GET_ALL_ORDER = {
                 "pickup": {
                     "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
                     "time": None,
+                    "name": "King's Celia Hotels And Suites Jibowu Lagos",
                 },
                 "delivery": {
                     "address": "34 Bajulaye Rd, Igbobi, Lagos 102216, Lagos, Nigeria",
                     "time": None,
+                    "name": "King's Celia Hotels And Suites Jibowu Lagos",
                 },
                 "rider": {"name": None, "contact": None},
             },
@@ -78,6 +82,7 @@ GET_ORDER_HISTORY_SUCCESS = {
                     "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria"
                 },
                 "created_at": "2024-February-04 18:39:17",
+                "name": "7 Fola Osibo Rd",
             },
             {
                 "order_id": "iwcyiop9kp",
@@ -90,6 +95,7 @@ GET_ORDER_HISTORY_SUCCESS = {
                     "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria"
                 },
                 "created_at": "2024-February-04 18:47:11",
+                "name": "King's Celia Hotels And Suites Jibowu Lagos",
             },
         ],
     }
@@ -120,6 +126,7 @@ GET_CUSTOMER_ORDER_SUCCESS = {
                 "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
                 "contact_name": None,
                 "contact_phone_number": None,
+                "name": "King's Celia Hotels And Suites Jibowu Lagos",
             },
             "delivery": {
                 "latitude": "6.5702086",
@@ -127,6 +134,7 @@ GET_CUSTOMER_ORDER_SUCCESS = {
                 "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
                 "contact_name": None,
                 "contact_phone_number": None,
+                "name": "7 Fola Osibo Rd",
             },
             "stopover": [
                 {
@@ -181,6 +189,7 @@ CUSTOMER_ORDER_RESPONSE = {
         "address": "2 Church St, Abule Egba, Lagos 102213, Lagos, Nigeria",
         "contact_name": "Tolu",
         "contact_phone_number": "+23412345678",
+        "name": "7 Fola Osibo Rd",
     },
     "delivery": {
         "latitude": "6.5702086",
@@ -188,6 +197,7 @@ CUSTOMER_ORDER_RESPONSE = {
         "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
         "contact_name": "John",
         "contact_phone_number": "+23412345678",
+        "name": "King's Celia Hotels And Suites Jibowu Lagos",
     },
     "stopover": [
         {
@@ -239,6 +249,7 @@ RIDER_ORDER_RESPONSE = {
             "contact_name": "Tolu",
             "contact_phone_number": "+23412345678",
             "time": "2024-02-05 09:48:12",
+            "name": "King's Celia Hotels And Suites Jibowu Lagos",
         },
         "delivery": {
             "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
@@ -249,6 +260,7 @@ RIDER_ORDER_RESPONSE = {
             "contact_name": "Tolu",
             "contact_phone_number": "+23412345678",
             "time": "2024-02-05 09:50:05",
+            "name": "King's Celia Hotels And Suites Jibowu Lagos",
         },
         "stopover": [
             {
@@ -381,6 +393,7 @@ GET_CURRENT_ORDER_SUCCESS_RESPONSE = {
                     "contact": "+2348192635372",
                     "contact_name": None,
                     "time": None,
+                    "name": "King's Celia Hotels And Suites Jibowu Lagos",
                 },
                 "delivery": {
                     "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria",
@@ -391,6 +404,7 @@ GET_CURRENT_ORDER_SUCCESS_RESPONSE = {
                     "contact": "+2348192635372",
                     "contact_name": None,
                     "time": None,
+                    "name": "7 Fola Osibo Rd",
                 },
                 "total_amount": "4851.41",
                 "payment_method": None,
@@ -413,6 +427,7 @@ GET_CURRENT_ORDER_SUCCESS_RESPONSE = {
                     "contact": "+2348192635372",
                     "contact_name": None,
                     "time": None,
+                    "name": "7 Fola Osibo Rd",
                 },
                 "delivery": {
                     "address": "24 Olorunkemi Street, Bariga, Lagos 102216, Lagos, Nigeria",
@@ -423,6 +438,7 @@ GET_CURRENT_ORDER_SUCCESS_RESPONSE = {
                     "contact": "+2348192635372",
                     "contact_name": "John Doe",
                     "time": None,
+                    "name": "King's Celia Hotels And Suites Jibowu Lagos",
                 },
                 "total_amount": "4851.41",
                 "payment_method": "CASH",
