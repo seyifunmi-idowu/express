@@ -318,7 +318,7 @@ class RiderCommission(BaseAbstractModel):
     )
 
     def __str__(self):
-        return self.commission
+        return self.commission.name
 
     class Meta:
         get_latest_by = "created_at"
