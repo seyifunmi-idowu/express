@@ -884,10 +884,16 @@ class OrderService:
     @classmethod
     def rider_received_payment(cls, order_id, user, session_id):
         order = cls.get_order(order_id, rider__user=user)
+        rider_commission = RiderCommission.objects.filter(rider=order.rider).latest()
+        if rider_commission:
+            charge = 100 - int(rider_commission.commission.commission)
+        else:
+            charge = settings.FELE_CHARGE
+
         cls.add_order_timeline_entry(order, "ORDER_COMPLETED")
         order.paid = True
         order.status = "ORDER_COMPLETED"
-        order.fele_amount = order.total_amount * Decimal(settings.FELE_CHARGE / 100)
+        order.fele_amount = order.total_amount * Decimal(charge / 100)
         order.paid_fele = True
         order.save()
         rider_user = order.rider.user
@@ -1069,9 +1075,6 @@ class OrderService:
         else:
             charge = settings.FELE_CHARGE
 
-        print(charge)
-        print("charge =============")
-        raise ("fail safe")
         cls.add_order_timeline_entry(order, "ORDER_COMPLETED")
         order.paid = True
         order.status = "ORDER_COMPLETED"
