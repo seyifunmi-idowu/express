@@ -154,7 +154,7 @@ class OrderAdmin(admin.ModelAdmin):
         "distance",
         "created_at",
     )
-    ordering = ["created_at"]
+    ordering = ["-created_at"]
     list_filter = ("order_by", "status")
     readonly_fields = (
         "customer",
