@@ -117,6 +117,9 @@ area_codes = {
 class NigerianPhone:
     def __init__(self, line):
         self.line = re.sub("[^0-9]", "", str(line))
+        if self.line.startswith("2340"):
+            # Remove the character at index 3
+            self.line = self.line[:3] + self.line[4:]
         lists = []
         for key, value in prefixes.items():
             lists.append(value)
