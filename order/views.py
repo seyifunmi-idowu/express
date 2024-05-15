@@ -436,7 +436,7 @@ class RiderOrderViewset(viewsets.ViewSet):
     def get_new_order(self, request):
         orders = OrderService.get_new_order(user=request.user)
         return ResponseManager.handle_response(
-            data=GetOrderSerializer(orders, many=True).data,
+            data=GetCurrentOrder(orders, many=True).data,
             status=status.HTTP_200_OK,
             message="Order Information",
         )
