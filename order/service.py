@@ -555,7 +555,7 @@ class OrderService:
         )
 
         title = f"New order request #{order.order_id}"
-        message = f"New customer order. Pick up: {order.pickup_location}."
+        message = f"New customer order. Pick up: {order.pickup_name}."
         NotificationService.send_collective_push_notification(
             on_duty_users, title, message
         )
@@ -746,7 +746,7 @@ class OrderService:
         order.save()
         if order.is_customer_order():
             title = f"Rider arrived at pickup: #{order_id}"
-            message = f"Your rider {order.rider.display_name}, is at pickup location: {order.pickup_location}"
+            message = f"Your rider {order.rider.display_name}, is at pickup location: {order.pickup_name}"
             NotificationService.send_push_notification(
                 order.customer.user, title, message
             )
@@ -830,7 +830,7 @@ class OrderService:
         order.save()
         if order.is_customer_order():
             title = f"Rider at drop off: #{order_id}"
-            message = f"Your rider {order.rider.display_name}, is at drop off point: {order.delivery_location}"
+            message = f"Your rider {order.rider.display_name}, is at drop off point: {order.delivery_name}"
             NotificationService.send_push_notification(
                 order.customer.user, title, message
             )
