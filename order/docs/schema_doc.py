@@ -414,6 +414,7 @@ GET_CURRENT_ORDER_SUCCESS_RESPONSE = {
                 "created_at": "2024-02-04 18:47:11",
                 "contact": {"contact": "+2348192635372", "destination": "pickup"},
                 "note_to_rider": "",
+                "order_by": "Apple",
             },
             {
                 "order_id": "2nvdrcz756",
@@ -448,6 +449,7 @@ GET_CURRENT_ORDER_SUCCESS_RESPONSE = {
                 "created_at": "2024-02-05 22:41:05",
                 "contact": {"contact": "+2348192635372", "destination": "pickup"},
                 "note_to_rider": "please be fast ooooo",
+                "order_by": "Chowdeck",
             },
         ],
         "message": "Order Information",

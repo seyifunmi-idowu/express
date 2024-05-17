@@ -29,6 +29,10 @@ class Business(BaseAbstractModel):
     def __str__(self):
         return self.business_name
 
+    @property
+    def display_name(self):
+        return self.business_name if self.business_name else self.user.display_name
+
     class Meta:
         db_table = "business"
         verbose_name = "business"

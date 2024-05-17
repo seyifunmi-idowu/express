@@ -430,7 +430,7 @@ class RiderOrderViewset(viewsets.ViewSet):
         operation_description="Get new orders",
         operation_summary="Get new orders",
         tags=["Rider-Order"],
-        responses=schema_doc.GET_ALL_ORDER_RESPONSE,
+        responses=schema_doc.GET_CURRENT_ORDER_RESPONSE,
     )
     @action(detail=False, methods=["get"], url_path="new")
     def get_new_order(self, request):

@@ -121,6 +121,7 @@ class GetOrderSerializer(serializers.ModelSerializer):
 class GetCurrentOrder(GetOrderSerializer):
     contact = serializers.SerializerMethodField()
     note_to_rider = serializers.SerializerMethodField()
+    order_by = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -137,6 +138,7 @@ class GetCurrentOrder(GetOrderSerializer):
             "created_at",
             "contact",
             "note_to_rider",
+            "order_by",
         )
 
     def get_contact(self, obj):
@@ -201,6 +203,11 @@ class GetCurrentOrder(GetOrderSerializer):
 
     def get_note_to_rider(self, obj):
         return obj.order_meta_data.get("note_to_driver", "")
+
+    def get_order_by(self, obj):
+        order_by = obj.order_by
+        order_by_mapper = {"CUSTOMER": obj.customer, "BUSINESS": obj.business}
+        return order_by_mapper[order_by].display_name
 
 
 class CustomerOrderSerializer(serializers.ModelSerializer):
