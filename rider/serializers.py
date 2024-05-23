@@ -24,8 +24,8 @@ class RiderSignupSerializer(serializers.Serializer):
         required=True,
     )
     address = serializers.CharField()
-    CITY_CHOICES = [("MAKURDI", "MAKURDI"), ("GBOKO", "GBOKO"), ("OTUKPO", "OTUKPO")]
-    city = serializers.ChoiceField(choices=CITY_CHOICES)
+    # CITY_CHOICES = [("MAKURDI", "MAKURDI"), ("GBOKO", "GBOKO"), ("OTUKPO", "OTUKPO")]
+    city = serializers.CharField()
     password = serializers.CharField(validators=[FieldValidators.validate_password])
     verify_password = serializers.CharField()
     one_signal_id = serializers.CharField(required=False)
