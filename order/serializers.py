@@ -161,9 +161,10 @@ class GetCurrentOrder(GetOrderSerializer):
         return {"contact": contact, "destination": destination}
 
     def get_pickup(self, obj):
-        split_address = []
         if obj.pickup_location:
             split_address = obj.pickup_location.split(", ", 1)
+        else:
+            split_address = [obj.pickup_name]
 
         return {
             "address": obj.pickup_location,
@@ -178,9 +179,10 @@ class GetCurrentOrder(GetOrderSerializer):
         }
 
     def get_delivery(self, obj):
-        split_address = []
-        if obj.pickup_location:
+        if obj.delivery_location:
             split_address = obj.delivery_location.split(", ", 1)
+        else:
+            split_address = [obj.delivery_name]
 
         return {
             "address": obj.delivery_location,
@@ -389,7 +391,10 @@ class RiderOrderSerializer(serializers.ModelSerializer):
         }
 
     def get_delivery(self, obj):
-        split_address = obj.delivery_location.split(", ", 1)
+        if obj.delivery_location:
+            split_address = obj.delivery_location.split(", ", 1)
+        else:
+            split_address = [obj.delivery_name]
         return {
             "address": obj.delivery_location,
             "longitude": obj.delivery_location_longitude,
