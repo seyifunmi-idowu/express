@@ -371,7 +371,10 @@ class RiderOrderSerializer(serializers.ModelSerializer):
         )
 
     def get_pickup(self, obj):
-        split_address = obj.pickup_location.split(", ", 1)
+        if obj.pickup_location:
+            split_address = obj.pickup_location.split(", ", 1)
+        else:
+            split_address = [obj.pickup_name]
 
         return {
             "longitude": obj.pickup_location_longitude,

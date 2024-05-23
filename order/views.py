@@ -21,6 +21,7 @@ from order.serializers import (
     BusinessOrderSerializer,
     CustomerCancelOrder,
     CustomerOrderSerializer,
+    GetAddressInfoSerializer,
     GetCurrentOrder,
     GetCustomerOrderSerializer,
     GetOrderSerializer,
@@ -33,7 +34,6 @@ from order.serializers import (
     RiderFailedPickupSerializer,
     RiderOrderSerializer,
     RiderPickUpOrderSerializer,
-    SearchAddressSerializer,
 )
 from order.service import MapService, OrderService, VehicleService
 
@@ -61,53 +61,50 @@ class VehicleViewset(viewsets.ViewSet):
 class MapsViewset(viewsets.ViewSet):
     permission_classes = (IsAuthenticated, IsCustomer)
 
-    # @swagger_auto_schema(
-    #     methods=["post"],
-    #     request_body=GetAddressInfoSerializer,
-    #     operation_description="Get address information",
-    #     operation_summary="Get address information",
-    #     tags=["Maps"],
-    #     responses=schema_doc.ADDRESS_INFO_RESPONSE,
-    # )
-    # @action(detail=False, methods=["post"], url_path="address-info")
-    # def get_address_information(self, request):
-    #     serialized_data = GetAddressInfoSerializer(data=request.data)
-    #     if not serialized_data.is_valid():
-    #         return ResponseManager.handle_response(
-    #             errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
-    #         )
-    #     if serialized_data.data.get("address") is not None:
-    #         response = MapService.get_info_from_address(
-    #             serialized_data.data.get("address")
-    #         )
-    #     else:
-    #         response = MapService.get_info_from_latitude_and_longitude(
-    #             serialized_data.validated_data.get("latitude"),
-    #             serialized_data.validated_data.get("longitude"),
-    #         )
-    #     return ResponseManager.handle_response(
-    #         data=response, status=status.HTTP_200_OK, message="Address information"
-    #     )
-
     @swagger_auto_schema(
         methods=["post"],
-        request_body=SearchAddressSerializer,
-        operation_description="Search address",
-        operation_summary="This endpoint is use to search for address",
+        request_body=GetAddressInfoSerializer,
+        operation_description="Get address information",
+        operation_summary="Get address information",
         tags=["Maps"],
         responses=schema_doc.ADDRESS_INFO_RESPONSE,
     )
     @action(detail=False, methods=["post"], url_path="address-info")
-    def search_for_address(self, request):
-        serialized_data = SearchAddressSerializer(data=request.data)
+    def get_address_information(self, request):
+        serialized_data = GetAddressInfoSerializer(data=request.data)
         if not serialized_data.is_valid():
             return ResponseManager.handle_response(
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
-        response = MapService.search_address(serialized_data.data.get("address"))
+        if serialized_data.data.get("address") is not None:
+            response = MapService.search_address(serialized_data.data.get("address"))
+        else:
+            latitude = serialized_data.validated_data.get("latitude")
+            longitude = serialized_data.validated_data.get("longitude")
+            response = MapService.search_address(f"{latitude},{longitude}")
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Address information"
         )
+
+    # @swagger_auto_schema(
+    #     methods=["post"],
+    #     request_body=SearchAddressSerializer,
+    #     operation_description="Search address",
+    #     operation_summary="This endpoint is use to search for address",
+    #     tags=["Maps"],
+    #     responses=schema_doc.ADDRESS_INFO_RESPONSE,
+    # )
+    # @action(detail=False, methods=["post"], url_path="address-info")
+    # def search_for_address(self, request):
+    #     serialized_data = SearchAddressSerializer(data=request.data)
+    #     if not serialized_data.is_valid():
+    #         return ResponseManager.handle_response(
+    #             errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
+    #         )
+    #     response = MapService.search_address(serialized_data.data.get("address"))
+    #     return ResponseManager.handle_response(
+    #         data=response, status=status.HTTP_200_OK, message="Address information"
+    #     )
 
 
 class CustomerOrderViewset(viewsets.ViewSet):
