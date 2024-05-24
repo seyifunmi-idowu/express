@@ -244,6 +244,8 @@ class OrderService:
             "note_to_driver": data.get("note_to_driver"),
             "promo_code": data.get("promo_code"),
             "timeline": timeline,
+            "pickup": pickup,
+            "delivery": delivery,
         }
         return Order.objects.create(
             customer=customer,
@@ -320,7 +322,8 @@ class OrderService:
         pickup.update(
             {
                 "address": pickup_address_info[0].get("formatted_address"),
-                "name": pickup_address_info[0].get("name"),
+                "name": pickup.get("address_details", None)
+                or pickup_address_info[0].get("name"),
             }
         )
         delivery_address_info = MapService.search_address(
@@ -333,7 +336,8 @@ class OrderService:
         delivery.update(
             {
                 "address": delivery_address_info[0].get("formatted_address"),
-                "name": delivery_address_info[0].get("name"),
+                "name": delivery.get("address_details", None)
+                or delivery_address_info[0].get("name"),
             }
         )
 
@@ -354,7 +358,8 @@ class OrderService:
                 stop_over.update(
                     {
                         "address": stop_over_address_info[0].get("formatted_address"),
-                        "name": stop_over_address_info[0].get("name"),
+                        "name": stop_over.get("address_details", None)
+                        or stop_over_address_info[0].get("name"),
                     }
                 )
 
