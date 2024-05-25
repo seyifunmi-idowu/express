@@ -31,7 +31,7 @@ class GetCustomerOrderSerializer(serializers.ModelSerializer):
 
     def get_pickup(self, obj):
         return {
-            "address": obj.pickup_location,
+            "address": obj.pickup_name,
             "time": obj.get_pick_up_time(),
             "name": obj.pickup_name,
         }
@@ -54,7 +54,7 @@ class GetCustomerOrderSerializer(serializers.ModelSerializer):
 
     def get_delivery(self, obj):
         return {
-            "address": obj.delivery_location,
+            "address": obj.delivery_name,
             "time": obj.get_delivery_time(),
             "name": obj.delivery_name,
         }

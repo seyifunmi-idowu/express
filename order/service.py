@@ -451,14 +451,14 @@ class OrderService:
                 {
                     "index": index,
                     "from": {
-                        "latitude": pickup_address_info[0].get("latitude"),
-                        "longitude": pickup_address_info[0].get("longitude"),
-                        "name": pickup_address_info[0].get("name"),
+                        "latitude": pickup.get("latitude"),
+                        "longitude": pickup.get("longitude"),
+                        "name": pickup.get("name"),
                     },
                     "to": {
-                        "latitude": delivery_address_info[0].get("latitude"),
-                        "longitude": delivery_address_info[0].get("longitude"),
-                        "name": delivery_address_info[0].get("name"),
+                        "latitude": delivery.get("latitude"),
+                        "longitude": delivery.get("longitude"),
+                        "name": delivery.get("name"),
                     },
                     "vehicle_id": vehicle_id,
                     "price": total_price,
