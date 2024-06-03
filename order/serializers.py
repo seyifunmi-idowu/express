@@ -505,7 +505,7 @@ class PlaceOrderSerializer(serializers.Serializer):
     note_to_driver = serializers.CharField(max_length=500, required=False)
     payment_method = serializers.ChoiceField(choices=PAYMENT_METHOD_CHOICES)
     payment_by = serializers.ChoiceField(choices=PAYMENT_BY_CHOICES, default="SENDER")
-    favorite_rider = serializers.BooleanField(default=False)
+    # favorite_rider = serializers.BooleanField(default=False)
     promo_code = serializers.CharField(max_length=20, required=False)
 
 

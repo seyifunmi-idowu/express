@@ -73,7 +73,7 @@ class Order(BaseAbstractModel):
         ("ORDER_CANCELLED", "Order cancelled"),
     ]
     PAYMENT_METHOD_CHOICES = [("CASH", "Cash"), ("WALLET", "Wallet")]
-    PAYMENT_BY_CHOICES = [("RECEIVER", "Receiver"), ("SENDER", "Sender")]
+    PAYMENT_BY_CHOICES = [("RECIPIENT", "Recipient"), ("SENDER", "Sender")]
     ORDER_BY_CHOICES = [("CUSTOMER", "Customer"), ("BUSINESS", "Business")]
 
     customer = models.ForeignKey(

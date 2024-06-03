@@ -10,7 +10,6 @@ from rest_framework import status
 from authentication.tasks import track_user_activity
 from business.service import BusinessService
 from customer.service import CustomerService
-from helpers.cache_manager import CacheManager, KeyBuilder
 from helpers.db_helpers import generate_id, generate_orderid
 from helpers.exceptions import CustomAPIException
 from helpers.googlemaps_service import GoogleMapsService
@@ -228,8 +227,8 @@ class OrderService:
         total_distance = data.get("total_distance")
         stop_overs = data.get("stop_overs", [])
         vehicle_id = data.get("vehicle_id")
-        payment_method = data.get("payment_method")
-        payment_by = data.get("payment_by")
+        payment_method = data.get("payment_method", None)
+        payment_by = data.get("payment_by", None)
         timeline = data.get("timeline")
 
         if pickup.get("save_address"):
@@ -241,8 +240,8 @@ class OrderService:
                 cls.save_address(customer, stop_over)
 
         order_meta_data = {
-            "note_to_driver": data.get("note_to_driver"),
-            "promo_code": data.get("promo_code"),
+            "note_to_driver": data.get("note_to_driver", None),
+            "promo_code": data.get("promo_code", None),
             "timeline": timeline,
             "pickup": pickup,
             "delivery": delivery,
@@ -251,7 +250,7 @@ class OrderService:
             customer=customer,
             vehicle=VehicleService.get_vehicle(vehicle_id),
             order_id=order_id,
-            status="PENDING",
+            status="PROCESSING_ORDER",
             pickup_number=pickup.get("contact_phone_number", None),
             pickup_contact_name=pickup.get("contact_name", None),
             pickup_location=pickup.get("address"),
@@ -297,7 +296,7 @@ class OrderService:
         return f"{formatted_time} mins"
 
     @classmethod
-    def initiate_order(cls, user, data):
+    def initiate_order(cls, user, data, is_customer_order=True):
         pickup = data["pickup"]
         delivery = data["delivery"]
         stop_overs = data.get("stop_overs", [])
@@ -480,8 +479,13 @@ class OrderService:
             "total_duration": total_duration,
             "timeline": timeline,
         }
-        key_builder = KeyBuilder.initiate_order(order_id)
-        CacheManager.set_key(key_builder, data, minutes=120)
+        if is_customer_order:
+            customer = CustomerService.get_customer(user=user)
+            cls.create_order(order_id, customer, data)
+        else:
+            business = BusinessService.get_business(user=user)
+            cls.create_business_order(order_id, business, data)
+
         data.pop("timeline")
         data.pop("vehicle_id")
         data.pop("user_id")
@@ -522,24 +526,35 @@ class OrderService:
 
     @classmethod
     def place_order(cls, user, order_id, data, session_id):
-        key_builder = KeyBuilder.initiate_order(order_id)
-        order_data = CacheManager.retrieve_key(key_builder)
-        if not order_data or order_data.get("user_id") != user.id:
-            raise CustomAPIException("Order not found.", status.HTTP_404_NOT_FOUND)
+        # key_builder = KeyBuilder.initiate_order(order_id)
+        # order_data = CacheManager.retrieve_key(key_builder)
+        # if not order_data or order_data.get("user_id") != user.id:
+        #     raise CustomAPIException("Order not found.", status.HTTP_404_NOT_FOUND)
 
+        order = cls.get_order(order_id, customer__user=user)
         if data["payment_method"] == "WALLET":
             user_wallet = user.get_user_wallet()
-            if user_wallet.balance < order_data["total_price"]:
+            if user_wallet.balance < order.total_amount:
                 raise CustomAPIException(
                     "You don't have sufficient in you wallet to place order. Kindly fund you wallet.",
                     status.HTTP_400_BAD_REQUEST,
                 )
 
-        order_data.update(data)
-        customer = CustomerService.get_customer(user=user)
-        order = cls.create_order(order_id, customer, order_data)
-        cls.notify_riders_around_location(order)
-        CacheManager.delete_key(key_builder)
+        order.status = "PENDING"
+        order.payment_method = data["payment_method"]
+        order.payment_by = data["payment_by"]
+        meta_data = {**order.order_meta_data}
+        if data.get("note_to_driver"):
+            meta_data["note_to_driver"] = data.get("note_to_driver")
+        if data.get("promo_code"):
+            meta_data["promo_code"] = data.get("promo_code")
+        order.order_meta_data = meta_data
+        order.save()
+        # order_data.update(data)
+        # customer = CustomerService.get_customer(user=user)
+        # order = cls.create_order(order_id, customer, order_data)
+        # cls.notify_riders_around_location(order)
+        # CacheManager.delete_key(key_builder)
         track_user_activity(
             context=dict({"order_id": order_id}),
             category="ORDER",
@@ -1134,21 +1149,7 @@ class OrderService:
         return total_price
 
     @classmethod
-    def place_business_order(cls, user, order_id, data, session_id):
-        key_builder = KeyBuilder.initiate_order(order_id)
-        order_data = CacheManager.retrieve_key(key_builder)
-        if not order_data or order_data.get("user_id") != user.id:
-            raise CustomAPIException("Order not found.", status.HTTP_404_NOT_FOUND)
-
-        user_wallet = user.get_user_wallet()
-        if user_wallet.balance < order_data["total_price"]:
-            raise CustomAPIException(
-                "You don't have sufficient in you wallet to place order. Kindly fund you wallet.",
-                status.HTTP_400_BAD_REQUEST,
-            )
-
-        order_data.update(data)
-        business = BusinessService.get_business(user=user)
+    def create_business_order(cls, order_id, business, order_data):
 
         pickup = order_data["pickup"]
         delivery = order_data["delivery"]
@@ -1161,11 +1162,11 @@ class OrderService:
             "note_to_driver": order_data.get("note_to_driver"),
             "timeline": timeline,
         }
-        order = Order.objects.create(
+        return Order.objects.create(
             business=business,
             vehicle=VehicleService.get_vehicle(vehicle_id),
             order_id=order_id,
-            status="PENDING",
+            status="PROCESSING_ORDER",
             order_by="BUSINESS",
             pickup_number=pickup.get("contact_phone_number", None),
             pickup_contact_name=pickup.get("contact_name", None),
@@ -1185,8 +1186,25 @@ class OrderService:
             order_meta_data=order_meta_data,
             payment_method="WALLET",
         )
+
+    @classmethod
+    def place_business_order(cls, user, order_id, data, session_id):
+        order = cls.get_order(order_id, business__user=user)
+        user_wallet = user.get_user_wallet()
+        if user_wallet.balance < order.total_amount:
+            raise CustomAPIException(
+                "You don't have sufficient in you wallet to place order. Kindly fund you wallet.",
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        order.status = "PENDING"
+        meta_data = {**order.order_meta_data}
+        if data.get("note_to_driver"):
+            meta_data["note_to_driver"] = data.get("note_to_driver")
+        order.order_meta_data = meta_data
+        order.save()
         cls.notify_riders_around_location(order)
-        CacheManager.delete_key(key_builder)
+
         track_user_activity(
             context=dict({"order_id": order_id}),
             category="ORDER",

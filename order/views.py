@@ -655,7 +655,7 @@ class BusinessOrderViewset(viewsets.ViewSet):
                 errors=serialized_data.errors, status=status.HTTP_400_BAD_REQUEST
             )
         response = OrderService.initiate_order(
-            request.user, serialized_data.validated_data
+            request.user, serialized_data.validated_data, is_customer_order=False
         )
         return ResponseManager.handle_response(
             data=response, status=status.HTTP_200_OK, message="Order Initiated"
