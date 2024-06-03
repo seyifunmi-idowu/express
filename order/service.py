@@ -467,6 +467,10 @@ class OrderService:
             )
 
         order_id = generate_orderid()
+        pickup["latitude"] = pickup_latitude
+        pickup["longitude"] = pickup_longitude
+        delivery["latitude"] = delivery_latitude
+        delivery["longitude"] = delivery_longitude
         data = {
             "user_id": user.id,
             "order_id": order_id,
