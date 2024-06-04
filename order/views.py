@@ -119,8 +119,10 @@ class CustomerOrderViewset(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"], url_path="history")
     def get_history_order(self, request):
-        orders = OrderService.get_order_qs(customer__user=request.user).order_by(
-            "-created_at"
+        orders = (
+            OrderService.get_order_qs(customer__user=request.user)
+            .order_by("-created_at")
+            .exclude(status="PROCESSING_ORDER")
         )
         return paginate_response(
             queryset=orders, serializer_=OrderHistorySerializer, request=request
@@ -135,7 +137,7 @@ class CustomerOrderViewset(viewsets.ViewSet):
     @action(detail=False, methods=["get"], url_path="ongoing")
     def get_ongoing_orders(self, request):
         orders = OrderService.get_order_qs(customer__user=request.user).exclude(
-            status__in=["ORDER_COMPLETED", "ORDER_CANCELLED"]
+            status__in=["ORDER_COMPLETED", "ORDER_CANCELLED", "PROCESSING_ORDER"]
         )
         return paginate_response(
             queryset=orders, serializer_=GetCustomerOrderSerializer, request=request
@@ -164,8 +166,10 @@ class CustomerOrderViewset(viewsets.ViewSet):
         responses=schema_doc.GET_ALL_ORDER_RESPONSE,
     )
     def list(self, request):
-        orders = OrderService.get_order_qs(customer__user=request.user).order_by(
-            "-created_at"
+        orders = (
+            OrderService.get_order_qs(customer__user=request.user)
+            .order_by("-created_at")
+            .exclude(status="PROCESSING_ORDER")
         )
         return paginate_response(
             queryset=orders, serializer_=GetCustomerOrderSerializer, request=request

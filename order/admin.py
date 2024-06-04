@@ -226,6 +226,7 @@ class OrderAdmin(admin.ModelAdmin):
         order = self.model.objects.exclude(customer__user__state="DELETED")
         order = order.exclude(rider__user__state="DELETED")
         order = order.exclude(business__user__state="DELETED")
+        order = order.exclude(status="PROCESSING_ORDER")
         return order
 
     def save_model(self, request, obj, form, change):

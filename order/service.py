@@ -221,8 +221,14 @@ class OrderService:
 
     @classmethod
     def create_order(cls, order_id, customer, data):
+        print(f"{order_id}   ======================   {order_id}")
+        print(f"{order_id}   ======================   {order_id}")
         pickup = data["pickup"]
         delivery = data["delivery"]
+        print(pickup)
+        print("create_order pickup ===========================")
+        print(delivery)
+        print("create_order delivery ===========================")
         total_duration = data.get("total_duration")
         total_distance = data.get("total_distance")
         stop_overs = data.get("stop_overs", [])
@@ -230,6 +236,15 @@ class OrderService:
         payment_method = data.get("payment_method", None)
         payment_by = data.get("payment_by", None)
         timeline = data.get("timeline")
+        first_timeline_entry = timeline[0]
+        to_data = first_timeline_entry.get("to", {})
+        from_data = first_timeline_entry.get("from", {})
+        pickup_longitude = from_data.get("longitude")
+        pickup_latitude = from_data.get("latitude")
+        pickup_name = from_data.get("name")
+        delivery_longitude = to_data.get("longitude")
+        delivery_latitude = to_data.get("latitude")
+        delivery_name = to_data.get("name")
 
         if pickup.get("save_address"):
             cls.save_address(customer, pickup)
@@ -254,15 +269,15 @@ class OrderService:
             pickup_number=pickup.get("contact_phone_number", None),
             pickup_contact_name=pickup.get("contact_name", None),
             pickup_location=pickup.get("address"),
-            pickup_name=pickup.get("name"),
-            pickup_location_longitude=pickup.get("longitude"),
-            pickup_location_latitude=pickup.get("latitude"),
+            pickup_name=pickup.get("name", pickup_name),
+            pickup_location_longitude=pickup.get("longitude", pickup_longitude),
+            pickup_location_latitude=pickup.get("latitude", pickup_latitude),
             delivery_number=delivery.get("contact_phone_number", None),
             delivery_contact_name=delivery.get("contact_name", None),
             delivery_location=delivery.get("address"),
-            delivery_name=delivery.get("name"),
-            delivery_location_longitude=delivery.get("longitude"),
-            delivery_location_latitude=delivery.get("latitude"),
+            delivery_name=delivery.get("name", delivery_name),
+            delivery_location_longitude=delivery.get("longitude", delivery_longitude),
+            delivery_location_latitude=delivery.get("latitude", delivery_latitude),
             order_stop_overs_meta_data=stop_overs,
             total_amount=data.get("total_price"),
             tip_amount=data.get("tip_amount"),
@@ -471,6 +486,11 @@ class OrderService:
         pickup["longitude"] = pickup_longitude
         delivery["latitude"] = delivery_latitude
         delivery["longitude"] = delivery_longitude
+        print(pickup)
+        print("pickup ===========================")
+        print(delivery)
+        print("delivery ===========================")
+
         data = {
             "user_id": user.id,
             "order_id": order_id,
@@ -483,6 +503,11 @@ class OrderService:
             "total_duration": total_duration,
             "timeline": timeline,
         }
+        print(data["pickup"])
+        print("data pickup ===========================")
+        print(data["delivery"])
+        print("data delivery ===========================")
+
         if is_customer_order:
             customer = CustomerService.get_customer(user=user)
             cls.create_order(order_id, customer, data)
