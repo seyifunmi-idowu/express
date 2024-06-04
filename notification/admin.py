@@ -34,4 +34,4 @@ class NotificationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Notification, NotificationAdmin)
-admin.site.register(Notification, UserNotification)
+admin.site.register(UserNotification)
