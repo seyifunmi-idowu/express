@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from notification.forms import NotificationActionForm
-from notification.models import Notification
+from notification.models import Notification, UserNotification
 from notification.service import NotificationService
 
 
@@ -34,3 +34,4 @@ class NotificationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Notification, NotificationAdmin)
+admin.site.register(Notification, UserNotification)
