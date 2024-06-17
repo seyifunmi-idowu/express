@@ -688,7 +688,7 @@ class OrderService:
         favorite_rider = kwargs.get("favorite_rider", False)
         rating = kwargs.get("rating")
         remark = kwargs.get("remark", None)
-        rider_rating = RiderRating.objects.get(
+        rider_rating = RiderRating.objects.filter(
             rider=order.rider, customer=order.customer
         ).first()
         if rider_rating:

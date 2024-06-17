@@ -81,6 +81,19 @@ GET_ORDER_HISTORY_SUCCESS = {
                 "delivery": {
                     "address": "70 Oduduwa Way, Ikeja GRA, Ikeja 101233, Lagos, Nigeria"
                 },
+                "rider": {
+                    "id": "2c4eccb6025d4c7693c5b9802224ab30",
+                    "name": "Messi Messi",
+                    "contact": "+2348105474514",
+                    "avatar_url": "https://feleexpress.s3.amazonaws.com/backend-dev/rider_document/passport_photo/7d09c9a2e6774d0f9ba727c6752f14c2.pdf",
+                    "rating": 2.0,
+                    "vehicle": "car",
+                    "vehicle_type": None,
+                    "vehicle_make": None,
+                    "vehicle_model": None,
+                    "vehicle_plate_number": "eky24sky",
+                    "vehicle_color": "red",
+                },
                 "created_at": "2024-February-04 18:39:17",
                 "name": "7 Fola Osibo Rd",
             },
