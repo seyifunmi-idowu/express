@@ -64,6 +64,7 @@ class OrderHistorySerializer(serializers.ModelSerializer):
     pickup = serializers.SerializerMethodField()
     delivery = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
+    rider = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -73,6 +74,7 @@ class OrderHistorySerializer(serializers.ModelSerializer):
             "total_amount",
             "pickup",
             "delivery",
+            "rider",
             "created_at",
         )
 
@@ -84,6 +86,23 @@ class OrderHistorySerializer(serializers.ModelSerializer):
 
     def get_delivery(self, obj):
         return {"address": obj.delivery_location, "name": obj.delivery_name}
+
+    def get_rider(self, obj):
+        if obj.rider:
+            return {
+                "id": obj.rider.id,
+                "name": obj.rider.display_name,
+                "contact": obj.rider.user.phone_number,
+                "avatar_url": obj.rider.photo_url(),
+                "rating": obj.rider.rating,
+                "vehicle": obj.rider.vehicle.name,
+                "vehicle_type": obj.rider.vehicle_type,
+                "vehicle_make": obj.rider.vehicle_make,
+                "vehicle_model": obj.rider.vehicle_model,
+                "vehicle_plate_number": obj.rider.vehicle_plate_number,
+                "vehicle_color": obj.rider.vehicle_color,
+            }
+        return None
 
 
 class GetOrderSerializer(serializers.ModelSerializer):
