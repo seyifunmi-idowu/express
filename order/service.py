@@ -582,7 +582,7 @@ class OrderService:
         # order_data.update(data)
         # customer = CustomerService.get_customer(user=user)
         # order = cls.create_order(order_id, customer, order_data)
-        # cls.notify_riders_around_location(order)
+        cls.notify_riders_around_location(order)
         # CacheManager.delete_key(key_builder)
         track_user_activity(
             context=dict({"order_id": order_id}),
