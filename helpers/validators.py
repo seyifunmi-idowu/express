@@ -221,14 +221,18 @@ class FormValidator:
             # This will validate all international numbers
             validated_no = phonenumbers.parse(phone_number)
             if str(validated_no.country_code) == "234":
+
                 phone = NigerianPhone(phone_number)
                 if not phone.is_valid():
                     raise forms.ValidationError("Phone number is not valid")
             else:
                 if phonenumbers.is_valid_number(validated_no) is False:
+
                     raise forms.ValidationError("Phone number is not valid")
         except phonenumbers.phonenumberutil.NumberParseException:
-            raise forms.ValidationError("Phone number is not valid")
+            phone = NigerianPhone(phone_number)
+            if not phone.is_valid():
+                raise forms.ValidationError("Phone number is not valid")
 
     @staticmethod
     def validate_password(password: str) -> None:
