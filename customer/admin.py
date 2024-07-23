@@ -72,5 +72,26 @@ from customer.models import Customer
 
 
 @admin.register(Customer)
-class CustomAdminClass(ModelAdmin):
-    pass
+class CustomerAdmin(ModelAdmin):  # Use UnfoldAdmin instead of ModelAdmin
+    search_fields = (
+        "user__first_name",
+        "user__last_name",
+        "business_name",
+        "business_category",
+    )
+    readonly_fields = (
+        "user",
+        "business_address",
+        "business_category",
+        "delivery_volume",
+    )
+    list_display = ("user", "customer_type", "business_name")
+    ordering = ("user__first_name", "user__last_name")
+    exclude = ("state", "created_by", "deleted_by", "updated_by", "deleted_at")
+    list_filter = ("customer_type",)  # Add customer_type to list_filter
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def get_queryset(self, request):
+        return self.model.objects.exclude(user__state="DELETED")

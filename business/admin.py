@@ -36,3 +36,37 @@
 #
 #
 # admin.site.register(Business, BusinessAdmin)
+
+
+from django.contrib import admin
+from unfold.admin import ModelAdmin
+
+from business.models import Business
+
+
+@admin.register(Business)
+class BusinessAdmin(ModelAdmin):  # Use UnfoldAdmin instead of ModelAdmin
+    search_fields = (
+        "user__first_name",
+        "user__last_name",
+        "business_name",
+        "business_category",
+    )
+    readonly_fields = (
+        "user",
+        "business_address",
+        "business_category",
+        "delivery_volume",
+        "webhook_url",
+    )
+
+    list_display = ("user", "business_name", "business_type")
+    ordering = ("business_name",)
+    exclude = ("state", "created_by", "deleted_by", "updated_by", "deleted_at")
+    list_filter = ("business_type",)
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def get_queryset(self, request):
+        return self.model.objects.exclude(user__state="DELETED")

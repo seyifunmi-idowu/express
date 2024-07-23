@@ -286,7 +286,12 @@ UNFOLD = {
     "SHOW_VIEW_ON_SITE": True,  # show/hide "View on site" button, default: True
     # "ENVIRONMENT": "sample_app.environment_callback",
     # "DASHBOARD_CALLBACK": "sample_app.dashboard_callback",
-    "THEME": "dark",  # Force theme: "dark" or "light". Will disable theme switcher
+    "THEME": [
+        "dark",
+        "light",
+    ],  # Force theme: "dark" or "light". Will disable theme switcher
+    "STYLES": [lambda request: static("css/style.css")],
+    "SCRIPTS": [lambda request: static("js/script.js")],
     "COLORS": {
         "primary": {
             "50": "250 245 255",
@@ -305,11 +310,11 @@ UNFOLD = {
     "EXTENSIONS": {"modeltranslation": {"flags": {"en": "🇬🇧", "fr": "🇫🇷", "nl": "🇧🇪"}}},
     "SIDEBAR": {
         "show_search": True,  # Search in applications and models names
-        "show_all_applications": True,  # Dropdown with all applications and models
+        "show_all_applications": False,  # Dropdown with all applications and models
         "navigation": [
             {
-                "title": _("Navigation"),
-                # "separator": True,  # Top border
+                "title": _("Apps"),
+                "separator": True,  # Top border
                 # "collapsible": True,  # Collapsible group of links
                 "items": [
                     {
@@ -318,8 +323,36 @@ UNFOLD = {
                         "permission": lambda request: request.user.is_superuser,
                     },
                     {
+                        "title": _("Business"),
+                        "link": reverse_lazy("admin:business_business_changelist"),
+                    },
+                    {
                         "title": _("Customer"),
                         "link": reverse_lazy("admin:customer_customer_changelist"),
+                    },
+                    {
+                        "title": _("Commission"),
+                        "link": reverse_lazy("admin:rider_commission_changelist"),
+                    },
+                    {
+                        "title": _("Order"),
+                        "link": reverse_lazy("admin:order_order_changelist"),
+                    },
+                    {
+                        "title": _("Vehicle"),
+                        "link": reverse_lazy("admin:order_vehicle_changelist"),
+                    },
+                    {
+                        "title": _("Rider"),
+                        "link": reverse_lazy("admin:rider_rider_changelist"),
+                    },
+                    {
+                        "title": _("Wallet"),
+                        "link": reverse_lazy("admin:wallet_wallet_changelist"),
+                    },
+                    {
+                        "title": _("Transaction"),
+                        "link": reverse_lazy("admin:wallet_transaction_changelist"),
                     },
                 ],
             }
