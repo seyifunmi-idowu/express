@@ -221,8 +221,14 @@ class OrderService:
 
     @classmethod
     def create_order(cls, order_id, customer, data):
+        print(f"{order_id}   ======================   {order_id}")
+        print(f"{order_id}   ======================   {order_id}")
         pickup = data["pickup"]
         delivery = data["delivery"]
+        print(pickup)
+        print("create_order pickup ===========================")
+        print(delivery)
+        print("create_order delivery ===========================")
         total_duration = data.get("total_duration")
         total_distance = data.get("total_distance")
         stop_overs = data.get("stop_overs", [])
@@ -480,6 +486,10 @@ class OrderService:
         pickup["longitude"] = pickup_longitude
         delivery["latitude"] = delivery_latitude
         delivery["longitude"] = delivery_longitude
+        print(pickup)
+        print("pickup ===========================")
+        print(delivery)
+        print("delivery ===========================")
 
         data = {
             "user_id": user.id,
@@ -493,6 +503,10 @@ class OrderService:
             "total_duration": total_duration,
             "timeline": timeline,
         }
+        print(data["pickup"])
+        print("data pickup ===========================")
+        print(data["delivery"])
+        print("data delivery ===========================")
 
         if is_customer_order:
             customer = CustomerService.get_customer(user=user)
