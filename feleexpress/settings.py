@@ -17,6 +17,9 @@ from typing import List
 
 import dj_database_url
 from decouple import config
+from django.templatetags.static import static
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -51,6 +54,7 @@ AUTH_USER_MODEL = "authentication.User"
 # Application definition
 
 INSTALLED_APPS = [
+    "unfold",  # before django.contrib.admin
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -62,6 +66,12 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "drf_yasg",
     "storages",
+    "unfold.contrib.filters",  # optional, if special filters are needed
+    "unfold.contrib.forms",  # optional, if special form elements are needed
+    "unfold.contrib.inlines",  # optional, if special inlines are needed
+    "unfold.contrib.import_export",  # optional, if django-import-export package is used
+    "unfold.contrib.guardian",  # optional, if django-guardian package is used
+    "unfold.contrib.simple_history",  # optional, if django-simple-history package is used
     "authentication.apps.AuthenticationConfig",
     "business.apps.BusinessConfig",
     "customer.apps.CustomerConfig",
@@ -248,6 +258,102 @@ if API_LOGGING_ENABLED:
     DRF_API_LOG_SERVER_ERROR = config(
         "DRF_API_LOG_SERVER_ERROR", cast=bool, default=False
     )
+
+UNFOLD = {
+    "SITE_TITLE": "Fele express admin",
+    "SITE_HEADER": None,
+    # "SITE_URL": "/",
+    "SITE_ICON": lambda request: static(
+        "assets/img/favicon.png"
+    ),  # both modes, optimise for 32px height
+    # "SITE_ICON": {
+    #     "light": lambda request: static("icon-light.svg"),  # light mode
+    #     "dark": lambda request: static("icon-dark.svg"),  # dark mode
+    # },
+    "SITE_LOGO": lambda request: static(
+        "assets/img/favicon.png"
+    ),  # both modes, optimise for 32px height
+    "SITE_SYMBOL": "speed",  # symbol from icon set
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "type": "image/svg+xml",
+            "href": lambda request: static("assets/img/favicon.png"),
+        }
+    ],
+    "SHOW_HISTORY": True,  # show/hide "History" button, default: True
+    "SHOW_VIEW_ON_SITE": True,  # show/hide "View on site" button, default: True
+    # "ENVIRONMENT": "sample_app.environment_callback",
+    # "DASHBOARD_CALLBACK": "sample_app.dashboard_callback",
+    "THEME": "dark",  # Force theme: "dark" or "light". Will disable theme switcher
+    "COLORS": {
+        "primary": {
+            "50": "250 245 255",
+            "100": "243 232 255",
+            "200": "233 213 255",
+            "300": "216 180 254",
+            "400": "192 132 252",
+            "500": "168 85 247",
+            "600": "147 51 234",
+            "700": "126 34 206",
+            "800": "107 33 168",
+            "900": "88 28 135",
+            "950": "59 7 100",
+        }
+    },
+    "EXTENSIONS": {"modeltranslation": {"flags": {"en": "🇬🇧", "fr": "🇫🇷", "nl": "🇧🇪"}}},
+    "SIDEBAR": {
+        "show_search": True,  # Search in applications and models names
+        "show_all_applications": True,  # Dropdown with all applications and models
+        "navigation": [
+            {
+                "title": _("Navigation"),
+                # "separator": True,  # Top border
+                # "collapsible": True,  # Collapsible group of links
+                "items": [
+                    {
+                        "title": _("Dashboard"),
+                        "link": reverse_lazy("admin:index"),
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Customer"),
+                        "link": reverse_lazy("admin:customer_customer_changelist"),
+                    },
+                ],
+            }
+        ],
+    },
+}
+
+
+def dashboard_callback(request, context):
+    """
+    Callback to prepare custom variables for index template which is used as dashboard
+    template. It can be overridden in application by creating custom admin/index.html.
+    """
+    context.update(
+        {"sample": "example"}  # this will be injected into templates/admin/index.html
+    )
+    return context
+
+
+def environment_callback(request):
+    """
+    Callback has to return a list of two values represeting text value and the color
+    type of the label displayed in top right corner.
+    """
+    return ["Production", "danger"]  # info, danger, warning, success
+
+
+def badge_callback(request):
+    return 3
+
+
+def permission_callback(request):
+    return request.user.has_perm("feleexpress.change_model")
+
 
 LOGIN_URL = "/admin/login"
 

@@ -63,3 +63,14 @@
 # admin.site.register(Customer, CustomerAdmin)
 # admin.site.register(IndividualCustomer, IndividualCustomerAdmin)
 # admin.site.register(BusinessCustomer, BusinessCustomerAdmin)
+
+
+from django.contrib import admin
+from unfold.admin import ModelAdmin
+
+from customer.models import Customer
+
+
+@admin.register(Customer)
+class CustomAdminClass(ModelAdmin):
+    pass
