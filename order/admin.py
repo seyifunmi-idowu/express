@@ -348,9 +348,10 @@ class VehiclesAdmin(ModelAdmin):
 
 class OrderTimelineInline(TabularInline):
     model = OrderTimeline
-    readonly_fields = ("status", "date", "proof_link", "reason")
+    readonly_fields = ("status", "date", "reason", "proof_img")
     ordering = ("created_at",)
-    fields = ("status", "date", "proof_link", "reason")
+    fields = ("status", "date", "reason", "proof_url")
+    list_display = ("status", "reason", "proof_img", "date")
     extra = 0
 
     def formfield_for_dbfield(self, *args, **kwargs):
@@ -365,15 +366,15 @@ class OrderTimelineInline(TabularInline):
     def date(self, instance):
         return instance.get_created_at()
 
-    def proof_link(self, instance):
+    def proof_img(self, instance):
         if instance.proof_url:
             return format_html(
-                '<a href="{}" target="_blank" download="">{}</a>',
-                instance.proof_url,
-                instance.proof_url,
+                '<img src="{}" width="50" height="50" />', instance.proof_url
             )
         else:
             return ""
+
+    proof_img.short_description = "Proof"  # type: ignore
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -385,7 +386,7 @@ class OrderTimelineInline(TabularInline):
 @admin.register(Order)
 class OrderAdmin(ModelAdmin):
     form = OrderAdminForm
-    # inlines = [OrderTimelineInline]
+    inlines = [OrderTimelineInline]
     search_fields = ("order_id", "status")
     list_display = (
         "order_id",
