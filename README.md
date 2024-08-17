@@ -1,16 +1,11 @@
-# Fele Express
-
-This repository holds the `backend api` code base for the Fele Express Application.
+# Express
 
 ## Install
 - Clone the repository:
-```
-git clone https://github.com/FeleExpress/feleexpress.git
-```
 
 - Check into the folder:
 ```
-cd fele
+cd express
 ```
 
 - Install pre-commit hooks
@@ -36,7 +31,7 @@ pip install -r requirements.txt
 - Copy .env.sample to .env
 
 - Make sure `DATABASE_URL` in `.env` points to:
-```postgres://root:password@postgres:5432/feleexpress```
+```postgres://root:password@postgres:5432/express```
 
 - Build the application:
 ```docker-compose -f docker-compose.yml build```
@@ -55,6 +50,3 @@ pip install -r requirements.txt
 - To stop the server:
 ```docker-compose -f docker-compose.yml down```
 
-## Deployment Links
-- [Staging Server](https://api-staging.feleexpress.com/)
-- [Production Server](https://api.feleexpress.com/) - to be updated
